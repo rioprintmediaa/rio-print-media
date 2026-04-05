@@ -2681,7 +2681,7 @@ tbody td:last-child { border-right: none; }
           <svg viewBox="0 0 24 24" fill="white"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
         </div>
         <div class="nav-btn-body" style="background:linear-gradient(90deg,#5d3a00,#8d4e00);box-shadow:0 5px 18px rgba(93,58,0,0.5);">
-          <span class="nav-btn-label" style="font-size:0.7rem;line-height:1.2;">User Mgmt<br>/ Backups</span>
+          <span class="nav-btn-label">Backup</span>
           <div class="nav-speed">
               <div class="nav-speed-row"><div class="nav-speed-line"></div><div class="nav-speed-line"></div><div class="nav-speed-line"></div><div class="nav-speed-dot"></div></div>
               <div class="nav-speed-row"><div class="nav-speed-line"></div><div class="nav-speed-line"></div><div class="nav-speed-dot"></div></div>
@@ -6582,16 +6582,17 @@ document.addEventListener('DOMContentLoaded', () => {
     form.parentNode.insertBefore(bar, form);
   }
 
-  // Show login — block dashboard until authenticated
-  var _ov=document.getElementById('rio-login-overlay');
-  if(_ov) _ov.style.display='flex';
-  setTimeout(function(){var _u=document.getElementById('rio-uname');if(_u)_u.focus();},300);
-  var _realRetry=window.retryConnect;
-  window.retryConnect=function(){
-    if(!window._rioUser){var _ov3=document.getElementById('rio-login-overlay');if(_ov3)_ov3.style.display='flex';return;}
-    if(_realRetry)_realRetry.apply(this,arguments);
-  };
-  detectPort().then(function(){rioAuthInit();}).catch(function(){rioAuthInit();});
+  // Connect to cloud API then load all data
+  setTimeout(function(){
+    detectPort().then(function(ok){
+      loadAll();
+      loadJobs();
+      setInterval(loadAll, 60000);
+    }).catch(function(){
+      loadAll();
+      loadJobs();
+    });
+  }, 500);
 });
 
 // ─── Delete selected note (last clicked) ─────────────────────
@@ -10376,266 +10377,6 @@ body.role-guest #s-edit-bar { display:none !important; }
   #rio-usermgmt-section { padding:12px; }
 }
 </style>
-
-
-
-<div id="rio-login-overlay" style="display:none">
-  <div id="rio-login-logo">&#128424; RIO PRINT MEDIA</div>
-  <div id="rio-login-box">
-    <h2>Welcome Back</h2>
-    <p>Sign in to continue</p>
-    <input class="rio-login-field" id="rio-uname" type="text"
-      placeholder="Username" autocomplete="username"
-      onkeydown="if(event.key==='Enter')document.getElementById('rio-pwd').focus()">
-    <input class="rio-login-field" id="rio-pwd" type="password"
-      placeholder="Password" autocomplete="current-password"
-      onkeydown="if(event.key==='Enter')rioDoLogin()">
-    <button id="rio-login-btn" onclick="rioDoLogin()">Sign In</button>
-    <div id="rio-login-err"></div>
-  </div>
-</div>
-
-<button id="rio-logout-btn" style="display:none" onclick="rioLogout()">&#9211; Logout</button>
-
-<div id="rio-mobile-bar">
-  <button id="rio-hamburger" onclick="rioToggleNav()">&#9776;</button>
-  <span id="rio-mobile-title">RIO PRINT MEDIA</span>
-</div>
-<div id="rio-nav-overlay" onclick="rioToggleNav()"></div>
-
-
-<script>
-var _rioUser = null;
-
-// ── Mobile nav toggle ────────────────────────────────────────
-function rioToggleNav() {
-  var nav = document.getElementById('nav');
-  var ov  = document.getElementById('rio-nav-overlay');
-  if (!nav) return;
-  nav.classList.toggle('mobile-open');
-  ov.classList.toggle('mobile-open');
-}
-
-// ── Login ────────────────────────────────────────────────────
-async function rioDoLogin() {
-  var uname = document.getElementById('rio-uname').value.trim();
-  var pwd   = document.getElementById('rio-pwd').value.trim();
-  var errEl = document.getElementById('rio-login-err');
-  var btn   = document.getElementById('rio-login-btn');
-  if (!uname || !pwd) { errEl.textContent = 'Enter username and password'; return; }
-  btn.textContent = 'Signing in...'; btn.disabled = true;
-  try {
-    var r = await fetch('https://rio-print-media.onrender.com/api/auth/login', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({username:uname, password:pwd})
-    });
-    var d = await r.json();
-    if (!r.ok || !d.ok) {
-      errEl.textContent = d.error || 'Invalid username or password';
-      btn.textContent = 'Sign In'; btn.disabled = false;
-      return;
-    }
-    _rioUser = d; window._rioUser = d;
-    sessionStorage.setItem('rio_user', JSON.stringify(d));
-    rioApplyRole(d);
-  } catch(e) {
-    errEl.textContent = 'Connection error — try again';
-    btn.textContent = 'Sign In'; btn.disabled = false;
-  }
-}
-
-// ── Apply role after login ───────────────────────────────────
-function rioApplyRole(user) {
-  var overlay = document.getElementById('rio-login-overlay');
-  if (overlay) overlay.style.display = 'none';
-  var lb = document.getElementById('rio-logout-btn');
-  if (lb) { lb.style.display = 'block'; lb.textContent = (user.name || user.username) + '  ⏻'; }
-
-  var role = user.role;
-  document.body.classList.remove('role-expense','role-invoice','role-guest','role-admin','role-partner','role-auditor');
-  document.body.classList.add('role-' + role);
-
-  if (role === 'expense') {
-    document.querySelectorAll('.panel').forEach(function(p){ p.style.display='none'; });
-    var ep = document.getElementById('panel-expense');
-    if (ep) { ep.style.display='block'; ep.classList.add('active'); }
-    if (typeof loadExpenses==='function') loadExpenses();
-    if (typeof renderExpenses==='function') renderExpenses();
-  } else if (role === 'invoice') {
-    document.querySelectorAll('.panel').forEach(function(p){ p.style.display='none'; });
-    var ip = document.getElementById('panel-rio-invoice');
-    if (ip) { ip.style.display='flex'; ip.classList.add('active'); }
-    if (typeof invNewInvoice==='function') invNewInvoice();
-    if (typeof loadInvRegister==='function') loadInvRegister();
-  } else {
-    // admin, partner, auditor, guest — full dashboard
-    loadAll();
-    loadJobs();
-    setInterval(loadAll, 60000);
-  }
-
-  // Show/hide user management based on role
-  var umgmt = document.getElementById('rio-usermgmt-section');
-  if (umgmt) {
-    umgmt.style.display = (role === 'admin') ? 'block' : 'none';
-  }
-}
-
-// ── Logout ───────────────────────────────────────────────────
-function rioLogout() {
-  sessionStorage.removeItem('rio_user');
-  _rioUser = null; window._rioUser = null;
-  location.reload();
-}
-
-// ── Auth init on page load ───────────────────────────────────
-function rioAuthInit() {
-  try {
-    var saved = sessionStorage.getItem('rio_user');
-    if (saved) {
-      var user = JSON.parse(saved);
-      if (user && user.username && user.role) {
-        _rioUser = user; window._rioUser = user;
-        rioApplyRole(user);
-        return;
-      }
-    }
-  } catch(e) {}
-  var overlay = document.getElementById('rio-login-overlay');
-  if (overlay) overlay.style.display = 'flex';
-  setTimeout(function() {
-    var u = document.getElementById('rio-uname');
-    if (u) u.focus();
-  }, 200);
-}
-
-
-
-
-
-// ══════════════════════════════════════════════════════════════
-//  USER MANAGEMENT
-// ══════════════════════════════════════════════════════════════
-var _umEditingUser = null;
-
-function rioAuthHeaders() {
-  var u = window._rioUser;
-  var headers = { 'Content-Type': 'application/json' };
-  if (u && u.token) headers['Authorization'] = 'Bearer ' + u.token;
-  return headers;
-}
-
-async function umLoadUsers() {
-  var tbody = document.getElementById('usermgmt-tbody');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px;">Loading...</td></tr>';
-  try {
-    var r = await fetch('https://rio-print-media.onrender.com/api/auth/users', { headers: rioAuthHeaders() });
-    if (!r.ok) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#c62828;padding:20px;">Auth error (' + r.status + ') — please re-login</td></tr>';
-      return;
-    }
-    var users = await r.json();
-    if (!Array.isArray(users) || users.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px;">No users found</td></tr>';
-      return;
-    }
-    tbody.innerHTML = users.map(function(u) {
-      var roleClass = 'role-' + (u.role||'guest');
-      var roleName  = (u.role||'guest').charAt(0).toUpperCase() + (u.role||'guest').slice(1);
-      var isAdmin   = u.username === 'admin';
-      var actions   = isAdmin
-        ? '<span style="color:#aaa;font-size:0.75rem;">Protected</span>'
-        : '<button onclick="umEditUser(this)" data-uname="' + u.username + '" data-name="' + (u.name||'') + '" data-role="' + (u.role||'') + '" style="background:#1a237e;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.75rem;cursor:pointer;margin-right:6px;font-family:Exo 2,sans-serif;">&#9998; Edit</button>'
-        + '<button onclick="umDeleteUser(this)" data-uname="' + u.username + '" style="background:#c62828;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.75rem;cursor:pointer;font-family:Exo 2,sans-serif;">&#128465; Delete</button>';
-      return '<tr>'
-        + '<td style="font-weight:700;font-family:Exo 2,sans-serif;">' + u.username + '</td>'
-        + '<td>' + (u.name||'—') + '</td>'
-        + '<td><span class="role-badge ' + roleClass + '">' + roleName + '</span></td>'
-        + '<td>' + actions + '</td>'
-        + '</tr>';
-    }).join('');
-  } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#c62828;padding:20px;">Error loading users</td></tr>';
-  }
-}
-
-function umShowForm(username, name, role) {
-  _umEditingUser = username || null;
-  document.getElementById('um-form-title').textContent = username ? 'Edit User' : 'Add New User';
-  document.getElementById('um-username').value  = username || '';
-  document.getElementById('um-username').disabled = !!username;
-  document.getElementById('um-name').value      = name || '';
-  document.getElementById('um-password').value  = '';
-  document.getElementById('um-role').value      = role || 'expense';
-  document.getElementById('um-form-wrap').style.display = 'block';
-  document.getElementById('um-username').focus();
-}
-
-function umHideForm() {
-  _umEditingUser = null;
-  document.getElementById('um-form-wrap').style.display = 'none';
-}
-
-function umEditUser(btn) {
-  var uname = btn.getAttribute('data-uname');
-  var name  = btn.getAttribute('data-name');
-  var role  = btn.getAttribute('data-role');
-  umShowForm(uname, name, role);
-}
-
-async function umDeleteUser(btn) {
-  var username = btn.getAttribute('data-uname');
-  if (!confirm('Delete user "' + username + '"? This cannot be undone.')) return;
-  try {
-    var r = await fetch('https://rio-print-media.onrender.com/api/auth/users/' + username, { method:'DELETE', headers: rioAuthHeaders() });
-    var d = await r.json();
-    if (d.ok) { umLoadUsers(); }
-    else { alert('Error: ' + (d.error||'Cannot delete')); }
-  } catch(e) { alert('Connection error'); }
-}
-
-async function umSaveUser() {
-  var username = document.getElementById('um-username').value.trim();
-  var name     = document.getElementById('um-name').value.trim();
-  var password = document.getElementById('um-password').value.trim();
-  var role     = document.getElementById('um-role').value;
-  var errEl    = document.getElementById('um-form-err');
-  errEl.textContent = '';
-
-  if (!username) { errEl.textContent = 'Username is required'; return; }
-  if (!_umEditingUser && !password) { errEl.textContent = 'Password is required for new users'; return; }
-
-  var body = { name:name, role:role };
-  if (password) body.password = password;
-
-  try {
-    var url, method;
-    if (_umEditingUser) {
-      url = 'https://rio-print-media.onrender.com/api/auth/users/' + username;
-      method = 'PUT';
-    } else {
-      url = 'https://rio-print-media.onrender.com/api/auth/users';
-      method = 'POST';
-      body.username = username;
-    }
-    var r = await fetch(url, {
-      method: method,
-      headers: rioAuthHeaders(),
-      body: JSON.stringify(body)
-    });
-    var d = await r.json();
-    if (d.ok) {
-      umHideForm();
-      umLoadUsers();
-    } else {
-      errEl.textContent = d.error || 'Save failed';
-    }
-  } catch(e) {
-    errEl.textContent = 'Connection error';
-  }
-}
-</script>
 
 </body>
 </html>
