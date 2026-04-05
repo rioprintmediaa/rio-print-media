@@ -181,6 +181,17 @@ def require_db():
     if not ensure_db():
         raise Exception("Database not connected")
 
+def init_indexes():
+    """Create indexes for fast queries."""
+    try:
+        _db["sales_records"].create_index([("SNo", DESCENDING)])
+        _db["daily_expenses"].create_index([("Date", DESCENDING)])
+        _db["sales_invoices"].create_index([("InvoiceDate", DESCENDING)])
+        _db["quotations"].create_index([("QuotationDate", DESCENDING)])
+        logger.info("Indexes created")
+    except Exception as e:
+        logger.warning(f"Index creation (non-fatal): {e}")
+
 def init_counters():
     """Seed counters from current max IDs in each collection."""
     collections = [
@@ -276,6 +287,11 @@ async def lifespan(app: FastAPI):
     connected = _connect_mongo()
     if connected:
         try:
+            init_indexes()
+            logger.info("Indexes ready")
+        except Exception as e:
+            logger.warning(f"init_indexes error (non-fatal): {e}")
+        try:
             init_counters()
             logger.info("Counters initialised")
         except Exception as e:
@@ -368,9 +384,16 @@ async def ping():
 #  SALES RECORDS
 # ─────────────────────────────────────────────
 @app.get("/api/sales")
-async def get_sales():
-    rows = list(col("sales_records").find({}, {"_id": 0}).sort("SNo", DESCENDING))
-    return JSONResponse(content=rows)
+async def get_sales(limit: int = Query(500, ge=1, le=2000), skip: int = Query(0, ge=0)):
+    if not ensure_db():
+        return JSONResponse(content=[], status_code=503)
+    try:
+        rows = list(col("sales_records").find({}, {"_id": 0})
+                    .sort("SNo", DESCENDING).skip(skip).limit(limit))
+        return JSONResponse(content=rows)
+    except Exception as e:
+        logger.error(f"get_sales error: {e}")
+        return JSONResponse(content=[], status_code=500)
 
 @app.post("/api/sales")
 async def post_sales(request: Request):
