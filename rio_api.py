@@ -1518,3 +1518,4 @@ async def delete_user(username: str):
     col("rio_users").delete_one({"username": username})
     return ok()
  
+ 
