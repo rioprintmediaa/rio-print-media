@@ -1517,3 +1517,4 @@ async def delete_user(username: str):
         return err("Cannot delete admin user")
     col("rio_users").delete_one({"username": username})
     return ok()
+ 
