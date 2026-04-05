@@ -2436,8 +2436,202 @@ tbody td:last-child { border-right: none; }
       console.error('JS ERROR:', msg, src, line);
     };
   </script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<style>
+/* ── LOGIN OVERLAY ────────────────────────────────────────── */
+#rio-login-overlay {
+  position:fixed;top:0;left:0;width:100vw;height:100vh;
+  background:linear-gradient(135deg,#0e1220 0%,#1a237e 100%);
+  display:none;align-items:center;justify-content:center;
+  z-index:99999;flex-direction:column;
+}
+#rio-login-box {
+  background:white;border-radius:18px;padding:36px 32px 28px;
+  width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+#rio-login-box h2 {
+  margin:0 0 4px;font-family:'Exo 2',sans-serif;font-size:1.4rem;
+  color:#1a237e;text-align:center;
+}
+#rio-login-box p {
+  margin:0 0 24px;font-size:0.82rem;color:#888;text-align:center;
+  font-family:'Nunito',sans-serif;
+}
+.rio-login-field {
+  width:100%;margin-bottom:14px;box-sizing:border-box;
+  border:1.5px solid #e0e0e0;border-radius:10px;
+  padding:12px 14px;font-size:1rem;font-family:'Nunito',sans-serif;
+  outline:none;transition:border 0.2s;
+}
+.rio-login-field:focus { border-color:#3949ab; }
+#rio-login-btn {
+  width:100%;padding:13px;
+  background:linear-gradient(90deg,#1a237e,#3949ab);
+  color:white;border:none;border-radius:10px;font-size:1rem;
+  font-family:'Exo 2',sans-serif;font-weight:700;cursor:pointer;
+  margin-top:4px;letter-spacing:0.5px;
+}
+#rio-login-btn:active { opacity:0.85; }
+#rio-login-err {
+  color:#c62828;font-size:0.82rem;text-align:center;
+  margin-top:10px;font-family:'Nunito',sans-serif;min-height:18px;
+}
+#rio-login-logo {
+  font-family:'Exo 2',sans-serif;font-size:1.1rem;font-weight:900;
+  color:white;margin-bottom:22px;letter-spacing:2px;text-align:center;opacity:0.9;
+}
+
+/* ── LOGOUT BUTTON ────────────────────────────────────────── */
+#rio-logout-btn {
+  position:fixed;top:10px;right:12px;z-index:9000;
+  background:#c62828;color:white;border:none;border-radius:8px;
+  padding:7px 16px;font-family:'Exo 2',sans-serif;font-weight:700;
+  font-size:0.78rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* ── ROLE RESTRICTIONS ────────────────────────────────────── */
+body.role-expense #nav { display:none !important; }
+body.role-expense .panel:not(#panel-expense) { display:none !important; }
+body.role-expense #panel-expense { display:block !important; }
+body.role-expense #content { margin-left:0 !important; padding:12px !important; }
+
+body.role-invoice #nav { display:none !important; }
+body.role-invoice .panel:not(#panel-rio-invoice):not(#panel-rio-quotation):not(#panel-rio-invmgr):not(#panel-rio-customers):not(#panel-rio-products):not(#panel-rio-reports) { display:none !important; }
+body.role-invoice #panel-rio-invoice { display:flex !important; }
+body.role-invoice #content { margin-left:0 !important; padding:12px !important; }
+
+/* ── GUEST MODE — hide all edit controls ──────────────────── */
+body.role-guest .btn-action,
+body.role-guest button[onclick*="save"],
+body.role-guest button[onclick*="Save"],
+body.role-guest button[onclick*="add"],
+body.role-guest button[onclick*="Add"],
+body.role-guest button[onclick*="delete"],
+body.role-guest button[onclick*="Delete"],
+body.role-guest button[onclick*="edit"],
+body.role-guest button[onclick*="Edit"],
+body.role-guest button[onclick*="submit"],
+body.role-guest button[onclick*="Submit"],
+body.role-guest .form-section,
+body.role-guest .action-bar,
+body.role-guest #s-edit-bar,
+body.role-guest [id*="add-"],
+body.role-guest [id*="-form"],
+body.role-guest [id*="form-"],
+body.role-guest .edit-actions,
+body.role-guest #rio-logout-btn { }
+body.role-guest .form-section { display:none !important; }
+body.role-guest .action-bar { display:none !important; }
+body.role-guest .btn-action { display:none !important; }
+body.role-guest td button { display:none !important; }
+body.role-guest .edit-btn { display:none !important; }
+body.role-guest #s-edit-bar { display:none !important; }
+
+/* ── USER MGMT TABLE ──────────────────────────────────────── */
+#usermgmt-table { width:100%;border-collapse:collapse;font-family:'Nunito',sans-serif;font-size:0.85rem; }
+#usermgmt-table th { background:#1a237e;color:white;padding:10px 12px;text-align:left;font-family:'Exo 2',sans-serif;font-size:0.78rem;letter-spacing:0.5px; }
+#usermgmt-table td { padding:9px 12px;border-bottom:1px solid #e8eaf6;vertical-align:middle; }
+#usermgmt-table tr:hover td { background:#f3f4ff; }
+.role-badge {
+  display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.72rem;
+  font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:0.5px;
+}
+.role-admin    { background:#e8eaf6;color:#1a237e; }
+.role-partner  { background:#e8f5e9;color:#1b5e20; }
+.role-auditor  { background:#fff3e0;color:#e65100; }
+.role-expense  { background:#fce4ec;color:#880e4f; }
+.role-invoice  { background:#e0f2f1;color:#004d40; }
+.role-guest    { background:#f5f5f5;color:#616161; }
+
+/* ── MOBILE RESPONSIVE ────────────────────────────────────── */
+#rio-mobile-bar {
+  display:none;position:fixed;top:0;left:0;right:0;height:52px;
+  background:linear-gradient(90deg,#0e1220,#1a237e);
+  z-index:8000;align-items:center;padding:0 12px;gap:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.4);
+}
+#rio-hamburger {
+  background:none;border:none;color:white;font-size:1.5rem;
+  cursor:pointer;padding:4px 8px;
+}
+#rio-mobile-title {
+  color:white;font-family:'Exo 2',sans-serif;font-weight:800;
+  font-size:0.9rem;letter-spacing:1px;flex:1;
+}
+#rio-nav-overlay {
+  display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
+  background:rgba(0,0,0,0.5);z-index:7998;
+}
+@media (max-width:900px) {
+  #rio-mobile-bar { display:flex !important; }
+  #nav {
+    position:fixed !important;top:0;left:-300px;width:270px !important;
+    height:100vh;z-index:7999;transition:left 0.3s ease;
+    overflow-y:auto;padding-top:52px !important;
+    box-shadow:4px 0 20px rgba(0,0,0,0.3);
+  }
+  #nav.mobile-open { left:0 !important; }
+  #rio-nav-overlay { display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:7998; }
+  #rio-nav-overlay.mobile-open { display:block !important; }
+  #app {
+    grid-template-columns:1fr !important;
+  }
+  #header {
+    display:none !important;
+  }
+  #content {
+    grid-column:1 !important;
+    margin-left:0 !important;
+    padding-top:60px !important;
+    width:100vw !important;
+    overflow-x:hidden !important;
+  }
+  #cmyk-line { display:none !important; }
+  .data-table-wrap { overflow-x:auto !important; }
+  table { min-width:500px; }
+  .form-section { padding:10px !important; }
+  .panel-header { flex-wrap:wrap;gap:8px; }
+  .summary-cards { grid-template-columns:1fr 1fr !important; }
+  .summary-metrics { grid-template-columns:1fr 1fr !important; }
+  .acct-summary-grid { grid-template-columns:1fr 1fr !important; }
+  .form-grid { grid-template-columns:1fr !important; }
+  .panel { padding:10px !important; }
+  .summary-cards { grid-template-columns:1fr 1fr !important; gap:8px !important; }
+  #panel-home { overflow-x:hidden !important; padding:10px !important; }
+  .acct-summary-grid { grid-template-columns:1fr 1fr !important; padding:8px !important; }
+  .acct-total-bar { margin:0 0 16px !important; border-radius:8px !important; }
+  .ledger-form-row { grid-template-columns:1fr 1fr !important; }
+  .notes-layout { grid-template-columns:1fr !important; }
+  .notes-divider { display:none !important; }
+  #app { overflow-x:hidden !important; }
+  #header { grid-column:1 !important; }
+  .sum-card { min-width:0 !important; }
+  .acct-sum-card { min-width:0 !important; }
+  #panel-dashboard { overflow-x:hidden !important; }
+  .buttons-grid { max-width:100% !important; }
+  .home-greeting h2 { font-size:1.2rem !important; }
+}
+</style>
+
 </head>
 <body>
+
+<div id="rio-mobile-bar">
+  <button id="rio-hamburger" onclick="rioToggleNav()">&#9776;</button>
+  <span id="rio-mobile-title">RIO PRINT MEDIA</span>
+</div>
+<div id="rio-nav-overlay" onclick="rioToggleNav()"></div>
+<script>
+function rioToggleNav() {
+  var nav = document.getElementById('nav');
+  var ov  = document.getElementById('rio-nav-overlay');
+  if (!nav) return;
+  nav.classList.toggle('mobile-open');
+  if (ov) ov.classList.toggle('mobile-open');
+}
+</script>
+
 
 
 <div id="app">
@@ -10228,194 +10422,6 @@ async function loadDashboardLedgerBalances() {
     </div>
   </div>
 
-
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<style>
-/* ── LOGIN OVERLAY ────────────────────────────────────────── */
-#rio-login-overlay {
-  position:fixed;top:0;left:0;width:100vw;height:100vh;
-  background:linear-gradient(135deg,#0e1220 0%,#1a237e 100%);
-  display:none;align-items:center;justify-content:center;
-  z-index:99999;flex-direction:column;
-}
-#rio-login-box {
-  background:white;border-radius:18px;padding:36px 32px 28px;
-  width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.5);
-}
-#rio-login-box h2 {
-  margin:0 0 4px;font-family:'Exo 2',sans-serif;font-size:1.4rem;
-  color:#1a237e;text-align:center;
-}
-#rio-login-box p {
-  margin:0 0 24px;font-size:0.82rem;color:#888;text-align:center;
-  font-family:'Nunito',sans-serif;
-}
-.rio-login-field {
-  width:100%;margin-bottom:14px;box-sizing:border-box;
-  border:1.5px solid #e0e0e0;border-radius:10px;
-  padding:12px 14px;font-size:1rem;font-family:'Nunito',sans-serif;
-  outline:none;transition:border 0.2s;
-}
-.rio-login-field:focus { border-color:#3949ab; }
-#rio-login-btn {
-  width:100%;padding:13px;
-  background:linear-gradient(90deg,#1a237e,#3949ab);
-  color:white;border:none;border-radius:10px;font-size:1rem;
-  font-family:'Exo 2',sans-serif;font-weight:700;cursor:pointer;
-  margin-top:4px;letter-spacing:0.5px;
-}
-#rio-login-btn:active { opacity:0.85; }
-#rio-login-err {
-  color:#c62828;font-size:0.82rem;text-align:center;
-  margin-top:10px;font-family:'Nunito',sans-serif;min-height:18px;
-}
-#rio-login-logo {
-  font-family:'Exo 2',sans-serif;font-size:1.1rem;font-weight:900;
-  color:white;margin-bottom:22px;letter-spacing:2px;text-align:center;opacity:0.9;
-}
-
-/* ── LOGOUT BUTTON ────────────────────────────────────────── */
-#rio-logout-btn {
-  position:fixed;top:10px;right:12px;z-index:9000;
-  background:#c62828;color:white;border:none;border-radius:8px;
-  padding:7px 16px;font-family:'Exo 2',sans-serif;font-weight:700;
-  font-size:0.78rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);
-}
-
-/* ── ROLE RESTRICTIONS ────────────────────────────────────── */
-body.role-expense #nav { display:none !important; }
-body.role-expense .panel:not(#panel-expense) { display:none !important; }
-body.role-expense #panel-expense { display:block !important; }
-body.role-expense #content { margin-left:0 !important; padding:12px !important; }
-
-body.role-invoice #nav { display:none !important; }
-body.role-invoice .panel:not(#panel-rio-invoice):not(#panel-rio-quotation):not(#panel-rio-invmgr):not(#panel-rio-customers):not(#panel-rio-products):not(#panel-rio-reports) { display:none !important; }
-body.role-invoice #panel-rio-invoice { display:flex !important; }
-body.role-invoice #content { margin-left:0 !important; padding:12px !important; }
-
-/* ── GUEST MODE — hide all edit controls ──────────────────── */
-body.role-guest .btn-action,
-body.role-guest button[onclick*="save"],
-body.role-guest button[onclick*="Save"],
-body.role-guest button[onclick*="add"],
-body.role-guest button[onclick*="Add"],
-body.role-guest button[onclick*="delete"],
-body.role-guest button[onclick*="Delete"],
-body.role-guest button[onclick*="edit"],
-body.role-guest button[onclick*="Edit"],
-body.role-guest button[onclick*="submit"],
-body.role-guest button[onclick*="Submit"],
-body.role-guest .form-section,
-body.role-guest .action-bar,
-body.role-guest #s-edit-bar,
-body.role-guest [id*="add-"],
-body.role-guest [id*="-form"],
-body.role-guest [id*="form-"],
-body.role-guest .edit-actions,
-body.role-guest #rio-logout-btn { }
-body.role-guest .form-section { display:none !important; }
-body.role-guest .action-bar { display:none !important; }
-body.role-guest .btn-action { display:none !important; }
-body.role-guest td button { display:none !important; }
-body.role-guest .edit-btn { display:none !important; }
-body.role-guest #s-edit-bar { display:none !important; }
-
-/* ── USER MGMT TABLE ──────────────────────────────────────── */
-#usermgmt-table { width:100%;border-collapse:collapse;font-family:'Nunito',sans-serif;font-size:0.85rem; }
-#usermgmt-table th { background:#1a237e;color:white;padding:10px 12px;text-align:left;font-family:'Exo 2',sans-serif;font-size:0.78rem;letter-spacing:0.5px; }
-#usermgmt-table td { padding:9px 12px;border-bottom:1px solid #e8eaf6;vertical-align:middle; }
-#usermgmt-table tr:hover td { background:#f3f4ff; }
-.role-badge {
-  display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.72rem;
-  font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:0.5px;
-}
-.role-admin    { background:#e8eaf6;color:#1a237e; }
-.role-partner  { background:#e8f5e9;color:#1b5e20; }
-.role-auditor  { background:#fff3e0;color:#e65100; }
-.role-expense  { background:#fce4ec;color:#880e4f; }
-.role-invoice  { background:#e0f2f1;color:#004d40; }
-.role-guest    { background:#f5f5f5;color:#616161; }
-
-/* ── MOBILE RESPONSIVE ────────────────────────────────────── */
-#rio-mobile-bar {
-  display:none;position:fixed;top:0;left:0;right:0;height:52px;
-  background:linear-gradient(90deg,#0e1220,#1a237e);
-  z-index:8000;align-items:center;padding:0 12px;gap:12px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.4);
-}
-#rio-hamburger {
-  background:none;border:none;color:white;font-size:1.5rem;
-  cursor:pointer;padding:4px 8px;
-}
-#rio-mobile-title {
-  color:white;font-family:'Exo 2',sans-serif;font-weight:800;
-  font-size:0.9rem;letter-spacing:1px;flex:1;
-}
-#rio-nav-overlay {
-  display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
-  background:rgba(0,0,0,0.5);z-index:7998;
-}
-@media (max-width:900px) {
-  #rio-mobile-bar { display:flex !important; }
-  #nav {
-    position:fixed !important;top:0;left:-300px;width:270px !important;
-    height:100vh;z-index:7999;transition:left 0.3s ease;
-    overflow-y:auto;padding-top:52px !important;
-    box-shadow:4px 0 20px rgba(0,0,0,0.3);
-  }
-  #nav.mobile-open { left:0 !important; }
-  #rio-nav-overlay { display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:7998; }
-  #rio-nav-overlay.mobile-open { display:block !important; }
-  #app {
-    grid-template-columns:1fr !important;
-  }
-  #header {
-    display:none !important;
-  }
-  #content {
-    grid-column:1 !important;
-    margin-left:0 !important;
-    padding-top:60px !important;
-    width:100vw !important;
-    overflow-x:hidden !important;
-  }
-  #cmyk-line { display:none !important; }
-  .data-table-wrap { overflow-x:auto !important; }
-  table { min-width:500px; }
-  .form-section { padding:10px !important; }
-  .panel-header { flex-wrap:wrap;gap:8px; }
-  .summary-cards { grid-template-columns:1fr 1fr !important; }
-  .summary-metrics { grid-template-columns:1fr 1fr !important; }
-  .acct-summary-grid { grid-template-columns:1fr 1fr !important; }
-  .form-grid { grid-template-columns:1fr !important; }
-  .panel { padding:10px !important; }
-  .summary-cards { grid-template-columns:1fr 1fr !important; }
-  #panel-home { overflow-x:hidden !important; }
-  .acct-summary-grid { grid-template-columns:1fr 1fr !important; }
-  .acct-total-bar { margin:0 0 16px !important; border-radius:8px !important; }
-  .ledger-form-row { grid-template-columns:1fr 1fr !important; }
-  .notes-layout { grid-template-columns:1fr !important; }
-  .notes-divider { display:none !important; }
-  #app { overflow-x:hidden !important; }
-}
-</style>
-
-
-<div id="rio-mobile-bar">
-  <button id="rio-hamburger" onclick="rioToggleNav()">&#9776;</button>
-  <span id="rio-mobile-title">RIO PRINT MEDIA</span>
-</div>
-<div id="rio-nav-overlay" onclick="rioToggleNav()"></div>
-<script>
-function rioToggleNav() {
-  var nav = document.getElementById('nav');
-  var ov  = document.getElementById('rio-nav-overlay');
-  if (!nav) return;
-  nav.classList.toggle('mobile-open');
-  if (ov) ov.classList.toggle('mobile-open');
-}
-</script>
 
 </body>
 </html>
