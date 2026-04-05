@@ -23,8 +23,10 @@ from pymongo.collection import Collection
 from bson import ObjectId
 from dotenv import load_dotenv
 
-# Force stdout flush so Render logs show print() immediately
-sys.stdout.reconfigure(line_buffering=True)
+# Use logging so uvicorn captures and displays output properly
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("rio_api")
 
 load_dotenv()
 
@@ -35,12 +37,12 @@ MONGO_URI  = os.environ.get("MONGO_URI", "")
 MONGO_DB   = os.environ.get("MONGO_DB",  "RioPrintMedia")
 HTML_FILE  = os.environ.get("HTML_FILE", "Rio_Sales_Tracker_v3_0.html")
 
-# ── Startup diagnostics (always printed, always visible in Render logs) ──
-print("=" * 60, flush=True)
-print(f"RIO API STARTING UP", flush=True)
-print(f"MONGO_DB  = {MONGO_DB}", flush=True)
-print(f"MONGO_URI = {'SET (' + MONGO_URI[:20] + '...)' if MONGO_URI else 'NOT SET — check Render Environment Variables!'}", flush=True)
-print("=" * 60, flush=True)
+# ── Startup diagnostics ──
+logger.info("=" * 60)
+logger.info("RIO API STARTING UP")
+logger.info(f"MONGO_DB  = {MONGO_DB}")
+logger.info(f"MONGO_URI = {'SET (' + MONGO_URI[:20] + '...)' if MONGO_URI else 'NOT SET — check Render Environment Variables!'}")
+logger.info("=" * 60)
 
 # ─────────────────────────────────────────────
 #  DB
@@ -249,7 +251,7 @@ def _connect_mongo():
         _db_connected = False
         return False
     try:
-        print(f"Connecting to MongoDB: {MONGO_DB} ...", flush=True)
+        logger.info(f"Connecting to MongoDB: {MONGO_DB} ...")
         _client = MongoClient(
             MONGO_URI,
             serverSelectionTimeoutMS=20000,
@@ -259,12 +261,12 @@ def _connect_mongo():
         _client.admin.command("ping")
         _db = _client[MONGO_DB]
         _db_connected = True
-        print(f"✓ Connected to MongoDB: {MONGO_DB}", flush=True)
+        logger.info(f"Connected to MongoDB: {MONGO_DB}")
         return True
     except Exception as e:
         _db_connected = False
-        print(f"✗ MongoDB connection FAILED: {e}", flush=True)
-        print(f"  URI starts with: {MONGO_URI[:30]}...", flush=True)
+        logger.error(f"MongoDB connection FAILED: {e}")
+        logger.error(f"URI starts with: {MONGO_URI[:30]}...")
         return False
 
 @asynccontextmanager
@@ -275,20 +277,20 @@ async def lifespan(app: FastAPI):
     if connected:
         try:
             init_counters()
-            print("✓ Counters initialised")
+            logger.info("Counters initialised")
         except Exception as e:
-            print(f"⚠ init_counters error (non-fatal): {e}")
+            logger.warning(f"init_counters error (non-fatal): {e}")
         try:
             ensure_default_users()
-            print("✓ Users ready")
+            logger.info("Users ready")
         except Exception as e:
-            print(f"⚠ ensure_default_users error (non-fatal): {e}")
+            logger.warning(f"ensure_default_users error (non-fatal): {e}")
     else:
-        print("⚠ Server started WITHOUT DB — will retry on first request")
+        logger.warning("Server started WITHOUT DB — will retry on first request")
     yield
     if _client:
         _client.close()
-        print("MongoDB connection closed")
+        logger.info("MongoDB connection closed")
 
 app = FastAPI(title="Rio Print Media API", lifespan=lifespan)
 
@@ -337,7 +339,7 @@ def ensure_db():
     global _db_connected
     if _db_connected and _db is not None:
         return True
-    print("DB not connected — attempting reconnect...")
+    logger.warning("DB not connected — attempting reconnect...")
     connected = _connect_mongo()
     if connected:
         try: init_counters()
@@ -1517,5 +1519,3 @@ async def delete_user(username: str):
         return err("Cannot delete admin user")
     col("rio_users").delete_one({"username": username})
     return ok()
- 
- 
