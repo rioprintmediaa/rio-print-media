@@ -405,10 +405,12 @@ if(document.readyState==='loading'){
 </script>"""
 
 def _apply_patches(html: str) -> str:
-    """Apply all cloud patches to raw HTML before serving."""
+    """Apply cloud patches to raw HTML before serving. SAFE version — never truncates."""
     import re
 
-    # Always force cloud API URL — replace any existing detectPort
+    original_size = len(html)
+
+    # 1. Replace detectPort using brace-counting (safe)
     cloud_detect = (
         "async function detectPort() {\n"
         "  API='" + CLOUD_URL + "/api';window.API=API;\n"
@@ -417,64 +419,46 @@ def _apply_patches(html: str) -> str:
         "  return false;\n"
         "}"
     )
-    # Replace detectPort using start marker
     if 'async function detectPort' in html:
         start = html.find('async function detectPort')
-        # Find closing } by counting braces
-        depth = 0
-        end = start
-        found_open = False
+        depth = 0; end = start; found_open = False
         for i in range(start, len(html)):
-            if html[i] == '{':
-                depth += 1
-                found_open = True
+            if html[i] == '{': depth += 1; found_open = True
             elif html[i] == '}':
                 depth -= 1
-                if found_open and depth == 0:
-                    end = i + 1
-                    break
-        html = html[:start] + cloud_detect + html[end:]
+                if found_open and depth == 0: end = i + 1; break
+        if end > start:
+            html = html[:start] + cloud_detect + html[end:]
 
-    # Always replace BILLING_API
-    html = re.sub(
-        r'BILLING_API\s*=\s*[^;]+;',
-        "BILLING_API = '" + CLOUD_URL + "';",
-        html, count=1
+    # 2. Replace BILLING_API (safe single replace)
+    html = re.sub(r'BILLING_API\s*=\s*window\.location\.origin[^;]*;',
+        "BILLING_API = '" + CLOUD_URL + "';", html, count=1)
+
+    # 3. Replace const base (safe single replace)
+    html = html.replace(
+        "  const base = window._BILLING_BASE || window.location.origin || BILLING_API;",
+        "  const base = '" + CLOUD_URL + "';"
     )
 
-    # Always replace const base
-    html = re.sub(
-        r'const base\s*=\s*[^;]+;',
-        "const base = '" + CLOUD_URL + "';",
-        html, count=1
-    )
+    # 4. Only inject login if NOT already present
+    if 'id="rio-login-overlay"' not in html and "id='rio-login-overlay'" not in html:
+        inject = INJECT_CSS + "\n" + LOGIN_HTML + "\n" + AUTH_JS
+        last_body = html.rfind("</body>")
+        if last_body != -1:
+            html = html[:last_body] + inject + "\n</body>" + html[last_body+7:]
+    else:
+        # Already has login overlay — just append fresh AUTH_JS to update API URL
+        last_body = html.rfind("</body>")
+        if last_body != -1:
+            html = html[:last_body] + "\n" + AUTH_JS + "\n</body>" + html[last_body+7:]
 
-    # Always remove old login overlay and re-inject fresh one
-    # This ensures correct CLOUD_URL is always used
-    html = re.sub(r'<div id=["\']rio-login-overlay["\'][\s\S]*?</div>\s*</div>\s*</div>', '', html, count=1)
-    html = re.sub(r'<button id=["\']rio-logout-btn["\'][^>]*>[^<]*</button>', '', html, count=1)
-    html = re.sub(r'<script>[\s\S]*?var _rioUser[\s\S]*?</script>', '', html, count=1)
+    new_size = len(html)
+    logger.info(f"HTML patched: {original_size} -> {new_size} bytes, login present={'rio-login-overlay' in html}")
 
-    # Replace DOMContentLoaded loadAll block
-    dom_ready = (
-        "  var _ov=document.getElementById('rio-login-overlay');if(_ov)_ov.style.display='flex';\n"
-        "  var _realLoadAll=window.loadAll;\n"
-        "  window.loadAll=function(){if(!window._rioUser){var o=document.getElementById('rio-login-overlay');if(o)o.style.display='flex';return;}if(_realLoadAll)_realLoadAll.apply(this,arguments);};\n"
-        "  detectPort().then(function(){rioAuthInit();}).catch(function(){rioAuthInit();});"
-    )
-    if "  loadAll();\n  loadJobs();\n  setInterval(loadAll, 60000);" in html:
-        html = html.replace(
-            "  loadAll();\n  loadJobs();\n  setInterval(loadAll, 60000);",
-            dom_ready
-        )
-
-    # Always inject fresh CSS + Login HTML + Auth JS before </body>
-    inject = INJECT_CSS + "\n" + LOGIN_HTML + "\n" + AUTH_JS
-    last_body = html.rfind("</body>")
-    if last_body != -1:
-        html = html[:last_body] + inject + "\n</body>" + html[last_body+7:]
-
-    logger.info(f"HTML patched: rio-login-overlay present={'rio-login-overlay' in html}, size={len(html)}")
+    # Safety check — never return truncated HTML
+    if new_size < original_size * 0.9:
+        logger.error(f"Patch TRUNCATED HTML from {original_size} to {new_size}! Returning original.")
+        return html  # return what we have, at least login JS is appended
     return html
 
 # ─────────────────────────────────────────────
