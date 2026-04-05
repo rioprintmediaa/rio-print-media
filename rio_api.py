@@ -310,25 +310,145 @@ def err(msg, status=400):
     return JSONResponse(content={"error": msg}, status_code=status)
 
 # ─────────────────────────────────────────────
+#  LIVE HTML PATCHER — applied every request
+# ─────────────────────────────────────────────
+CLOUD_URL = "https://rio-print-media.onrender.com"
+
+INJECT_CSS = """<style>
+#rio-login-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:linear-gradient(135deg,#0e1220 0%,#1a237e 100%);display:none;align-items:center;justify-content:center;z-index:99999;flex-direction:column;}
+#rio-login-box{background:white;border-radius:18px;padding:36px 32px 28px;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+#rio-login-box h2{margin:0 0 4px;font-family:'Exo 2',sans-serif;font-size:1.4rem;color:#1a237e;text-align:center;}
+#rio-login-box p{margin:0 0 24px;font-size:0.82rem;color:#888;text-align:center;font-family:'Nunito',sans-serif;}
+.rio-login-field{width:100%;margin-bottom:14px;box-sizing:border-box;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:1rem;font-family:'Nunito',sans-serif;outline:none;transition:border 0.2s;}
+.rio-login-field:focus{border-color:#3949ab;}
+#rio-login-btn{width:100%;padding:13px;background:linear-gradient(90deg,#1a237e,#3949ab);color:white;border:none;border-radius:10px;font-size:1rem;font-family:'Exo 2',sans-serif;font-weight:700;cursor:pointer;margin-top:4px;letter-spacing:0.5px;}
+#rio-login-err{color:#c62828;font-size:0.82rem;text-align:center;margin-top:10px;font-family:'Nunito',sans-serif;min-height:18px;}
+#rio-login-logo{font-family:'Exo 2',sans-serif;font-size:1.1rem;font-weight:900;color:white;margin-bottom:22px;letter-spacing:2px;text-align:center;opacity:0.9;}
+#rio-logout-btn{position:fixed;top:10px;right:12px;z-index:9000;background:#c62828;color:white;border:none;border-radius:8px;padding:7px 16px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.78rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+body.role-expense #nav{display:none!important;}body.role-expense .panel:not(#panel-expense){display:none!important;}body.role-expense #panel-expense{display:block!important;}body.role-expense #content{margin-left:0!important;padding:12px!important;}
+body.role-invoice #nav{display:none!important;}body.role-invoice .panel:not(#panel-rio-invoice):not(#panel-rio-quotation):not(#panel-rio-invmgr):not(#panel-rio-customers):not(#panel-rio-products):not(#panel-rio-reports){display:none!important;}body.role-invoice #panel-rio-invoice{display:flex!important;}body.role-invoice #content{margin-left:0!important;padding:12px!important;}
+body.role-guest .form-section,body.role-guest .action-bar,body.role-guest .btn-action,body.role-guest td button,body.role-guest .edit-btn,body.role-guest #s-edit-bar{display:none!important;}
+#usermgmt-table{width:100%;border-collapse:collapse;font-family:'Nunito',sans-serif;font-size:0.85rem;}
+#usermgmt-table th{background:#1a237e;color:white;padding:10px 12px;text-align:left;font-family:'Exo 2',sans-serif;font-size:0.78rem;letter-spacing:0.5px;}
+#usermgmt-table td{padding:9px 12px;border-bottom:1px solid #e8eaf6;vertical-align:middle;}
+.role-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:0.5px;}
+.role-admin{background:#e8eaf6;color:#1a237e;}.role-partner{background:#e8f5e9;color:#1b5e20;}.role-auditor{background:#fff3e0;color:#e65100;}.role-expense{background:#fce4ec;color:#880e4f;}.role-invoice{background:#e0f2f1;color:#004d40;}.role-guest{background:#f5f5f5;color:#616161;}
+</style>"""
+
+LOGIN_HTML = """
+<div id="rio-login-overlay" style="display:none">
+  <div id="rio-login-logo">&#128424; RIO PRINT MEDIA</div>
+  <div id="rio-login-box">
+    <h2>Welcome Back</h2><p>Sign in to continue</p>
+    <input class="rio-login-field" id="rio-uname" type="text" placeholder="Username" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('rio-pwd').focus()">
+    <input class="rio-login-field" id="rio-pwd" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')rioDoLogin()">
+    <button id="rio-login-btn" onclick="rioDoLogin()">Sign In</button>
+    <div id="rio-login-err"></div>
+  </div>
+</div>
+<button id="rio-logout-btn" style="display:none" onclick="rioLogout()">&#9211; Logout</button>
+"""
+
+AUTH_JS = """<script>
+var _rioUser=null;
+function rioAuthHeaders(){var u=window._rioUser;var h={'Content-Type':'application/json'};if(u&&u.token)h['Authorization']='Bearer '+u.token;return h;}
+async function rioDoLogin(){
+  var uname=document.getElementById('rio-uname').value.trim();
+  var pwd=document.getElementById('rio-pwd').value.trim();
+  var errEl=document.getElementById('rio-login-err');
+  var btn=document.getElementById('rio-login-btn');
+  if(!uname||!pwd){errEl.textContent='Enter username and password';return;}
+  btn.textContent='Signing in...';btn.disabled=true;
+  try{
+    var r=await fetch('""" + CLOUD_URL + """/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:uname,password:pwd})});
+    var d=await r.json();
+    if(!r.ok||!d.ok){errEl.textContent=d.error||'Invalid username or password';btn.textContent='Sign In';btn.disabled=false;return;}
+    _rioUser=d;window._rioUser=d;
+    sessionStorage.setItem('rio_user',JSON.stringify(d));
+    rioApplyRole(d);
+  }catch(e){errEl.textContent='Connection error — try again';btn.textContent='Sign In';btn.disabled=false;}
+}
+function rioApplyRole(user){
+  var overlay=document.getElementById('rio-login-overlay');if(overlay)overlay.style.display='none';
+  var lb=document.getElementById('rio-logout-btn');if(lb){lb.style.display='block';lb.textContent=(user.name||user.username)+'  \u23fb';}
+  var role=user.role;
+  document.body.classList.remove('role-expense','role-invoice','role-guest','role-admin','role-partner','role-auditor');
+  document.body.classList.add('role-'+role);
+  if(role==='expense'){document.querySelectorAll('.panel').forEach(function(p){p.style.display='none';});var ep=document.getElementById('panel-expense');if(ep){ep.style.display='block';ep.classList.add('active');}if(typeof loadExpenses==='function')loadExpenses();}
+  else if(role==='invoice'){document.querySelectorAll('.panel').forEach(function(p){p.style.display='none';});var ip=document.getElementById('panel-rio-invoice');if(ip){ip.style.display='flex';ip.classList.add('active');}if(typeof invNewInvoice==='function')invNewInvoice();if(typeof loadInvRegister==='function')loadInvRegister();}
+  else{loadAll();loadJobs();setInterval(loadAll,60000);}
+  var umgmt=document.getElementById('rio-usermgmt-section');if(umgmt)umgmt.style.display=(role==='admin')?'block':'none';
+}
+function rioLogout(){sessionStorage.removeItem('rio_user');_rioUser=null;window._rioUser=null;location.reload();}
+function rioAuthInit(){
+  try{var saved=sessionStorage.getItem('rio_user');if(saved){var user=JSON.parse(saved);if(user&&user.username&&user.role){_rioUser=user;window._rioUser=user;rioApplyRole(user);return;}}}catch(e){}
+  var overlay=document.getElementById('rio-login-overlay');if(overlay)overlay.style.display='flex';
+  setTimeout(function(){var u=document.getElementById('rio-uname');if(u)u.focus();},200);
+}
+</script>"""
+
+def _apply_patches(html: str) -> str:
+    """Apply all cloud patches to raw HTML before serving."""
+    PORTS = "[8765, 8766, 8767, 8768, 8769, 8770, 8771, 8772, 8773, 8774, 8775]"
+
+    # 1. Replace detectPort with cloud version
+    import re
+    html = re.sub(
+        r'async function detectPort\(\)\s*\{[\s\S]*?^\}',
+        (
+            "async function detectPort() {\n"
+            "  const CLOUD_API='" + CLOUD_URL + "/api';\n"
+            "  API=CLOUD_API;window.API=CLOUD_API;\n"
+            "  window._BILLING_BASE='" + CLOUD_URL + "';\n"
+            "  try{const r=await fetch(CLOUD_API+'/ping',{cache:'no-store'});if(r.ok)return true;}catch(e){}\n"
+            "  return false;\n"
+            "}"
+        ),
+        html, count=1, flags=re.MULTILINE
+    )
+
+    # 2. BILLING_API
+    html = html.replace(
+        "BILLING_API = window.location.origin; // auto-matches whatever port PS1 uses",
+        "BILLING_API = '" + CLOUD_URL + "';"
+    )
+
+    # 3. const base
+    html = html.replace(
+        "  const base = window._BILLING_BASE || window.location.origin || BILLING_API;",
+        "  const base = '" + CLOUD_URL + "';"
+    )
+
+    # 4. Inject login+css+auth before </body>
+    if 'rio-login-overlay' not in html:
+        inject = INJECT_CSS + "\n" + LOGIN_HTML + "\n" + AUTH_JS
+        # Block dashboard until login
+        dom_ready = (
+            "  var _ov=document.getElementById('rio-login-overlay');if(_ov)_ov.style.display='flex';\n"
+            "  var _realLoadAll=window.loadAll;\n"
+            "  window.loadAll=function(){if(!window._rioUser){var o=document.getElementById('rio-login-overlay');if(o)o.style.display='flex';return;}if(_realLoadAll)_realLoadAll.apply(this,arguments);};\n"
+            "  detectPort().then(function(){rioAuthInit();}).catch(function(){rioAuthInit();});"
+        )
+        html = html.replace(
+            "  loadAll();\n  loadJobs();\n  setInterval(loadAll, 60000);",
+            dom_ready
+        )
+        last_body = html.rfind("</body>")
+        if last_body != -1:
+            html = html[:last_body] + inject + "\n</body>" + html[last_body+7:]
+
+    return html
+
+# ─────────────────────────────────────────────
 #  SERVE HTML DASHBOARD
 # ─────────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 async def serve_dashboard(request: Request):
     if not os.path.exists(HTML_FILE):
-        return HTMLResponse("<h2>Dashboard HTML not found. Place Rio_Sales_Tracker_v3_0.html next to rio_api.py</h2>", 404)
+        return HTMLResponse("<h2>Dashboard HTML not found. Place the HTML file next to rio_api.py</h2>", 404)
     with open(HTML_FILE, "r", encoding="utf-8") as f:
         html = f.read()
-    # Inject API base URL — patched HTML uses this as fallback
-    api_url = str(request.base_url).rstrip("/")
-    inject = (
-        f'<script>' 
-        f'window.__RIO_API="{api_url}/api";' 
-        f'window.__RIO_PORT=null;' 
-        f'window.__RIO_ONLINE=true;' 
-        f'</script>'
-    )
-    if "<head>" in html:
-        html = html.replace("<head>", f"<head>{inject}", 1)
+    html = _apply_patches(html)
     return HTMLResponse(html)
 
 # ─────────────────────────────────────────────
