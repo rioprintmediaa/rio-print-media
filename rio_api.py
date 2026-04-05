@@ -385,10 +385,21 @@ function rioAuthInit(){
   var overlay=document.getElementById('rio-login-overlay');if(overlay)overlay.style.display='flex';
   setTimeout(function(){var u=document.getElementById('rio-uname');if(u)u.focus();},200);
 }
+// Force API to cloud URL always
+window.API = '""" + CLOUD_URL + """/api';
+window._BILLING_BASE = '""" + CLOUD_URL + """';
+if(typeof API !== 'undefined') API = '""" + CLOUD_URL + """/api';
+
 // Auto-init on load
 if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',function(){rioAuthInit();});
+  document.addEventListener('DOMContentLoaded',function(){
+    window.API = '""" + CLOUD_URL + """/api';
+    if(typeof API !== 'undefined') API = '""" + CLOUD_URL + """/api';
+    rioAuthInit();
+  });
 }else{
+  window.API = '""" + CLOUD_URL + """/api';
+  if(typeof API !== 'undefined') API = '""" + CLOUD_URL + """/api';
   rioAuthInit();
 }
 </script>"""
