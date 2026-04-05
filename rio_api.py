@@ -343,6 +343,556 @@ async def serve_dashboard(request: Request):
     return HTMLResponse(html)
 
 # ─────────────────────────────────────────────
+#  MOBILE APP
+# ─────────────────────────────────────────────
+MOBILE_PIN = os.environ.get("MOBILE_PIN", "4104")
+RENDER_URL = os.environ.get("RENDER_URL", "https://rio-print-media.onrender.com")
+
+@app.get("/mobile", response_class=HTMLResponse)
+async def serve_mobile(request: Request):
+    api_url = RENDER_URL
+    pin = MOBILE_PIN
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d1b3e">
+<title>RIO PRINT MEDIA</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}}
+:root{{--blue:#1a237e;--teal:#00796b;--orange:#ef6c00;--red:#c62828;--green:#2e7d32;--purple:#7b1fa2;--pink:#ad1457;--accent:#00b8d9;}}
+body{{font-family:'Nunito',sans-serif;background:#f0f2f8;overflow-x:hidden;}}
+input,select,textarea,button{{font-family:'Exo 2',sans-serif;}}
+
+/* PIN SCREEN */
+#pin-screen{{position:fixed;inset:0;background:linear-gradient(135deg,#0e1220,#1a237e);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;}}
+.pin-logo{{font-family:'Exo 2',sans-serif;font-size:1.1rem;font-weight:900;color:white;letter-spacing:3px;margin-bottom:8px;opacity:0.9;}}
+.pin-sub{{font-size:0.75rem;color:rgba(255,255,255,0.5);margin-bottom:32px;letter-spacing:1px;}}
+.pin-dots{{display:flex;gap:14px;margin-bottom:24px;}}
+.pin-dot{{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);background:transparent;transition:background 0.2s;}}
+.pin-dot.filled{{background:white;border-color:white;}}
+.pin-err{{color:#ef9a9a;font-size:0.78rem;min-height:20px;margin-bottom:12px;text-align:center;}}
+.pin-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:240px;}}
+.pin-btn{{height:64px;border-radius:16px;border:none;background:rgba(255,255,255,0.12);color:white;font-size:1.4rem;font-weight:700;cursor:pointer;transition:background 0.15s,transform 0.1s;}}
+.pin-btn:active{{background:rgba(255,255,255,0.25);transform:scale(0.95);}}
+.pin-btn.del{{font-size:1rem;}}
+.pin-btn.empty{{background:transparent;pointer-events:none;}}
+
+/* TOP BAR */
+#top-bar{{position:fixed;top:0;left:0;right:0;height:52px;background:linear-gradient(90deg,#0e1220,#1a237e);display:flex;align-items:center;padding:0 12px;gap:10px;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.3);}}
+#top-bar .title{{color:white;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.9rem;letter-spacing:1px;flex:1;}}
+.status-dot{{width:8px;height:8px;border-radius:50%;background:#ef9a9a;}}
+.status-dot.connected{{background:#43a047;}}
+
+/* MAIN CONTENT */
+#main{{padding-top:52px;padding-bottom:60px;min-height:100vh;}}
+
+/* BOTTOM NAV */
+#bottom-nav{{position:fixed;bottom:0;left:0;right:0;height:56px;background:white;border-top:1px solid #e0e0e0;display:flex;z-index:100;}}
+.nav-item{{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:none;background:transparent;padding:4px 0;transition:background 0.15s;}}
+.nav-item.active{{background:#e8eaf6;}}
+.nav-item svg{{width:20px;height:20px;fill:#9e9e9e;}}
+.nav-item.active svg{{fill:#1a237e;}}
+.nav-item span{{font-size:9px;color:#9e9e9e;font-family:'Exo 2',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}}
+.nav-item.active span{{color:#1a237e;}}
+
+/* PANELS */
+.panel{{display:none;padding:12px;}}
+.panel.active{{display:block;}}
+
+/* CARDS */
+.stat-grid{{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}}
+.stat-card{{background:white;border-radius:14px;padding:14px;border-left:4px solid #ccc;}}
+.stat-card.blue{{border-left-color:#5c6bc0;}}
+.stat-card.red{{border-left-color:#c62828;}}
+.stat-card.orange{{border-left-color:#ef6c00;}}
+.stat-card.teal{{border-left-color:#00796b;}}
+.stat-label{{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-family:'Exo 2',sans-serif;font-weight:700;}}
+.stat-val{{font-family:'Exo 2',sans-serif;font-size:1.3rem;font-weight:800;color:#1a1a2e;}}
+.stat-sub{{font-size:10px;color:#aaa;margin-top:3px;}}
+
+/* SECTION HEADER */
+.sec-header{{font-family:'Exo 2',sans-serif;font-size:0.78rem;font-weight:800;color:#555;text-transform:uppercase;letter-spacing:0.8px;margin:14px 0 8px;display:flex;align-items:center;justify-content:space-between;}}
+
+/* LIST ITEMS */
+.list-item{{background:white;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid #f0f0f0;}}
+.list-item-top{{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}}
+.list-item-name{{font-family:'Exo 2',sans-serif;font-size:0.85rem;font-weight:700;color:#1a1a2e;}}
+.list-item-amount{{font-family:'Exo 2',sans-serif;font-size:0.9rem;font-weight:800;color:#1565c0;}}
+.list-item-amount.red{{color:#c62828;}}
+.list-item-meta{{font-size:0.72rem;color:#888;display:flex;gap:8px;flex-wrap:wrap;}}
+.badge{{display:inline-block;padding:2px 8px;border-radius:20px;font-size:0.65rem;font-family:'Exo 2',sans-serif;font-weight:700;}}
+.badge-blue{{background:#e8eaf6;color:#1a237e;}}
+.badge-green{{background:#e8f5e9;color:#2e7d32;}}
+.badge-red{{background:#ffebee;color:#c62828;}}
+.badge-orange{{background:#fff3e0;color:#e65100;}}
+
+/* FORM */
+.form-card{{background:white;border-radius:14px;padding:14px;margin-bottom:12px;}}
+.form-card h3{{font-family:'Exo 2',sans-serif;font-size:0.82rem;font-weight:800;color:#1a237e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;}}
+.field{{margin-bottom:10px;}}
+.field label{{display:block;font-size:0.72rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}}
+.field input,.field select,.field textarea{{width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:0.9rem;outline:none;background:#fafafa;transition:border 0.2s;}}
+.field input:focus,.field select:focus{{border-color:#3949ab;background:white;}}
+.field-row{{display:grid;grid-template-columns:1fr 1fr;gap:10px;}}
+.btn-primary{{width:100%;padding:13px;background:linear-gradient(90deg,#1a237e,#3949ab);color:white;border:none;border-radius:12px;font-size:0.95rem;font-family:'Exo 2',sans-serif;font-weight:700;cursor:pointer;letter-spacing:0.5px;margin-top:4px;}}
+.btn-primary:active{{opacity:0.85;transform:scale(0.98);}}
+.btn-secondary{{width:100%;padding:11px;background:#f5f5f5;color:#555;border:1px solid #e0e0e0;border-radius:12px;font-size:0.85rem;font-family:'Exo 2',sans-serif;font-weight:700;cursor:pointer;margin-top:8px;}}
+
+/* LOADING */
+.loading{{text-align:center;padding:40px;color:#aaa;font-size:0.85rem;}}
+.empty{{text-align:center;padding:40px;color:#aaa;font-size:0.85rem;}}
+
+/* FAB */
+.fab{{position:fixed;bottom:68px;right:16px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1a237e,#3949ab);color:white;border:none;font-size:1.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(26,35,126,0.4);z-index:99;}}
+.fab:active{{transform:scale(0.92);}}
+
+/* MODAL */
+.modal-overlay{{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center;}}
+.modal-overlay.open{{display:flex;}}
+.modal{{background:white;border-radius:20px 20px 0 0;width:100%;max-height:85vh;overflow-y:auto;padding:20px 16px 32px;}}
+.modal-handle{{width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px;}}
+.modal h2{{font-family:'Exo 2',sans-serif;font-size:1rem;font-weight:800;color:#1a237e;margin-bottom:16px;}}
+</style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <div class="pin-logo">&#128424; RIO PRINT MEDIA</div>
+  <div class="pin-sub">MOBILE DASHBOARD</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-err" id="pin-err"></div>
+  <div class="pin-grid">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn empty"></button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn del" onclick="pinDel()">&#9003;</button>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div id="top-bar" style="display:none">
+  <span class="title">RIO PRINT MEDIA</span>
+  <div class="status-dot" id="status-dot"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main" style="display:none">
+
+  <!-- SUMMARY PANEL -->
+  <div class="panel active" id="panel-summary">
+    <div class="stat-grid">
+      <div class="stat-card blue"><div class="stat-label">Total Sales</div><div class="stat-val" id="m-total-sales">...</div><div class="stat-sub" id="m-sales-count"></div></div>
+      <div class="stat-card red"><div class="stat-label">Pending</div><div class="stat-val" id="m-pending">...</div><div class="stat-sub" id="m-pending-count"></div></div>
+      <div class="stat-card orange"><div class="stat-label">Expenses</div><div class="stat-val" id="m-expenses">...</div><div class="stat-sub" id="m-exp-count"></div></div>
+      <div class="stat-card teal"><div class="stat-label">Received</div><div class="stat-val" id="m-received">...</div><div class="stat-sub">this FY</div></div>
+    </div>
+    <div class="sec-header">Recent Sales</div>
+    <div id="m-recent-sales"><div class="loading">Loading...</div></div>
+  </div>
+
+  <!-- SALES PANEL -->
+  <div class="panel" id="panel-sales">
+    <div class="sec-header">Sales Records <span id="m-sales-badge" class="badge badge-blue"></span></div>
+    <div id="m-sales-list"><div class="loading">Loading...</div></div>
+  </div>
+
+  <!-- EXPENSES PANEL -->
+  <div class="panel" id="panel-expenses">
+    <div class="sec-header">Expenses <span id="m-exp-badge" class="badge badge-orange"></span></div>
+    <div id="m-exp-list"><div class="loading">Loading...</div></div>
+  </div>
+
+  <!-- PENDING PANEL -->
+  <div class="panel" id="panel-pending">
+    <div class="sec-header">Pending Payments</div>
+    <div id="m-pending-list"><div class="loading">Loading...</div></div>
+  </div>
+
+  <!-- BILLING PANEL -->
+  <div class="panel" id="panel-billing">
+    <div class="sec-header">Recent Invoices</div>
+    <div id="m-invoice-list"><div class="loading">Loading...</div></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div id="bottom-nav" style="display:none">
+  <button class="nav-item active" onclick="switchTab('summary',this)">
+    <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+    <span>Summary</span>
+  </button>
+  <button class="nav-item" onclick="switchTab('sales',this)">
+    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+    <span>Sales</span>
+  </button>
+  <button class="nav-item" onclick="switchTab('expenses',this)">
+    <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+    <span>Expenses</span>
+  </button>
+  <button class="nav-item" onclick="switchTab('pending',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+    <span>Pending</span>
+  </button>
+  <button class="nav-item" onclick="switchTab('billing',this)">
+    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+    <span>Billing</span>
+  </button>
+</div>
+
+<!-- ADD SALE MODAL -->
+<div class="modal-overlay" id="modal-sale">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>&#43; New Sale</h2>
+    <div class="field"><label>Customer</label><input id="s-customer" type="text" list="m-customers" placeholder="Customer name"></div>
+    <datalist id="m-customers"></datalist>
+    <div class="field-row">
+      <div class="field"><label>Category</label>
+        <select id="s-category">
+          <option>Flex</option><option>Sunpac</option><option>Banner</option>
+          <option>Sticker</option><option>Offset</option><option>Digital</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Order Date</label><input id="s-date" type="date"></div>
+    </div>
+    <div class="field"><label>Product / Description</label><input id="s-product" type="text" placeholder="Product description"></div>
+    <div class="field-row">
+      <div class="field"><label>Total Amount</label><input id="s-total" type="number" placeholder="0.00"></div>
+      <div class="field"><label>Advance Paid</label><input id="s-advance" type="number" placeholder="0.00"></div>
+    </div>
+    <div class="field"><label>Billing Type</label>
+      <select id="s-billing"><option>GST</option><option>NON-GST</option><option>IGST</option></select>
+    </div>
+    <div id="s-err" style="color:#c62828;font-size:0.78rem;min-height:16px;margin:4px 0;"></div>
+    <button class="btn-primary" onclick="saveSale()">Save Sale</button>
+    <button class="btn-secondary" onclick="closeModal('modal-sale')">Cancel</button>
+  </div>
+</div>
+
+<!-- ADD EXPENSE MODAL -->
+<div class="modal-overlay" id="modal-expense">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>&#43; New Expense</h2>
+    <div class="field"><label>Date</label><input id="e-date" type="date"></div>
+    <div class="field"><label>Category</label>
+      <select id="e-cat"><option>Loading...</option></select>
+    </div>
+    <div class="field"><label>Description</label><input id="e-desc" type="text" placeholder="Expense description"></div>
+    <div class="field"><label>Amount</label><input id="e-amount" type="number" placeholder="0.00"></div>
+    <div class="field"><label>Paid By</label>
+      <select id="e-paid"><option>Cash</option><option>KVB MOM</option><option>KVB Mani</option><option>Indian Bank</option></select>
+    </div>
+    <div id="e-err" style="color:#c62828;font-size:0.78rem;min-height:16px;margin:4px 0;"></div>
+    <button class="btn-primary" onclick="saveExpense()">Save Expense</button>
+    <button class="btn-secondary" onclick="closeModal('modal-expense')">Cancel</button>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openFab()" style="display:none">&#43;</button>
+
+<script>
+const API = '{api_url}/api';
+const CORRECT_PIN = '{pin}';
+var _pinVal = '';
+var _pinAttempts = 0;
+var _pinLocked = false;
+var _data = {{ sales:[], expenses:[], clients:[] }};
+var _activeTab = 'summary';
+var _expCategories = [];
+
+// ── PIN ──────────────────────────────────────
+function pinPress(d) {{
+  if (_pinLocked) return;
+  if (_pinVal.length >= 4) return;
+  _pinVal += d;
+  updateDots();
+  if (_pinVal.length === 4) setTimeout(checkPin, 150);
+}}
+function pinDel() {{
+  _pinVal = _pinVal.slice(0,-1);
+  updateDots();
+  document.getElementById('pin-err').textContent = '';
+}}
+function updateDots() {{
+  for (var i=0;i<4;i++) {{
+    document.getElementById('d'+i).classList.toggle('filled', i < _pinVal.length);
+  }}
+}}
+function checkPin() {{
+  if (_pinVal === CORRECT_PIN) {{
+    document.getElementById('pin-screen').style.display = 'none';
+    document.getElementById('top-bar').style.display = 'flex';
+    document.getElementById('main').style.display = 'block';
+    document.getElementById('bottom-nav').style.display = 'flex';
+    document.getElementById('fab').style.display = 'flex';
+    sessionStorage.setItem('rio_mobile_auth','1');
+    loadAllData();
+  }} else {{
+    _pinAttempts++;
+    _pinVal = '';
+    updateDots();
+    if (_pinAttempts >= 3) {{
+      _pinLocked = true;
+      document.getElementById('pin-err').textContent = 'Too many attempts. Wait 30s.';
+      setTimeout(function(){{ _pinLocked=false; _pinAttempts=0; document.getElementById('pin-err').textContent=''; }}, 30000);
+    }} else {{
+      document.getElementById('pin-err').textContent = 'Wrong PIN. ' + (3-_pinAttempts) + ' attempts left.';
+    }}
+  }}
+}}
+
+// ── INIT ─────────────────────────────────────
+window.onload = function() {{
+  if (sessionStorage.getItem('rio_mobile_auth')==='1') {{
+    document.getElementById('pin-screen').style.display='none';
+    document.getElementById('top-bar').style.display='flex';
+    document.getElementById('main').style.display='block';
+    document.getElementById('bottom-nav').style.display='flex';
+    document.getElementById('fab').style.display='flex';
+    loadAllData();
+  }}
+  // Set today's date on forms
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('s-date').value = today;
+  document.getElementById('e-date').value = today;
+}};
+
+// ── TAB SWITCHING ─────────────────────────────
+function switchTab(tab, el) {{
+  _activeTab = tab;
+  document.querySelectorAll('.panel').forEach(function(p){{ p.classList.remove('active'); }});
+  document.getElementById('panel-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(n){{ n.classList.remove('active'); }});
+  el.classList.add('active');
+}}
+
+// ── LOAD DATA ─────────────────────────────────
+async function loadAllData() {{
+  try {{
+    var r = await fetch(API+'/ping');
+    var dot = document.getElementById('status-dot');
+    if (r.ok) {{ dot.className='status-dot connected'; }} else {{ dot.className='status-dot'; }}
+  }} catch(e) {{ document.getElementById('status-dot').className='status-dot'; }}
+
+  try {{
+    var [salesR, expR, clientsR] = await Promise.all([
+      fetch(API+'/sales').then(r=>r.json()),
+      fetch(API+'/expenses').then(r=>r.json()),
+      fetch(API+'/rio_clients').then(r=>r.json()).catch(()=>[])
+    ]);
+    _data.sales = salesR || [];
+    _data.expenses = expR || [];
+    _data.clients = Array.isArray(clientsR) ? clientsR : [];
+    renderAll();
+    loadExpCategories();
+    loadInvoices();
+  }} catch(e) {{ console.error('loadAllData',e); }}
+}}
+
+async function loadExpCategories() {{
+  try {{
+    var r = await fetch(API+'/expense_categories');
+    var d = await r.json();
+    _expCategories = d || [];
+    var sel = document.getElementById('e-cat');
+    sel.innerHTML = _expCategories.map(function(c){{
+      return '<option>'+c.CategoryName+'</option>';
+    }}).join('') || '<option>General</option>';
+  }} catch(e) {{}}
+}}
+
+async function loadInvoices() {{
+  try {{
+    var r = await fetch(API+'/billing/invoices?pageSize=20&from=2025-04-01&to=2026-03-31');
+    var d = await r.json();
+    var rows = (d.data || []);
+    var html = rows.length ? rows.map(function(inv){{
+      return '<div class="list-item">'
+        +'<div class="list-item-top"><span class="list-item-name">'+inv.CustomerName+'</span>'
+        +'<span class="list-item-amount">&#8377;'+fmt(inv.TotalAmount)+'</span></div>'
+        +'<div class="list-item-meta"><span>'+inv.InvoiceNo+'</span><span>'+inv.InvoiceDate+'</span>'
+        +'<span class="badge badge-blue">'+inv.BillingType+'</span></div></div>';
+    }}).join('') : '<div class="empty">No invoices</div>';
+    document.getElementById('m-invoice-list').innerHTML = html;
+  }} catch(e) {{}}
+}}
+
+function renderAll() {{
+  var sales = _data.sales;
+  var exps = _data.expenses;
+
+  // Summary stats
+  var totalAmt = sales.reduce(function(s,r){{ return s+(parseFloat(r.TotalAmount)||0); }},0);
+  var received = sales.reduce(function(s,r){{ return s+(parseFloat(r.ReceivedAmount)||0); }},0);
+  var pending = totalAmt - received;
+  var pendingCount = sales.filter(function(r){{ return (parseFloat(r.RemainingAmount)||0)>0; }}).length;
+  var totalExp = exps.reduce(function(s,e){{ return s+(parseFloat(e.Amount)||0); }},0);
+
+  document.getElementById('m-total-sales').textContent = '&#8377;'+fmtL(totalAmt);
+  document.getElementById('m-sales-count').textContent = sales.length+' records';
+  document.getElementById('m-pending').textContent = '&#8377;'+fmtL(pending);
+  document.getElementById('m-pending-count').textContent = pendingCount+' unpaid';
+  document.getElementById('m-expenses').textContent = '&#8377;'+fmtL(totalExp);
+  document.getElementById('m-exp-count').textContent = exps.length+' entries';
+  document.getElementById('m-received').textContent = '&#8377;'+fmtL(received);
+
+  // Recent sales (top 5)
+  var recent = sales.slice(0,5);
+  document.getElementById('m-recent-sales').innerHTML = recent.length ? recent.map(saleCard).join('') : '<div class="empty">No sales yet</div>';
+
+  // Sales list
+  document.getElementById('m-sales-badge').textContent = sales.length;
+  document.getElementById('m-sales-list').innerHTML = sales.length ? sales.map(saleCard).join('') : '<div class="empty">No sales</div>';
+
+  // Expenses list
+  document.getElementById('m-exp-badge').textContent = exps.length;
+  document.getElementById('m-exp-list').innerHTML = exps.length ? exps.slice(0,50).map(expCard).join('') : '<div class="empty">No expenses</div>';
+
+  // Pending list
+  var pendingList = sales.filter(function(r){{ return (parseFloat(r.RemainingAmount)||0)>0; }});
+  document.getElementById('m-pending-list').innerHTML = pendingList.length ? pendingList.map(function(r){{
+    return '<div class="list-item">'
+      +'<div class="list-item-top"><span class="list-item-name">'+r.Customer+'</span>'
+      +'<span class="list-item-amount red">&#8377;'+fmt(r.RemainingAmount)+'</span></div>'
+      +'<div class="list-item-meta"><span>SNo: '+r.SNo+'</span><span>'+r.OrderDate+'</span>'
+      +'<span class="badge badge-red">PENDING</span></div></div>';
+  }}).join('') : '<div class="empty">No pending payments</div>';
+
+  // Populate customer datalist
+  var dl = document.getElementById('m-customers');
+  dl.innerHTML = _data.clients.map(function(c){{ return '<option value="'+c+'">'; }}).join('');
+}}
+
+function saleCard(r) {{
+  var pending = parseFloat(r.RemainingAmount)||0;
+  return '<div class="list-item">'
+    +'<div class="list-item-top"><span class="list-item-name">'+r.Customer+'</span>'
+    +'<span class="list-item-amount">&#8377;'+fmt(r.TotalAmount)+'</span></div>'
+    +'<div class="list-item-meta"><span>'+r.OrderDate+'</span><span class="badge badge-blue">'+r.Category+'</span>'
+    +(pending>0?'<span class="badge badge-red">Pending &#8377;'+fmt(pending)+'</span>':'<span class="badge badge-green">Paid</span>')
+    +'</div></div>';
+}}
+
+function expCard(e) {{
+  return '<div class="list-item">'
+    +'<div class="list-item-top"><span class="list-item-name">'+e.Description+'</span>'
+    +'<span class="list-item-amount">&#8377;'+fmt(e.Amount)+'</span></div>'
+    +'<div class="list-item-meta"><span>'+e.Date+'</span><span class="badge badge-orange">'+e.Category+'</span></div></div>';
+}}
+
+// ── FAB ───────────────────────────────────────
+function openFab() {{
+  if (_activeTab==='sales'||_activeTab==='summary') openModal('modal-sale');
+  else if (_activeTab==='expenses') openModal('modal-expense');
+  else if (_activeTab==='billing') window.location.href='/';
+}}
+
+// ── MODALS ────────────────────────────────────
+function openModal(id) {{ document.getElementById(id).classList.add('open'); }}
+function closeModal(id) {{ document.getElementById(id).classList.remove('open'); }}
+
+// ── SAVE SALE ─────────────────────────────────
+async function saveSale() {{
+  var customer = document.getElementById('s-customer').value.trim();
+  var total = parseFloat(document.getElementById('s-total').value)||0;
+  var errEl = document.getElementById('s-err');
+  if (!customer) {{ errEl.textContent='Customer required'; return; }}
+  if (!total) {{ errEl.textContent='Amount required'; return; }}
+  errEl.textContent='Saving...';
+  try {{
+    var advance = parseFloat(document.getElementById('s-advance').value)||0;
+    var body = {{
+      Customer: customer,
+      Category: document.getElementById('s-category').value,
+      OrderDate: document.getElementById('s-date').value,
+      ProductSize: document.getElementById('s-product').value,
+      BillingType: document.getElementById('s-billing').value,
+      TotalAmount: total,
+      Payment1Amt: advance,
+      Payment1Mode: 'Cash',
+      Payment1Date: document.getElementById('s-date').value,
+      FY: '2025-26'
+    }};
+    var r = await fetch(API+'/sales', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(body)}});
+    var d = await r.json();
+    if (r.ok) {{
+      errEl.textContent='';
+      closeModal('modal-sale');
+      document.getElementById('s-customer').value='';
+      document.getElementById('s-total').value='';
+      document.getElementById('s-advance').value='';
+      document.getElementById('s-product').value='';
+      loadAllData();
+    }} else {{ errEl.textContent = d.error||'Save failed'; }}
+  }} catch(e) {{ errEl.textContent='Connection error'; }}
+}}
+
+// ── SAVE EXPENSE ──────────────────────────────
+async function saveExpense() {{
+  var desc = document.getElementById('e-desc').value.trim();
+  var amount = parseFloat(document.getElementById('e-amount').value)||0;
+  var errEl = document.getElementById('e-err');
+  if (!desc) {{ errEl.textContent='Description required'; return; }}
+  if (!amount) {{ errEl.textContent='Amount required'; return; }}
+  errEl.textContent='Saving...';
+  try {{
+    var body = {{
+      Date: document.getElementById('e-date').value,
+      Category: document.getElementById('e-cat').value,
+      Description: desc,
+      Amount: amount,
+      PaidBy: document.getElementById('e-paid').value
+    }};
+    var r = await fetch(API+'/expenses', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(body)}});
+    var d = await r.json();
+    if (r.ok) {{
+      errEl.textContent='';
+      closeModal('modal-expense');
+      document.getElementById('e-desc').value='';
+      document.getElementById('e-amount').value='';
+      loadAllData();
+    }} else {{ errEl.textContent = d.error||'Save failed'; }}
+  }} catch(e) {{ errEl.textContent='Connection error'; }}
+}}
+
+// ── FORMATTERS ────────────────────────────────
+function fmt(v) {{
+  var n = parseFloat(v)||0;
+  return n.toLocaleString('en-IN',{{minimumFractionDigits:0,maximumFractionDigits:0}});
+}}
+function fmtL(v) {{
+  var n = parseFloat(v)||0;
+  if (n>=100000) return (n/100000).toFixed(1)+'L';
+  if (n>=1000) return (n/1000).toFixed(0)+'K';
+  return n.toFixed(0);
+}}
+</script>
+</body>
+</html>"""
+    return HTMLResponse(html)
+
+# ─────────────────────────────────────────────
 #  DB RECONNECT HELPER
 # ─────────────────────────────────────────────
 def ensure_db():
