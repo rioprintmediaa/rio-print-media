@@ -465,12 +465,22 @@ def _apply_patches(html: str) -> str:
 # ─────────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 async def serve_dashboard(request: Request):
+    logger.info(f"GET / — looking for HTML_FILE: {HTML_FILE}")
     if not os.path.exists(HTML_FILE):
-        return HTMLResponse("<h2>Dashboard HTML not found. Place the HTML file next to rio_api.py</h2>", 404)
-    with open(HTML_FILE, "r", encoding="utf-8") as f:
-        html = f.read()
-    html = _apply_patches(html)
-    return HTMLResponse(html)
+        logger.error(f"HTML file not found: {HTML_FILE} — cwd={os.getcwd()} files={os.listdir('.')[:20]}")
+        return HTMLResponse(f"<h2>Dashboard HTML not found: {HTML_FILE}</h2><p>CWD: {os.getcwd()}</p><p>Files: {os.listdir('.')[:20]}</p>", 404)
+    try:
+        with open(HTML_FILE, "r", encoding="utf-8") as f:
+            html = f.read()
+        logger.info(f"HTML file loaded: {len(html)} bytes")
+        html = _apply_patches(html)
+        logger.info(f"HTML patched OK: {len(html)} bytes")
+        return HTMLResponse(html)
+    except Exception as e:
+        logger.error(f"Error serving dashboard: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return HTMLResponse(f"<h2>Server error: {e}</h2>", 500)
 
 # ─────────────────────────────────────────────
 #  DB RECONNECT HELPER
