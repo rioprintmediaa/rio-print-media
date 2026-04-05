@@ -6586,11 +6586,6 @@ document.addEventListener('DOMContentLoaded', () => {
   var _ov=document.getElementById('rio-login-overlay');
   if(_ov) _ov.style.display='flex';
   setTimeout(function(){var _u=document.getElementById('rio-uname');if(_u)_u.focus();},300);
-  var _realLoadAll=window.loadAll;
-  window.loadAll=function(){
-    if(!window._rioUser){var _ov2=document.getElementById('rio-login-overlay');if(_ov2)_ov2.style.display='flex';return;}
-    if(_realLoadAll)_realLoadAll.apply(this,arguments);
-  };
   var _realRetry=window.retryConnect;
   window.retryConnect=function(){
     if(!window._rioUser){var _ov3=document.getElementById('rio-login-overlay');if(_ov3)_ov3.style.display='flex';return;}
