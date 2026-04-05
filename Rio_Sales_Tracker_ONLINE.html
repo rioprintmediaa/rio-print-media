@@ -10378,5 +10378,21 @@ body.role-guest #s-edit-bar { display:none !important; }
 }
 </style>
 
+
+<div id="rio-mobile-bar">
+  <button id="rio-hamburger" onclick="rioToggleNav()">&#9776;</button>
+  <span id="rio-mobile-title">RIO PRINT MEDIA</span>
+</div>
+<div id="rio-nav-overlay" onclick="rioToggleNav()"></div>
+<script>
+function rioToggleNav() {
+  var nav = document.getElementById('nav');
+  var ov  = document.getElementById('rio-nav-overlay');
+  if (!nav) return;
+  nav.classList.toggle('mobile-open');
+  if (ov) ov.classList.toggle('mobile-open');
+}
+</script>
+
 </body>
 </html>
