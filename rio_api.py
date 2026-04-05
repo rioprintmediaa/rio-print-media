@@ -385,6 +385,12 @@ function rioAuthInit(){
   var overlay=document.getElementById('rio-login-overlay');if(overlay)overlay.style.display='flex';
   setTimeout(function(){var u=document.getElementById('rio-uname');if(u)u.focus();},200);
 }
+// Auto-init on load
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',function(){rioAuthInit();});
+}else{
+  rioAuthInit();
+}
 </script>"""
 
 def _apply_patches(html: str) -> str:
