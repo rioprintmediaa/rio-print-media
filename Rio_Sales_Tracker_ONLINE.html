@@ -6836,6 +6836,12 @@ function showPanel(id) {
   const idx = map[id];
   if (idx !== undefined) { const btns=document.querySelectorAll('.nav-btn'); if(btns[idx]) btns[idx].classList.add('active'); }
   document.getElementById('content')?.scrollTo(0,0);
+  // Auto-load account balances when Summary panel becomes active
+  if (id === 'summary') {
+    setTimeout(function(){ if(typeof loadAccountBalances==='function') loadAccountBalances(); }, 200);
+    const d = document.getElementById('acct-date');
+    if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+  }
 }
 
 function navRipple(e, id) {
@@ -8504,16 +8510,7 @@ async function deleteAccountBalance(id) {
   if (res?.ok) { toast('Deleted', 'success'); loadAccountBalances(); }
 }
 
-// Auto-load account balances when Summary panel becomes active
-const _origShowPanel = showPanel;
-showPanel = function(id) {
-  _origShowPanel(id);
-  if (id === 'summary') {
-    setTimeout(loadAccountBalances, 200);
-    const d = document.getElementById('acct-date');
-    if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
-  }
-};
+// Summary panel auto-load hook is now integrated directly into showPanel()
 
 </script>
 
