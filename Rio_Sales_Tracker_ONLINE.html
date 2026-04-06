@@ -2616,6 +2616,12 @@ body.role-guest #s-edit-bar { display:none !important; }
 
 </head>
 <body>
+<script>
+// Safe stubs for functions called before main script loads
+function retryConnect(){setTimeout(function(){if(typeof window._retryConnect==='function')window._retryConnect();},500);}
+function switchNavTab(t){setTimeout(function(){if(typeof window._switchNavTab==='function')window._switchNavTab(t);},500);}
+</script>
+
 
 <div id="rio-mobile-bar">
   <button id="rio-hamburger" onclick="rioToggleNav()">&#9776;</button>
@@ -2630,6 +2636,8 @@ function rioToggleNav() {
   nav.classList.toggle('mobile-open');
   if (ov) ov.classList.toggle('mobile-open');
 }
+window._switchNavTab = switchNavTab;
+
 </script>
 
 
@@ -4803,6 +4811,8 @@ function retryConnect() {
   setStatus('connecting'); 
   loadAll(); 
 }
+window._retryConnect = retryConnect;
+
 
 let salesData = [], expenseData = [], notesData = [], followupsData = [], clientsList = [];
 let editingSNo = null;
@@ -7711,8 +7721,7 @@ async function umSaveUser() {
 
 <script>
 // ══ ALL REPORTS ENGINE ═══════════════════════════════════════
-var _rptType = '';
-var rptData = [];
+var _rptType = ''; var rptData = [];
 
 function rptBackToCards() {
   document.getElementById('rpt-cards-grid').style.display = 'block';
@@ -10408,7 +10417,7 @@ async function prodClear(){
 }
 
 // ── Reports ───────────────────────────────────────────────────
-let rptData = [];
+
 async function loadReport(){
   const {from:fyFrom,to:fyTo}=fyDateRange(selectedFY||currentFY());
   // Always force FY date range into the visible input fields
