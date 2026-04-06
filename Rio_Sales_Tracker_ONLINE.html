@@ -8142,20 +8142,6 @@ function exportReportCSV() {
 function loadReport() { if (_rptType) rptLoadData(); }
 </script>
 
-</body></html>`;
-
-  const pw = window.open('', '_blank', 'width=960,height=820');
-  if (!pw) { toast('Allow popups to export PDF','error'); return; }
-  pw.document.open();
-  pw.document.write(html);
-  pw.document.close();
-  pw.onload = () => {
-    pw.document.title = filename;
-    pw.focus();
-    pw.print();
-  };
-  toast(`Opening print dialog — save as "${filename}"`, 'success');
-}
 
 document.addEventListener('click', function(e){
   const modal = document.getElementById('jobcard-modal');
