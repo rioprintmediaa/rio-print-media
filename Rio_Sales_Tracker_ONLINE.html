@@ -4443,7 +4443,7 @@ window._switchNavTab = switchNavTab;
             <div style="margin-left:auto;display:flex;flex-direction:column;gap:1px;"><span style="font-size:0.6rem;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1px;">Grand Total</span><span id="rpt-tot-grand" style="font-family:'Exo 2',sans-serif;font-weight:900;color:#ffd54f;font-size:1.1rem;">₹0</span></div>
             <div style="display:flex;gap:8px;margin-left:12px;">
               <button onclick="exportReportCSV()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:5px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">📥 CSV</button>
-              <button onclick="printReportPage()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:5px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">🖨 Print</button>
+              <button onclick="window.print()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:5px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:'Exo 2',sans-serif;">🖨 Print</button>
             </div>
           </div>
         </div>
@@ -6836,12 +6836,6 @@ function showPanel(id) {
   const idx = map[id];
   if (idx !== undefined) { const btns=document.querySelectorAll('.nav-btn'); if(btns[idx]) btns[idx].classList.add('active'); }
   document.getElementById('content')?.scrollTo(0,0);
-  // Auto-load account balances when Summary panel becomes active
-  if (id === 'summary') {
-    setTimeout(function(){ if(typeof loadAccountBalances==='function') loadAccountBalances(); }, 200);
-    const d = document.getElementById('acct-date');
-    if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
-  }
 }
 
 function navRipple(e, id) {
@@ -7447,19 +7441,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background
       : `<div class="no-img">[ No design image uploaded ]</div>`}
   </div>
 </div>
-</body></html>\`;
 
-  // Open print window with the job card HTML
-  const pw = window.open('', '_blank', 'width=1100,height=900');
-  if (!pw) { toast('Allow popups to print the job card', 'error'); return; }
-  pw.document.open();
-  pw.document.write(html);
-  pw.document.close();
-  pw.onload = () => { pw.focus(); pw.print(); };
-  toast('Opening job card — save as "' + filename + '"', 'success');
-}
-
-</script>
 
 <script>
 // ── Daily Quote + Proverb ─────────────────────────────
@@ -8158,26 +8140,21 @@ function exportReportCSV() {
 
 // Keep old loadReport for any existing calls
 function loadReport() { if (_rptType) rptLoadData(); }
+</script>
 
-function printReportPage() {
-  if (!rptData || !rptData.length) {
-    if (typeof toast === 'function') toast('Load report first', 'error');
-    return;
-  }
-  var title = (document.getElementById('rpt-title-label') || {}).textContent || 'Report';
-  var tableHtml = (document.getElementById('rpt-table-wrap') || {}).innerHTML || '';
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title + '<\/title>'
-    + '<style>body{font-family:Arial,sans-serif;font-size:11px;margin:16px;}table{width:100%;border-collapse:collapse;font-size:11px;}th{background:#1a237e;color:white;padding:6px 8px;text-align:left;}td{padding:5px 8px;border-bottom:1px solid #eee;}h2{font-size:14px;margin-bottom:10px;}@media print{button{display:none!important;}}<\/style>'
-    + '<\/head><body>'
-    + '<h2>' + title + ' &mdash; RIO PRINT MEDIA<\/h2>'
-    + tableHtml
-    + '<\/body><\/html>';
-  var pw = window.open('', '_blank', 'width=960,height=820');
-  if (!pw) { if (typeof toast === 'function') toast('Allow popups to print', 'error'); return; }
+</body></html>`;
+
+  const pw = window.open('', '_blank', 'width=960,height=820');
+  if (!pw) { toast('Allow popups to export PDF','error'); return; }
   pw.document.open();
   pw.document.write(html);
   pw.document.close();
-  pw.onload = function() { pw.focus(); pw.print(); };
+  pw.onload = () => {
+    pw.document.title = filename;
+    pw.focus();
+    pw.print();
+  };
+  toast(`Opening print dialog — save as "${filename}"`, 'success');
 }
 
 document.addEventListener('click', function(e){
@@ -8510,7 +8487,16 @@ async function deleteAccountBalance(id) {
   if (res?.ok) { toast('Deleted', 'success'); loadAccountBalances(); }
 }
 
-// Summary panel auto-load hook is now integrated directly into showPanel()
+// Auto-load account balances when Summary panel becomes active
+const _origShowPanel = showPanel;
+showPanel = function(id) {
+  _origShowPanel(id);
+  if (id === 'summary') {
+    setTimeout(loadAccountBalances, 200);
+    const d = document.getElementById('acct-date');
+    if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+  }
+};
 
 </script>
 
@@ -10498,7 +10484,12 @@ async function loadReport(){
     if(totDiv)totDiv.style.display='flex';
   }catch(e){wrap.innerHTML='<div style="padding:24px;text-align:center;color:#e53935;">Error: '+e.message+'</div>';}
 }
-// exportReportCSV is defined in the Reports Engine block above — no duplicate needed here
+function exportReportCSV(){
+  if(!rptData.length){toast('Load report first','error');return;}
+  const hdr='Invoice No,Date,Customer,Type,Taxable,CGST,SGST,IGST,Grand Total\n';
+  const rows=rptData.map(r=>`"${r.InvoiceNo||r.invoiceno||''}","${r.InvoiceDate||r.invoicedate||''}","${r.CustomerName||r.customername||''}","${r.BillingType||r.billingtype||''}",${+(r.SubTotal||r.subtotal||0)},${+(r.CGST||r.cgst||0)},${+(r.SGST||r.sgst||0)},${+(r.IGST||r.igst||0)},${+(r.TotalAmount||r.totalamount||0)}`).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([hdr+rows],{type:'text/csv'}));a.download='RIO_Report_'+todayStr()+'.csv';a.click();
+}
 
 // ── Backup ────────────────────────────────────────────────────
 async function doBackup(){
