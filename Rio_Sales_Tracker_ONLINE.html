@@ -2871,11 +2871,11 @@ function rioToggleNav() {
         </div>
       </button>
       <button class="nav-btn nav-btn-7" onclick="navRipple(event,'rio-backup')" style="background:none;">
-        <div class="nav-btn-icon" style="background:linear-gradient(135deg,#4a2800,#8d4e00);">
-          <svg viewBox="0 0 24 24" fill="white"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+        <div class="nav-btn-icon" style="background:linear-gradient(135deg,#1a237e,#3949ab);">
+          <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
         </div>
-        <div class="nav-btn-body" style="background:linear-gradient(90deg,#5d3a00,#8d4e00);box-shadow:0 5px 18px rgba(93,58,0,0.5);">
-          <span class="nav-btn-label">Backup</span>
+        <div class="nav-btn-body" style="background:linear-gradient(90deg,#1a237e,#3949ab);box-shadow:0 5px 18px rgba(26,35,126,0.5);">
+          <span class="nav-btn-label">User Mgmt</span>
           <div class="nav-speed">
               <div class="nav-speed-row"><div class="nav-speed-line"></div><div class="nav-speed-line"></div><div class="nav-speed-line"></div><div class="nav-speed-dot"></div></div>
               <div class="nav-speed-row"><div class="nav-speed-line"></div><div class="nav-speed-line"></div><div class="nav-speed-dot"></div></div>
@@ -2885,15 +2885,12 @@ function rioToggleNav() {
       </button>
     </div><!-- /nav-content-billing -->
 
-  <div id="followup-ticker-wrap" style="width:100%;height:180px;overflow:hidden;padding:10px 8px 8px;box-sizing:border-box;display:flex;flex-direction:column;margin-top:auto;">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:0 4px;">
+  <div id="followup-ticker-wrap" style="width:100%;padding:10px 8px 8px;box-sizing:border-box;display:flex;flex-direction:column;margin-top:auto;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;">
       <span style="width:8px;height:8px;border-radius:50%;background:#ff5252;display:inline-block;flex-shrink:0;"></span>
-      <span style="font-family:'Exo 2',sans-serif;font-size:0.6rem;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,0.55);text-transform:uppercase;">Pending Followups</span>
+      <span style="font-family:'Exo 2',sans-serif;font-size:0.6rem;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,0.55);text-transform:uppercase;flex:1;">Pending Followups</span>
     </div>
-    <div style="flex:1;min-height:0;overflow:hidden;border:1px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.04);position:relative;">
-      <div id="followup-ticker-inner" style="position:absolute;top:0;left:0;right:0;will-change:transform;">
-        <div id="followup-ticker-list" style="padding:8px 6px;"></div>
-      </div>
+    <div id="followup-ticker-list" style="max-height:160px;overflow-y:auto;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.04);padding:6px 5px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.2) transparent;">
     </div>
   </div>
   </nav>
@@ -2915,10 +2912,9 @@ function rioToggleNav() {
       <div class="addr-line">Erode – 638107, Tamil Nadu</div>
       <div class="addr-line"><strong>Ph: 9962011515</strong> &nbsp;|&nbsp; GST: 33BCFPR3860P1Z2</div>
     </div>
-    <!-- Info notice moved to top right -->
-    <div id="info-notice-header" style="margin-left:auto;max-width:320px;background:#e8f4fd;border:1px solid #b3d7f5;border-radius:8px;padding:6px 12px;display:flex;align-items:flex-start;gap:8px;font-size:0.72rem;color:#1a5276;">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="#1a78c2" style="flex-shrink:0;margin-top:1px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-      <span>Data connects to <strong>SQL Server</strong> via PowerShell backend. <strong>Double-click</strong> a row to edit.</span>
+    <!-- Daily Wisdom Quote -->
+    <div id="daily-quote-header" style="margin-left:auto;max-width:340px;background:linear-gradient(135deg,#fffde7,#fff8e1);border:1px solid #ffe082;border-radius:8px;padding:6px 12px;font-size:0.7rem;color:#5d4037;line-height:1.4;">
+      <div id="daily-quote-text" style="font-style:italic;color:#6d4c41;">Loading quote…</div>
     </div>
     <div class="sql-status" id="sql-status" style="margin-left:12px;">Connecting...</div>
   </header>
@@ -3158,7 +3154,7 @@ function rioToggleNav() {
           <button onclick="showPanel('rio-customers')" style="background:linear-gradient(135deg,#2e7d32,#43a047);color:white;border:none;border-radius:12px;padding:12px 6px;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.68rem;cursor:pointer;box-shadow:0 4px 14px rgba(46,125,50,0.35);transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''"><div style="font-size:1.2rem;margin-bottom:3px;">👥</div>Customers<div id="dash-cust-count" style="font-size:0.65rem;opacity:0.8;margin-top:2px;"></div></button>
           <button onclick="showPanel('rio-products')" style="background:linear-gradient(135deg,#880e4f,#e91e8c);color:white;border:none;border-radius:12px;padding:12px 6px;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.68rem;cursor:pointer;box-shadow:0 4px 14px rgba(136,14,79,0.35);transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''"><div style="font-size:1.2rem;margin-bottom:3px;">⭐</div>Products<div id="dash-prod-count" style="font-size:0.65rem;opacity:0.8;margin-top:2px;"></div></button>
           <button onclick="showPanel('rio-reports')" style="background:linear-gradient(135deg,#b71c1c,#e53935);color:white;border:none;border-radius:12px;padding:12px 6px;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.68rem;cursor:pointer;box-shadow:0 4px 14px rgba(183,28,28,0.35);transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''"><div style="font-size:1.2rem;margin-bottom:3px;">📊</div>Reports</button>
-          <button onclick="showPanel('rio-backup')" style="background:linear-gradient(135deg,#4a2800,#8d4e00);color:white;border:none;border-radius:12px;padding:12px 6px;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.68rem;cursor:pointer;box-shadow:0 4px 14px rgba(74,40,0,0.35);transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''"><div style="font-size:1.2rem;margin-bottom:3px;">💾</div>Backup</button>
+          <button onclick="showPanel('rio-backup')" style="background:linear-gradient(135deg,#1a237e,#3949ab);color:white;border:none;border-radius:12px;padding:12px 6px;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.68rem;cursor:pointer;box-shadow:0 4px 14px rgba(26,35,126,0.35);transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''"><div style="font-size:1.2rem;margin-bottom:3px;">👤</div>User Mgmt</button>
         </div>
 
         <!-- Billing Month + Top Customers -->
@@ -4391,14 +4387,37 @@ function rioToggleNav() {
         <div style="display:flex;align-items:center;gap:8px;margin-left:auto;"><div style="display:inline-flex;align-items:center;border-radius:8px;overflow:hidden;border:1.5px solid #ef6c00;box-shadow:0 2px 6px rgba(239,108,0,0.18);"><span style="background:#ef6c00;padding:4px 8px;font-family:'Exo 2',sans-serif;font-size:0.65rem;font-weight:800;color:white;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;">FY</span><select class="fy-select-panel" onchange="onFYChangePanel(this)" style="background:#fff3e0;border:none;color:#bf360c;font-family:'Exo 2',sans-serif;font-size:0.75rem;font-weight:700;height:28px;padding:0 8px;min-width:90px;cursor:pointer;outline:none;"></select></div><button onclick="showPanel('dashboard')" title="Dashboard" style="display:flex;align-items:center;gap:6px;padding:6px 16px;border:1.5px solid #546e7a;border-radius:20px;background:white;color:#546e7a;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.75rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;" onmouseover="this.style.background='#546e7a';this.style.color='white';" onmouseout="this.style.background='white';this.style.color='#546e7a';"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Dashboard</button></div>
       </div>
       
-    <!-- ══ USER MANAGEMENT SECTION ══════════════════════════ -->
-    <div id="rio-usermgmt-section" style="display:none;padding:20px;">
+      
+    <!-- ══ USER MANAGEMENT PANEL ══════════════════════════════ -->
+    <div id="rio-usermgmt-section" style="padding:20px;">
+
+      <!-- Role Info Cards -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;">
+        <div style="background:linear-gradient(135deg,#1a237e,#3949ab);border-radius:12px;padding:14px 16px;color:white;">
+          <div style="font-family:'Exo 2',sans-serif;font-size:0.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">👑 Admin</div>
+          <div style="font-size:0.72rem;opacity:0.85;">Full access — all panels, user management, reports, settings</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#e65100,#ff6d00);border-radius:12px;padding:14px 16px;color:white;">
+          <div style="font-family:'Exo 2',sans-serif;font-size:0.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">💸 Expense</div>
+          <div style="font-size:0.72rem;opacity:0.85;">Access only to the Daily Expense panel — add &amp; view expenses</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#00695c,#00897b);border-radius:12px;padding:14px 16px;color:white;">
+          <div style="font-family:'Exo 2',sans-serif;font-size:0.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">🧾 Invoice</div>
+          <div style="font-size:0.72rem;opacity:0.85;">Access to Billing &amp; Invoices — create and manage invoices</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#455a64,#607d8b);border-radius:12px;padding:14px 16px;color:white;">
+          <div style="font-family:'Exo 2',sans-serif;font-size:0.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">👁 Guest</div>
+          <div style="font-size:0.72rem;opacity:0.85;">Full read-only view — no add, edit or delete access</div>
+        </div>
+      </div>
+
+      <!-- Header + Add Button -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
         <div>
-          <h3 style="margin:0;font-family:'Exo 2',sans-serif;color:#1a237e;font-size:1.1rem;">&#128101; User Management</h3>
-          <p style="margin:4px 0 0;font-size:0.78rem;color:#888;font-family:'Nunito',sans-serif;">Add and manage dashboard users and their access roles</p>
+          <h3 style="margin:0;font-family:'Exo 2',sans-serif;color:#1a237e;font-size:1.05rem;">👤 User Management</h3>
+          <p style="margin:4px 0 0;font-size:0.78rem;color:#888;">Add and manage dashboard users and their access roles</p>
         </div>
-        <button onclick="umShowForm()" style="background:linear-gradient(90deg,#1a237e,#3949ab);color:white;border:none;border-radius:8px;padding:8px 18px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add User</button>
+        <button onclick="umShowForm()" style="background:linear-gradient(90deg,#1a237e,#3949ab);color:white;border:none;border-radius:8px;padding:9px 20px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">+ Add User</button>
       </div>
 
       <!-- Add/Edit Form -->
@@ -4421,55 +4440,38 @@ function rioToggleNav() {
             <label style="font-size:0.78rem;font-weight:700;color:#555;font-family:'Exo 2',sans-serif;display:block;margin-bottom:4px;">Role</label>
             <select id="um-role" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #c5cae9;border-radius:8px;font-family:'Nunito',sans-serif;font-size:0.88rem;outline:none;background:white;">
               <option value="admin">Admin — Full Access + User Mgmt</option>
-              <option value="partner">Partner — Full Access</option>
-              <option value="auditor">Auditor — Full Access (View + Edit)</option>
-              <option value="guest">Guest — Full View Only (No Edit)</option>
               <option value="expense" selected>Expense — Expenses Panel Only</option>
               <option value="invoice">Invoice — Billing &amp; Invoices Only</option>
+              <option value="guest">Guest — Full View Only (No Edit)</option>
             </select>
           </div>
         </div>
         <div id="um-form-err" style="color:#c62828;font-size:0.78rem;margin-top:8px;font-family:'Nunito',sans-serif;min-height:16px;"></div>
         <div style="display:flex;gap:10px;margin-top:14px;">
-          <button onclick="umSaveUser()" style="background:linear-gradient(90deg,#1b5e20,#388e3c);color:white;border:none;border-radius:8px;padding:9px 22px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">&#10003; Save</button>
-          <button onclick="umHideForm()" style="background:#546e7a;color:white;border:none;border-radius:8px;padding:9px 22px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">&#10005; Cancel</button>
+          <button onclick="umSaveUser()" style="background:linear-gradient(90deg,#1b5e20,#388e3c);color:white;border:none;border-radius:8px;padding:9px 22px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">✓ Save</button>
+          <button onclick="umHideForm()" style="background:#546e7a;color:white;border:none;border-radius:8px;padding:9px 22px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">✕ Cancel</button>
         </div>
       </div>
 
       <!-- Users Table -->
       <div style="background:white;border-radius:12px;overflow:hidden;border:1.5px solid #e8eaf6;">
-        <table id="usermgmt-table">
+        <table style="width:100%;border-collapse:collapse;font-family:'Nunito',sans-serif;font-size:0.85rem;">
           <thead>
-            <tr>
-              <th>Username</th>
-              <th>Full Name</th>
-              <th>Role</th>
-              <th>Actions</th>
+            <tr style="background:#1a237e;">
+              <th style="padding:10px 14px;text-align:left;color:white;font-family:'Exo 2',sans-serif;font-size:0.72rem;letter-spacing:0.5px;">USERNAME</th>
+              <th style="padding:10px 14px;text-align:left;color:white;font-family:'Exo 2',sans-serif;font-size:0.72rem;letter-spacing:0.5px;">FULL NAME</th>
+              <th style="padding:10px 14px;text-align:left;color:white;font-family:'Exo 2',sans-serif;font-size:0.72rem;letter-spacing:0.5px;">ROLE</th>
+              <th style="padding:10px 14px;text-align:left;color:white;font-family:'Exo 2',sans-serif;font-size:0.72rem;letter-spacing:0.5px;">ACCESS</th>
+              <th style="padding:10px 14px;text-align:left;color:white;font-family:'Exo 2',sans-serif;font-size:0.72rem;letter-spacing:0.5px;">ACTIONS</th>
             </tr>
           </thead>
           <tbody id="usermgmt-tbody">
-            <tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px;">Loading users...</td></tr>
+            <tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">Loading users...</td></tr>
           </tbody>
         </table>
       </div>
-      <div style="height:1px;background:#e8eaf6;margin:20px 0;"></div>
     </div>
     <!-- ══ END USER MANAGEMENT ════════════════════════════════ -->
-<div class="form-section" style="border-top:3px solid #ef6c00;">
-        <div class="form-section-title" style="color:#5d3a00;">Database Operations</div>
-        <p style="font-size:0.82rem;color:#666;margin-bottom:14px;">Backup saves a compressed <code>.bak</code> file in <code>Support/DB_Backups/</code> next to <code>RioBilling_API.ps1</code>.</p>
-        <div class="action-bar" style="margin-bottom:0;">
-          <button class="btn-action success" onclick="doBackup()" id="backup-btn"><span class="bic"><svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg></span><span class="btx">Backup Now</span></button>
-          <button class="btn-action warning" onclick="showRestoreModal()"><span class="bic"><svg viewBox="0 0 24 24"><path d="M13 3C8.03 3 4 7.03 4 12H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg></span><span class="btx">Restore…</span></button>
-          <button class="btn-action secondary" onclick="loadBackupList()"><span class="bic"><svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></span><span class="btx">List Backups</span></button>
-          <button class="btn-action" style="background:linear-gradient(90deg,#4a148c,#7b1fa2);box-shadow:0 4px 14px rgba(74,20,140,0.4);" onclick="resetSequences()"><span class="bic"><svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg></span><span class="btx">Reset Sequences</span></button>
-        </div>
-        <div id="backup-status" style="margin-top:10px;font-size:0.82rem;"></div>
-      </div>
-      <div class="data-table-wrap">
-        <div class="data-table-header"><h3 style="color:#5d3a00;">Recent Backups</h3></div>
-        <div id="backup-list" style="padding:14px;"><div style="color:#aaa;font-size:0.82rem;">Click "List Backups" to view.</div></div>
-      </div>
     </div>
 
 
@@ -4727,22 +4729,29 @@ async function api(path, opts = {}) {
 }
 
 // ─── Status indicator ─────────────────────────────────────────
-function setStatus(s) {
+function setStatus(s, counts) {
   const el = document.getElementById('sql-status');
   if (!el) return;
   if (s === 'offline') {
     el.style.background  = '#ffebee';
     el.style.color       = '#c62828';
     el.style.borderColor = '#ef9a9a';
-    el.innerHTML = `<span>✕ SQL Offline</span>
+    el.innerHTML = `<span>✕ Offline</span>
       <button onclick="retryConnect()" style="margin-left:8px;padding:3px 10px;border-radius:12px;
         border:1.5px solid #c62828;background:white;color:#c62828;font-weight:700;font-size:0.72rem;
         cursor:pointer;font-family:'Exo 2',sans-serif;">⟳ Retry</button>`;
     return;
   }
+  if (s === 'connected' && counts) {
+    el.style.background  = '#e8f5e9';
+    el.style.color       = '#1b5e20';
+    el.style.borderColor = '#a5d6a7';
+    el.textContent = `● Connected | ${counts.sales} sales · ${counts.expenses} expenses`;
+    return;
+  }
   const states = {
     connecting: ['#fff8e1','#f57f17','#ffe082','⟳ Connecting...'],
-    connected:  ['#e8f5e9','#1b5e20','#a5d6a7','● SQL Connected']
+    connected:  ['#e8f5e9','#1b5e20','#a5d6a7','● Connected']
   };
   const [bg, color, border, text] = states[s] || states.connecting;
   el.style.background   = bg;
@@ -5000,6 +5009,9 @@ async function loadAll() {
   clientsList   = toArr(clients).map(c => (c||'').trim().toUpperCase()).filter(Boolean).sort();
 
   console.log(`[RIO] Loaded → Sales:${salesData.length} Expenses:${expenseData.length} Notes:${notesData.length} Followups:${followupsData.length} Clients:${clientsList.length}`);
+
+  // Update status bar with counts
+  setStatus('connected', { sales: salesData.length, expenses: expenseData.length });
 
   // ── Set default FY to current year on first load ──────────────
   if (!selectedFY) selectedFY = currentFY();
@@ -6107,66 +6119,111 @@ function renderSummary() {
 
 // ─── RENDER: Pending ──────────────────────────────────────────
 function renderPending() {
-  // Recalculate remaining balance per record (don't trust stored RemainingBalance)
   function calcRem(r) {
     const paid = (+r.AdvanceAmt||0)+(+r.BalanceSettledAmt||0)+(+r.Balance2Amt||0)+(+r.Balance3Amt||0);
     const rem  = (+r.TotalAmount||0) - paid;
     return rem > 0 ? rem : 0;
   }
 
-  // Current FY pending + previous FY pending (carry-forward)
-  const curFYSales = fySales().filter(r => calcRem(r) > 0);
-  const prevFYPending = selectedFY ? salesData.filter(r => {
-    if (isInFY(r.OrderDate)) return false;
-    return calcRem(r) > 0;
-  }) : [];
-  const pc = [...curFYSales, ...prevFYPending];
-  // Expenses: current FY pending + all previous FY pending (carry-forward)
+  // Determine if selected FY is the latest FY
+  const allFYs = [...new Set(salesData.map(r => dateToFY(parseLocalDate(r.OrderDate))).filter(Boolean))].sort();
+  const latestFY = allFYs[allFYs.length - 1] || currentFY();
+  const isLatestFY = !selectedFY || selectedFY === latestFY;
+
+  let pc, prevFYPending = [];
+  if (!selectedFY) {
+    // All Years — show everything pending
+    pc = salesData.filter(r => calcRem(r) > 0);
+  } else if (isLatestFY) {
+    // Latest FY — show current FY pending + previous FY carry-forward
+    pc = salesData.filter(r => isInFY(r.OrderDate) && calcRem(r) > 0);
+    prevFYPending = salesData.filter(r => !isInFY(r.OrderDate) && calcRem(r) > 0);
+  } else {
+    // Specific older FY — show ONLY that FY's pending records
+    pc = salesData.filter(r => isInFY(r.OrderDate) && calcRem(r) > 0);
+  }
+
+  // Expenses pending
   const curFYExp = fyExpenses().filter(r => r.PaymentMode === 'Pending');
-  const prevFYExp = selectedFY ? expenseData.filter(r => {
+  const prevFYExp = (selectedFY && isLatestFY) ? expenseData.filter(r => {
     if (isInFY(r.ExpDate || r.ExpenseDate || r.Date || r.CreatedAt || '')) return false;
     return r.PaymentMode === 'Pending';
   }) : [];
   const pe = [...curFYExp, ...prevFYExp];
 
-  // Group by customer
+  // Group current FY by customer
   const map = {};
   pc.forEach(r => {
     const c = r.Customer || 'Unknown';
     const rFY = dateToFY(parseLocalDate(r.OrderDate));
-    if (!map[c]) map[c] = {count:0, pending:0, last:'', fy: rFY};
+    if (!map[c]) map[c] = {count:0, pending:0, last:'', fy: rFY, isCarry: false};
     map[c].count++;
     map[c].pending += calcRem(r);
     if (!map[c].last || (r.OrderDate||'') > map[c].last) {
       map[c].last = r.OrderDate;
-      map[c].fy = rFY; // FY of most recent pending order
+      map[c].fy = rFY;
+    }
+  });
+
+  // Group carry-forward by customer (separate)
+  const carryMap = {};
+  prevFYPending.forEach(r => {
+    const c = r.Customer || 'Unknown';
+    const rFY = dateToFY(parseLocalDate(r.OrderDate));
+    if (!carryMap[c]) carryMap[c] = {count:0, pending:0, last:'', fy: rFY};
+    carryMap[c].count++;
+    carryMap[c].pending += calcRem(r);
+    if (!carryMap[c].last || (r.OrderDate||'') > carryMap[c].last) {
+      carryMap[c].last = r.OrderDate;
+      carryMap[c].fy = rFY;
     }
   });
 
   const cd = document.getElementById('pending-customers');
-  if (cd) cd.innerHTML = Object.keys(map).length
-    ? Object.entries(map).sort((a,b)=>b[1].pending-a[1].pending).map(([c,v]) => `
-        <div class="pending-item">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div class="pi-client">${c}</div>
-            <span style="font-family:'Exo 2',sans-serif;font-size:0.65rem;font-weight:800;background:#e8eaf6;color:#1a237e;padding:2px 8px;border-radius:10px;border:1px solid #9fa8da;white-space:nowrap;">${v.fy}</span>
-          </div>
-          <div class="pi-details">
-            <span class="pi-tag">${v.count} pending order(s)</span>
-            <span class="pi-tag">Last: ${fd(v.last)}</span>
-            <span class="pi-amount">₹${fn(v.pending)}</span>
-          </div>
-        </div>`).join('')
-    : '<div style="color:#888;padding:24px;text-align:center;">No pending customer payments ✓</div>';
+  if (cd) {
+    const currentRows = Object.entries(map).sort((a,b)=>b[1].pending-a[1].pending).map(([c,v]) => `
+      <div class="pending-item">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="pi-client">${c}</div>
+          <span style="font-family:'Exo 2',sans-serif;font-size:0.65rem;font-weight:800;background:#e8eaf6;color:#1a237e;padding:2px 8px;border-radius:10px;border:1px solid #9fa8da;white-space:nowrap;">${v.fy}</span>
+        </div>
+        <div class="pi-details">
+          <span class="pi-tag">${v.count} pending order(s)</span>
+          <span class="pi-tag">Last: ${fd(v.last)}</span>
+          <span class="pi-amount">₹${fn(v.pending)}</span>
+        </div>
+      </div>`).join('');
+
+    const carryRows = Object.entries(carryMap).sort((a,b)=>b[1].pending-a[1].pending).map(([c,v]) => `
+      <div class="pending-item" style="background:#fffde7;border-left:3px solid #f9a825;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="pi-client">${c}</div>
+          <span style="font-family:'Exo 2',sans-serif;font-size:0.65rem;font-weight:800;background:#fff3e0;color:#e65100;padding:2px 8px;border-radius:10px;border:1px solid #ffcc80;white-space:nowrap;">${v.fy} · Carry-fwd</span>
+        </div>
+        <div class="pi-details">
+          <span class="pi-tag">${v.count} pending order(s)</span>
+          <span class="pi-tag">Last: ${fd(v.last)}</span>
+          <span class="pi-amount">₹${fn(v.pending)}</span>
+        </div>
+      </div>`).join('');
+
+    if (currentRows || carryRows) {
+      cd.innerHTML = currentRows + (carryRows ? `<div style="font-family:'Exo 2',sans-serif;font-size:0.65rem;font-weight:800;color:#e65100;text-transform:uppercase;letter-spacing:1px;padding:8px 4px 4px;margin-top:6px;border-top:1px dashed #ffe082;">${prevFYPending.length ? '⚠ Previous FY Carry-Forward' : ''}</div>` + carryRows : '') : '<div style="color:#888;padding:24px;text-align:center;">No pending customer payments ✓</div>';
+    } else {
+      cd.innerHTML = '<div style="color:#888;padding:24px;text-align:center;">No pending customer payments ✓</div>';
+    }
+  }
 
   const et = document.getElementById('pending-exp-tbody');
   if (et) et.innerHTML = pe.length
     ? pe.map(r => `<tr><td>${fd(r.ExpDate)}</td><td>${r.Category}</td><td>${r.SubCategory||''}</td><td style="color:#ff6b6b;font-weight:700;font-family:'Exo 2',sans-serif;">₹${fn(r.Amount)}</td></tr>`).join('')
     : '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px;">No pending expenses ✓</td></tr>';
 
-  const gp = Object.values(map).reduce((s,v)=>s+v.pending, 0);
+  const allPending = [...pc, ...prevFYPending];
+  const gp = allPending.reduce((s,r)=>s+calcRem(r), 0);
   const ge = pe.reduce((s,r)=>s+(+r.Amount||0), 0);
-  se('pending-summary', `${Object.keys(map).length} customer(s) pending  |  Total: ₹${fn(gp)}     ${pe.length} expense(s) pending  |  Total: ₹${fn(ge)}`);
+  const totalCustomers = new Set([...Object.keys(map), ...Object.keys(carryMap)]).size;
+  se('pending-summary', `${totalCustomers} customer(s) pending  |  Total: ₹${fn(gp)}     ${pe.length} expense(s) pending  |  Total: ₹${fn(ge)}`);
 }
 
 // ─── RENDER: CWS ──────────────────────────────────────────────
@@ -6695,11 +6752,15 @@ function showPanel(id) {
   const idx = map[id];
   if (idx !== undefined) { const btns=document.querySelectorAll('.nav-btn'); if(btns[idx]) btns[idx].classList.add('active'); }
   document.getElementById('content')?.scrollTo(0,0);
-  // Auto-load account balances when Summary panel becomes active
+  // Auto-load when summary panel opens
   if (id === 'summary') {
     setTimeout(function(){ if(typeof loadAccountBalances==='function') loadAccountBalances(); }, 200);
     const d = document.getElementById('acct-date');
     if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+  }
+  // Auto-load users when backup/usermgmt panel opens
+  if (id === 'rio-backup') {
+    setTimeout(function(){ if(typeof umLoadUsers==='function') umLoadUsers(); }, 200);
   }
 }
 
@@ -6827,16 +6888,13 @@ async function deleteSelectedFollowup() {
 }
 
 
-// ─── Followup Ticker ──────────────────────────────────────────
-let _tickerAnim = null;
+// ─── Followup Ticker (scrollable) ────────────────────────────
 function updateFollowupTicker() {
   const list = document.getElementById('followup-ticker-list');
-  const inner = document.getElementById('followup-ticker-inner');
-  if (!list || !inner) return;
+  if (!list) return;
   const pending = (window.followupsData||[]).filter(r => !r.IsAddressed);
   if (!pending.length) {
     list.innerHTML = '<div style="text-align:center;padding:16px 4px;font-size:0.62rem;color:rgba(255,255,255,0.3);">No pending followups</div>';
-    if(_tickerAnim){cancelAnimationFrame(_tickerAnim);_tickerAnim=null;}
     return;
   }
   const today = new Date().toISOString().split('T')[0];
@@ -6844,7 +6902,7 @@ function updateFollowupTicker() {
   const pc = p => p==='High'?'#ff5252':p==='Low'?'#69f0ae':'#ffb74d';
   list.innerHTML = sorted.map(r => {
     const ov = r.FollowupDate && r.FollowupDate < today;
-    return `<div style="display:flex;align-items:flex-start;gap:7px;padding:7px 6px;margin-bottom:5px;border-radius:8px;background:rgba(255,255,255,0.05);border-left:2px solid ${pc(r.Priority||'Normal')};">
+    return `<div onclick="openFollowupPopup(${r.Id})" style="display:flex;align-items:flex-start;gap:7px;padding:7px 6px;margin-bottom:4px;border-radius:8px;background:rgba(255,255,255,0.05);border-left:2px solid ${pc(r.Priority||'Normal')};cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
       <span style="width:6px;height:6px;border-radius:50%;background:${ov?'#ff1744':'#ffb300'};flex-shrink:0;margin-top:4px;"></span>
       <div style="flex:1;min-width:0;">
         <div style="font-family:'Exo 2',sans-serif;font-size:0.62rem;font-weight:700;color:rgba(255,255,255,0.85);line-height:1.3;word-break:break-word;">${r.FollowupText||''}</div>
@@ -6852,24 +6910,54 @@ function updateFollowupTicker() {
       </div>
     </div>`;
   }).join('');
-  // Duplicate for seamless loop
-  list.innerHTML += list.innerHTML;
-  if(_tickerAnim){cancelAnimationFrame(_tickerAnim);_tickerAnim=null;}
-  inner.style.transform='translateY(0)';
-  // Wait for DOM to render before measuring scrollHeight
-  setTimeout(()=>{
-    const halfH = list.scrollHeight / 2;
-    if(halfH <= 0) return;
-    let pos = 0;
-    function tick(){
-      pos += 0.5;
-      if(pos >= halfH) pos = 0;
-      inner.style.transform = `translateY(-${pos}px)`;
-      _tickerAnim = requestAnimationFrame(tick);
-    }
-    _tickerAnim = requestAnimationFrame(tick);
-  }, 120);
 }
+
+// ─── Followup Hourly Popup ────────────────────────────────────
+let _followupPopupTimer = null;
+
+function openFollowupPopup(id) {
+  const pending = (window.followupsData||[]).filter(r => !r.IsAddressed);
+  const r = id ? pending.find(x => x.Id === id) : (pending.sort((a,b)=>new Date(a.FollowupDate)-new Date(b.FollowupDate))[0]);
+  if (!r) return;
+  const popup = document.getElementById('followup-hourly-popup');
+  if (!popup) return;
+  document.getElementById('fhp-text').textContent = r.FollowupText || '';
+  document.getElementById('fhp-date').textContent = fd(r.FollowupDate) + ' · ' + (r.Priority||'Normal');
+  document.getElementById('fhp-id').value = r.Id;
+  popup.style.display = 'flex';
+}
+
+function closeFollowupPopup(remindLater) {
+  const popup = document.getElementById('followup-hourly-popup');
+  if (popup) popup.style.display = 'none';
+  if (remindLater) {
+    if (_followupPopupTimer) clearTimeout(_followupPopupTimer);
+    _followupPopupTimer = setTimeout(() => openFollowupPopup(null), 60 * 60 * 1000); // 1 hour
+  }
+}
+
+async function followupDone() {
+  const id = +document.getElementById('fhp-id')?.value;
+  if (!id) return;
+  const res = await api('/followups/'+id+'/address', { method:'PUT' });
+  if (res?.ok) {
+    closeFollowupPopup(false);
+    toast('✓ Follow-up marked as done', 'success');
+    await loadAll();
+  } else {
+    toast('Error marking follow-up done', 'error');
+  }
+}
+
+// Init hourly popup — show 3s after page load, then every hour
+setTimeout(() => {
+  const pending = (window.followupsData||[]).filter(r => !r.IsAddressed);
+  if (pending.length) openFollowupPopup(null);
+  _followupPopupTimer = setInterval(() => {
+    const p = (window.followupsData||[]).filter(r => !r.IsAddressed);
+    if (p.length) openFollowupPopup(null);
+  }, 60 * 60 * 1000);
+}, 3000);
 
 // ─── JOB CARD MODAL ──────────────────────────────────────────
 let jcDesignDataUrl = null;
@@ -7593,6 +7681,7 @@ async function deleteAccountBalance(id) {
   if (res?.ok) { toast('Deleted', 'success'); loadAccountBalances(); }
 }
 
+// Auto-load account balances when Summary panel becomes active
 // Summary panel auto-load hook is integrated directly into showPanel()
 
 </script>
@@ -10125,6 +10214,131 @@ async function loadDashboardLedgerBalances() {
 
 // ── All functions below are defined in first/second script blocks — no re-declaration ──
 
+// ══════════════════════════════════════════════════════════════
+//  USER MANAGEMENT FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+var _umEditingUser = null;
+
+const ROLE_ACCESS = {
+  admin:   'Full access — all panels, user management, reports',
+  expense: 'Daily Expense panel only — add & view expenses',
+  invoice: 'Billing & Invoices only — create and manage invoices',
+  guest:   'Full read-only view — no add, edit or delete'
+};
+const ROLE_COLORS = {
+  admin:   {bg:'#e8eaf6',color:'#1a237e'},
+  expense: {bg:'#fff3e0',color:'#e65100'},
+  invoice: {bg:'#e0f2f1',color:'#004d40'},
+  guest:   {bg:'#f5f5f5',color:'#616161'}
+};
+
+async function umLoadUsers() {
+  var tbody = document.getElementById('usermgmt-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">Loading...</td></tr>';
+  try {
+    var r = await fetch('https://rio-print-media.onrender.com/api/auth/users', { headers: rioAuthHeaders() });
+    if (!r.ok) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#c62828;padding:20px;">Auth error (' + r.status + ') — please re-login</td></tr>';
+      return;
+    }
+    var users = await r.json();
+    if (!Array.isArray(users) || users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No users found</td></tr>';
+      return;
+    }
+    tbody.innerHTML = users.map(function(u) {
+      var role = u.role || 'guest';
+      var rc = ROLE_COLORS[role] || ROLE_COLORS.guest;
+      var roleName = role.charAt(0).toUpperCase() + role.slice(1);
+      var access = ROLE_ACCESS[role] || '—';
+      var isAdmin = u.username === 'admin';
+      var actions = isAdmin
+        ? '<span style="color:#aaa;font-size:0.75rem;font-style:italic;">Protected</span>'
+        : '<button onclick="umEditUser(this)" data-uname="' + u.username + '" data-name="' + (u.name||'') + '" data-role="' + role + '" style="background:#1a237e;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.75rem;cursor:pointer;margin-right:6px;font-family:\'Exo 2\',sans-serif;">✎ Edit</button>'
+        + '<button onclick="umDeleteUser(this)" data-uname="' + u.username + '" style="background:#c62828;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:0.75rem;cursor:pointer;font-family:\'Exo 2\',sans-serif;">✕ Delete</button>';
+      return '<tr style="border-bottom:1px solid #e8eaf6;">'
+        + '<td style="padding:10px 14px;font-weight:700;font-family:\'Exo 2\',sans-serif;">' + u.username + '</td>'
+        + '<td style="padding:10px 14px;">' + (u.name||'—') + '</td>'
+        + '<td style="padding:10px 14px;"><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-family:\'Exo 2\',sans-serif;font-weight:700;background:' + rc.bg + ';color:' + rc.color + ';">' + roleName + '</span></td>'
+        + '<td style="padding:10px 14px;font-size:0.78rem;color:#555;">' + access + '</td>'
+        + '<td style="padding:10px 14px;">' + actions + '</td>'
+        + '</tr>';
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#c62828;padding:20px;">Error loading users</td></tr>';
+  }
+}
+
+function umShowForm(username, name, role) {
+  _umEditingUser = username || null;
+  var titleEl = document.getElementById('um-form-title');
+  if (titleEl) titleEl.textContent = username ? 'Edit User' : 'Add New User';
+  var unEl = document.getElementById('um-username');
+  if (unEl) { unEl.value = username || ''; unEl.disabled = !!username; }
+  var nmEl = document.getElementById('um-name');
+  if (nmEl) nmEl.value = name || '';
+  var pwEl = document.getElementById('um-password');
+  if (pwEl) pwEl.value = '';
+  var rlEl = document.getElementById('um-role');
+  if (rlEl) rlEl.value = role || 'expense';
+  var fw = document.getElementById('um-form-wrap');
+  if (fw) fw.style.display = 'block';
+  if (unEl) unEl.focus();
+}
+
+function umHideForm() {
+  _umEditingUser = null;
+  var fw = document.getElementById('um-form-wrap');
+  if (fw) fw.style.display = 'none';
+}
+
+function umEditUser(btn) {
+  umShowForm(btn.getAttribute('data-uname'), btn.getAttribute('data-name'), btn.getAttribute('data-role'));
+}
+
+async function umDeleteUser(btn) {
+  var username = btn.getAttribute('data-uname');
+  if (!confirm('Delete user "' + username + '"? This cannot be undone.')) return;
+  try {
+    var r = await fetch('https://rio-print-media.onrender.com/api/auth/users/' + username, { method:'DELETE', headers: rioAuthHeaders() });
+    var d = await r.json();
+    if (d.ok) { toast('User deleted ✓', 'success'); umLoadUsers(); }
+    else { toast('Error: ' + (d.error||'Cannot delete'), 'error'); }
+  } catch(e) { toast('Connection error', 'error'); }
+}
+
+async function umSaveUser() {
+  var username = (document.getElementById('um-username')?.value||'').trim();
+  var name     = (document.getElementById('um-name')?.value||'').trim();
+  var password = (document.getElementById('um-password')?.value||'').trim();
+  var role     = document.getElementById('um-role')?.value || 'expense';
+  var errEl    = document.getElementById('um-form-err');
+  if (errEl) errEl.textContent = '';
+
+  if (!username) { if(errEl) errEl.textContent='Username is required'; return; }
+  if (!_umEditingUser && !password) { if(errEl) errEl.textContent='Password is required for new users'; return; }
+
+  var body = { name:name, role:role };
+  if (password) body.password = password;
+
+  try {
+    var url, method;
+    if (_umEditingUser) {
+      url = 'https://rio-print-media.onrender.com/api/auth/users/' + username;
+      method = 'PUT';
+    } else {
+      url = 'https://rio-print-media.onrender.com/api/auth/users';
+      method = 'POST';
+      body.username = username;
+    }
+    var r = await fetch(url, { method:method, headers:rioAuthHeaders(), body:JSON.stringify(body) });
+    var d = await r.json();
+    if (d.ok) { umHideForm(); umLoadUsers(); toast('User saved ✓', 'success'); }
+    else { if(errEl) errEl.textContent = d.error || 'Save failed'; }
+  } catch(e) { if(errEl) errEl.textContent = 'Connection error'; }
+}
+
 </script>
 
 
@@ -10419,6 +10633,73 @@ async function loadDashboardLedgerBalances() {
     </div>
   </div>
 
+<!-- ── FOLLOWUP HOURLY POPUP ─────────────────────────────────── -->
+<div id="followup-hourly-popup" style="display:none;position:fixed;inset:0;z-index:99998;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);">
+  <div style="background:white;border-radius:18px;padding:28px 32px;width:420px;max-width:95vw;box-shadow:0 24px 80px rgba(0,0,0,0.4);">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+      <div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#c62828,#ef5350);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+      </div>
+      <div>
+        <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.05rem;color:#1a1a2e;">⏰ Pending Follow-Up</div>
+        <div style="font-size:0.75rem;color:#888;">Action required — please review</div>
+      </div>
+    </div>
+    <input type="hidden" id="fhp-id">
+    <div style="background:#fff3e0;border:1.5px solid #ffe0b2;border-radius:10px;padding:14px 16px;margin-bottom:20px;">
+      <div id="fhp-text" style="font-family:'Nunito',sans-serif;font-size:0.95rem;color:#1a1a2e;line-height:1.5;margin-bottom:6px;"></div>
+      <div id="fhp-date" style="font-family:'Exo 2',sans-serif;font-size:0.72rem;font-weight:700;color:#e65100;"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeFollowupPopup(true)" style="padding:10px 22px;border-radius:10px;border:1.5px solid #ddd;background:white;color:#555;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;">⏰ Remind in 1 hr</button>
+      <button onclick="followupDone()" style="padding:10px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,#2e7d32,#43a047);color:white;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.85rem;cursor:pointer;">✅ Follow Up Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DAILY WISDOM QUOTE SCRIPT ─────────────────────────────── -->
+<script>
+(function initDailyWisdom() {
+  var quotes = [
+    {q:"Success is not final, failure is not fatal: it is the courage to continue that counts.", a:"Winston Churchill"},
+    {q:"Price is what you pay. Value is what you get.", a:"Warren Buffett"},
+    {q:"Your most unhappy customers are your greatest source of learning.", a:"Bill Gates"},
+    {q:"A satisfied customer is the best business strategy of all.", a:"Michael LeBoeuf"},
+    {q:"Chase the vision, not the money; the money will end up following you.", a:"Tony Hsieh"},
+    {q:"The customer's perception is your reality.", a:"Kate Zabriskie"},
+    {q:"Business is all about solving people's problems — at a profit.", a:"Paul Marsden"},
+    {q:"Great things in business are never done by one person.", a:"Steve Jobs"},
+    {q:"The best way to predict the future is to create it.", a:"Peter Drucker"},
+    {q:"Your time is limited, don't waste it living someone else's life.", a:"Steve Jobs"},
+    {q:"Innovation distinguishes between a leader and a follower.", a:"Steve Jobs"},
+    {q:"In the middle of every difficulty lies opportunity.", a:"Albert Einstein"},
+    {q:"Quality is not an act, it is a habit.", a:"Aristotle"},
+    {q:"The secret of getting ahead is getting started.", a:"Mark Twain"},
+    {q:"It always seems impossible until it's done.", a:"Nelson Mandela"},
+    {q:"Strive not to be a success, but rather to be of value.", a:"Albert Einstein"},
+    {q:"The way to get started is to quit talking and begin doing.", a:"Walt Disney"},
+    {q:"Don't watch the clock; do what it does. Keep going.", a:"Sam Levenson"},
+    {q:"Coming together is a beginning; staying together is progress; working together is success.", a:"Henry Ford"},
+    {q:"The harder I work, the luckier I seem to get.", a:"Thomas Jefferson"},
+    {q:"An investment in knowledge pays the best interest.", a:"Benjamin Franklin"},
+    {q:"The only way to do great work is to love what you do.", a:"Steve Jobs"},
+    {q:"Success usually comes to those who are too busy to be looking for it.", a:"Henry David Thoreau"},
+    {q:"Don't be afraid to give up the good to go for the great.", a:"John D. Rockefeller"},
+    {q:"The best revenge is massive success.", a:"Frank Sinatra"},
+    {q:"Opportunities don't happen. You create them.", a:"Chris Grosser"},
+    {q:"Fall seven times, stand up eight.", a:"Japanese Proverb"},
+    {q:"The man who moves a mountain begins by carrying away small stones.", a:"Confucius"},
+    {q:"He who learns but does not think is lost.", a:"Confucius"},
+    {q:"A journey of a thousand miles begins with a single step.", a:"Lao Tzu"}
+  ];
+  var dayIndex = Math.floor(Date.now() / 86400000) % quotes.length;
+  var q = quotes[dayIndex];
+  var el = document.getElementById('daily-quote-text');
+  if (el) {
+    el.innerHTML = '&#128161; <em>' + q.q + '</em> <strong style="font-style:normal;color:#8d6e63;"> — ' + q.a + '</strong>';
+  }
+})();
+</script>
 
 </body>
 </html>
