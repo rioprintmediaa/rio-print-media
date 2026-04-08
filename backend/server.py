@@ -10,12 +10,12 @@ Deploy on Render.com:
     Start command: uvicorn rio_api:app --host 0.0.0.0 --port 8001
 """
 
-import os, re, bcrypt, sys
+import os, re, bcrypt, sys, jwt, secrets
 from contextlib import asynccontextmanager
-from datetime import datetime, date
+from datetime import datetime, date, timezone, timedelta
 from typing import Optional, Any
 
-from fastapi import FastAPI, Request, Query
+from fastapi import FastAPI, Request, Query, HTTPException, Response
 from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient, ASCENDING, DESCENDING
@@ -43,6 +43,103 @@ logger.info("RIO API STARTING UP")
 logger.info(f"MONGO_DB  = {MONGO_DB}")
 logger.info(f"MONGO_URI = {'SET (' + MONGO_URI[:20] + '...)' if MONGO_URI else 'NOT SET — check Render Environment Variables!'}")
 logger.info("=" * 60)
+
+# ─────────────────────────────────────────────
+#  AUTH HELPERS
+# ─────────────────────────────────────────────
+JWT_ALGORITHM = "HS256"
+
+def get_jwt_secret() -> str:
+    return os.environ.get("JWT_SECRET", "fallback-secret-key")
+
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+
+def create_access_token(user_id: str, email: str, role: str) -> str:
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "role": role,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=15),
+        "type": "access"
+    }
+    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
+
+def create_refresh_token(user_id: str) -> str:
+    payload = {
+        "sub": user_id,
+        "exp": datetime.now(timezone.utc) + timedelta(days=7),
+        "type": "refresh"
+    }
+    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
+
+async def get_current_user(request: Request) -> dict:
+    token = request.cookies.get("access_token")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "access":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        user = col("users").find_one({"_id": ObjectId(payload["sub"])}, {"_id": 0, "password_hash": 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        user["id"] = str(payload["sub"])
+        return user
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+
+async def seed_admin():
+    """Seed admin user on startup."""
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@rioprintmedia.com")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "Rio@2026Admin")
+    
+    existing = col("users").find_one({"email": admin_email})
+    if existing is None:
+        hashed = hash_password(admin_password)
+        col("users").insert_one({
+            "email": admin_email,
+            "password_hash": hashed,
+            "name": "Administrator",
+            "role": "Admin",
+            "created_at": datetime.now(timezone.utc)
+        })
+        logger.info("Admin user created: %s", admin_email)
+    elif not verify_password(admin_password, existing["password_hash"]):
+        col("users").update_one(
+            {"email": admin_email},
+            {"$set": {"password_hash": hash_password(admin_password)}}
+        )
+        logger.info("Admin password updated")
+    
+    # Write to test credentials
+    with open("/app/memory/test_credentials.md", "w") as f:
+        f.write("# Test Credentials\n\n")
+        f.write("## Admin Account\n")
+        f.write(f"- Email: {admin_email}\n")
+        f.write(f"- Password: {admin_password}\n")
+        f.write(f"- Role: Admin\n\n")
+        f.write("## Auth Endpoints\n")
+        f.write("- POST /api/auth/register\n")
+        f.write("- POST /api/auth/login\n")
+        f.write("- GET /api/auth/me\n")
+        f.write("- POST /api/auth/logout\n")
+        f.write("- POST /api/auth/refresh\n")
+
+
 
 # ─────────────────────────────────────────────
 #  DB
@@ -342,6 +439,19 @@ async def serve_dashboard(request: Request):
     logger.info(f"Serving {len(html)} bytes")
     return HTMLResponse(html)
 
+# Also serve at /api/rio for frontend redirect
+@app.get("/api/rio", response_class=HTMLResponse)
+async def serve_rio_dashboard(request: Request):
+    logger.info(f"GET /api/rio — serving {HTML_FILE}")
+    if not os.path.exists(HTML_FILE):
+        logger.error(f"HTML file not found: {HTML_FILE} — cwd={os.getcwd()}")
+        return HTMLResponse(f"<h2>File not found: {HTML_FILE}</h2><p>CWD: {os.getcwd()}</p><p>Files: {os.listdir('.')[:20]}</p>", 404)
+    with open(HTML_FILE, "r", encoding="utf-8") as f:
+        html = f.read()
+    logger.info(f"Serving {len(html)} bytes from /api/rio")
+    return HTMLResponse(html)
+
+
 # ─────────────────────────────────────────────
 #  MOBILE APP
 # ─────────────────────────────────────────────
@@ -518,6 +628,147 @@ input,select,textarea,button{{font-family:'Exo 2',sans-serif;}}
   <div class="panel" id="panel-expenses">
     <div class="sec-header">Expenses <span id="m-exp-badge" class="badge badge-orange"></span></div>
     <div id="m-exp-list"><div class="loading">Loading...</div></div>
+
+
+# ═══════════════════════════════════════════════════════════════
+#  AUTH ENDPOINTS
+# ═══════════════════════════════════════════════════════════════
+
+@app.post("/api/auth/register_jwt")
+async def auth_register(request: Request, response: Response):
+    """Register a new user with role assignment."""
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    password = (body.get("password") or "").strip()
+    name = (body.get("name") or "").strip()
+    role = (body.get("role") or "Billing").strip()  # Default to Billing role
+    
+    if not email or not password:
+        return JSONResponse({"detail": "Email and password required"}, status_code=400)
+    
+    # Check if email already exists
+    if col("users").find_one({"email": email}):
+        return JSONResponse({"detail": "Email already registered"}, status_code=400)
+    
+    # Validate role
+    valid_roles = ["Admin", "Auditing", "Expense", "Billing", "Guest"]
+    if role not in valid_roles:
+        return JSONResponse({"detail": f"Invalid role. Must be one of: {', '.join(valid_roles)}"}, status_code=400)
+    
+    # Hash password and create user
+    hashed = hash_password(password)
+    user_doc = {
+        "email": email,
+        "password_hash": hashed,
+        "name": name or email.split("@")[0],
+        "role": role,
+        "created_at": datetime.now(timezone.utc)
+    }
+    result = col("users").insert_one(user_doc)
+    user_id = str(result.inserted_id)
+    
+    # Create tokens
+    access_token = create_access_token(user_id, email, role)
+    refresh_token = create_refresh_token(user_id)
+    
+    # Set cookies
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    
+    return JSONResponse({"id": user_id, "email": email, "name": user_doc["name"], "role": role})
+
+@app.post("/api/auth/login_jwt")
+async def auth_login(request: Request, response: Response):
+    """Login with email and password (JWT cookie-based)."""
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    password = (body.get("password") or "").strip()
+    
+    if not email or not password:
+        return JSONResponse({"detail": "Email and password required"}, status_code=400)
+    
+    # Brute force check
+    ip = request.client.host
+    identifier = f"{ip}:{email}"
+    attempts_doc = col("login_attempts").find_one({"identifier": identifier})
+    if attempts_doc and attempts_doc.get("count", 0) >= 5:
+        lockout_until = attempts_doc.get("lockout_until")
+        if lockout_until and datetime.now(timezone.utc) < lockout_until:
+            return JSONResponse({"detail": "Too many failed attempts. Try again in 15 minutes."}, status_code=429)
+    
+    # Find user
+    user = col("users").find_one({"email": email})
+    if not user or not verify_password(password, user["password_hash"]):
+        # Increment failed attempts
+        col("login_attempts").update_one(
+            {"identifier": identifier},
+            {
+                "$inc": {"count": 1},
+                "$set": {"lockout_until": datetime.now(timezone.utc) + timedelta(minutes=15)}
+            },
+            upsert=True
+        )
+        return JSONResponse({"detail": "Invalid email or password"}, status_code=401)
+    
+    # Success - clear attempts
+    col("login_attempts").delete_one({"identifier": identifier})
+    
+    user_id = str(user["_id"])
+    role = user.get("role", "Billing")
+    
+    # Create tokens
+    access_token = create_access_token(user_id, email, role)
+    refresh_token = create_refresh_token(user_id)
+    
+    # Set cookies
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    
+    return JSONResponse({"id": user_id, "email": email, "name": user.get("name", ""), "role": role})
+
+@app.get("/api/auth/me")
+async def auth_me(request: Request):
+    """Get current user info from JWT."""
+    user = await get_current_user(request)
+    return JSONResponse(user)
+
+@app.post("/api/auth/logout")
+async def auth_logout(response: Response):
+    """Clear auth cookies."""
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+    return JSONResponse({"ok": True})
+
+@app.post("/api/auth/refresh")
+async def auth_refresh(request: Request, response: Response):
+    """Refresh access token using refresh token."""
+    token = request.cookies.get("refresh_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="No refresh token")
+    
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        
+        user = col("users").find_one({"_id": ObjectId(payload["sub"])})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        user_id = str(user["_id"])
+        email = user["email"]
+        role = user.get("role", "Billing")
+        
+        new_access_token = create_access_token(user_id, email, role)
+        response.set_cookie(key="access_token", value=new_access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
+        
+        return JSONResponse({"ok": True})
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Refresh token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+
   </div>
 
   <!-- PENDING PANEL -->
@@ -912,6 +1163,73 @@ def ensure_db():
 # ─────────────────────────────────────────────
 #  PING — reports real DB status
 # ─────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════════
+#  AUTH ENDPOINTS
+# ═══════════════════════════════════════════════════════════════
+
+@app.post("/api/auth/register")
+async def register_user(request: Request, response: Response):
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    password = (body.get("password") or "").strip()
+    name = (body.get("name") or "").strip()
+    role = (body.get("role") or "Billing").strip()
+    
+    if not email or not password:
+        return JSONResponse({"detail": "Email and password required"}, status_code=400)
+    if col("users").find_one({"email": email}):
+        return JSONResponse({"detail": "Email already registered"}, status_code=400)
+    
+    valid_roles = ["Admin", "Auditing", "Expense", "Billing", "Guest"]
+    if role not in valid_roles:
+        role = "Billing"
+    
+    hashed = hash_password(password)
+    result = col("users").insert_one({
+        "email": email, "password_hash": hashed, "name": name or email.split("@")[0],
+        "role": role, "created_at": datetime.now(timezone.utc)
+    })
+    user_id = str(result.inserted_id)
+    access_token = create_access_token(user_id, email, role)
+    refresh_token = create_refresh_token(user_id)
+    response.set_cookie("access_token", access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
+    response.set_cookie("refresh_token", refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    return JSONResponse({"id": user_id, "email": email, "name": name or email.split("@")[0], "role": role})
+
+@app.post("/api/auth/login_jwt2")
+async def login_user(request: Request, response: Response):
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    password = (body.get("password") or "").strip()
+    
+    if not email or not password:
+        return JSONResponse({"detail": "Email and password required"}, status_code=400)
+    
+    user = col("users").find_one({"email": email})
+    if not user or not verify_password(password, user["password_hash"]):
+        return JSONResponse({"detail": "Invalid email or password"}, status_code=401)
+    
+    user_id = str(user["_id"])
+    role = user.get("role", "Billing")
+    access_token = create_access_token(user_id, email, role)
+    refresh_token = create_refresh_token(user_id)
+    response.set_cookie("access_token", access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
+    response.set_cookie("refresh_token", refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    return JSONResponse({"id": user_id, "email": email, "name": user.get("name", ""), "role": role})
+
+@app.get("/api/auth/me")
+async def get_me(request: Request):
+    user = await get_current_user(request)
+    return JSONResponse(user)
+
+@app.post("/api/auth/logout")
+async def logout_user(response: Response):
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+    return JSONResponse({"ok": True})
+
+
 @app.get("/api/ping")
 async def ping():
     connected = ensure_db()
@@ -1280,7 +1598,7 @@ async def get_jobs(fr: Optional[str] = Query(None, alias="from"), to: Optional[s
 async def post_jobs(request: Request):
     b = await request.json()
     new_id = next_id("jobs")
-    # Auto-generate JobNo if not provided: J001, J002, ...
+    # Use client-supplied JobNo if given, else auto-generate incremental J001, J002, ...
     job_no = (b.get("JobNo") or "").strip()
     if not job_no:
         pipeline = [{"$group": {"_id": None, "max": {"$max": "$Id"}}}]
@@ -1312,7 +1630,7 @@ async def put_jobs(job_id: int, request: Request):
         "Status":       b.get("Status", ""),
         "DispatchDate": b.get("DispatchDate"),
     }
-    # Only update JobNo if provided (don't overwrite existing)
+    # Only update JobNo if client explicitly provides one (preserve existing)
     if b.get("JobNo"):
         update["JobNo"] = b.get("JobNo")
     col("jobs").update_one({"Id": job_id}, {"$set": update})
@@ -1320,6 +1638,13 @@ async def put_jobs(job_id: int, request: Request):
 
 @app.delete("/api/jobs/{job_id}")
 async def delete_jobs(job_id: int):
+    # Only allow deletion of the latest job (same logic as invoices)
+    latest_job = col("jobs").find_one(sort=[("Id", DESCENDING)], projection={"_id": 0, "Id": 1})
+    if not latest_job or latest_job["Id"] != job_id:
+        return JSONResponse(
+            {"ok": False, "error": "Can only delete the latest job"},
+            status_code=400
+        )
     col("jobs").delete_one({"Id": job_id})
     return ok()
 
@@ -2030,7 +2355,7 @@ def ensure_default_users():
 # ─────────────────────────────────────────────
 #  AUTH — Emergency admin reset (upsert admin user)
 # ─────────────────────────────────────────────
-@app.post("/api/auth/reset-admin")
+@app.get("/api/auth/reset-admin")
 async def reset_admin():
     """Force-upsert admin user with default password. Use if locked out."""
     hashed = hash_password("rio@admin")

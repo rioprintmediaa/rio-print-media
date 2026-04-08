@@ -2030,7 +2030,7 @@ def ensure_default_users():
 # ─────────────────────────────────────────────
 #  AUTH — Emergency admin reset (upsert admin user)
 # ─────────────────────────────────────────────
-@app.post("/api/auth/reset-admin")
+@app.get("/api/auth/reset-admin")
 async def reset_admin():
     """Force-upsert admin user with default password. Use if locked out."""
     hashed = hash_password("rio@admin")
