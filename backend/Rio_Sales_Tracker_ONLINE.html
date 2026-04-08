@@ -2915,15 +2915,15 @@ function rioToggleNav() {
       <div class="addr-line">Erode – 638107, Tamil Nadu</div>
       <div class="addr-line"><strong>Ph: 9962011515</strong> &nbsp;|&nbsp; GST: 33BCFPR3860P1Z2</div>
     </div>
-    <!-- Daily Proverb & Quote (2 Lines Each: Quote + Author) -->
-    <div id="daily-wisdom" style="margin-left:auto;max-width:650px;display:flex;gap:32px;align-items:flex-start;">
-      <div style="flex:1;text-align:right;border-right:2px solid #d0d0d0;padding-right:24px;">
-        <div id="proverb-text" style="font-size:0.85rem;color:#e65100;line-height:1.5;font-weight:600;margin-bottom:4px;">"A journey of a thousand miles begins with a single step."</div>
-        <div id="proverb-author" style="font-size:0.72rem;color:#e65100;font-weight:400;padding-right:40px;">—Medieval Proverb</div>
+    <!-- Daily Proverb & Quote (single line quote + author 2nd line, bottom aligned) -->
+    <div id="daily-wisdom" style="margin-left:12px;max-width:500px;display:flex;gap:18px;align-items:flex-end;align-self:flex-end;padding-bottom:2px;">
+      <div style="flex:1;text-align:left;border-right:2px solid #d0d0d0;padding-right:16px;">
+        <div id="proverb-text" style="font-size:0.78rem;color:#e65100;line-height:1.4;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">"A journey of a thousand miles begins with a single step."</div>
+        <div id="proverb-author" style="font-size:0.68rem;color:#e65100;font-weight:400;margin-top:2px;">—Medieval Proverb</div>
       </div>
-      <div style="flex:1;text-align:right;">
-        <div id="quote-text" style="font-size:0.85rem;color:#6a1b9a;line-height:1.5;font-style:italic;font-weight:600;margin-bottom:4px;">"Success is not final, failure is not fatal: it is the courage to continue that counts."</div>
-        <div id="quote-author" style="font-size:0.72rem;color:#6a1b9a;font-style:normal;font-weight:400;padding-right:40px;">—Winston Churchill</div>
+      <div style="flex:1;text-align:left;">
+        <div id="quote-text" style="font-size:0.78rem;color:#6a1b9a;line-height:1.4;font-style:italic;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">"Success is not final, failure is not fatal: it is the courage to continue that counts."</div>
+        <div id="quote-author" style="font-size:0.68rem;color:#6a1b9a;font-style:normal;font-weight:400;margin-top:2px;">—Winston Churchill</div>
       </div>
     </div>
     <div class="sql-status" id="sql-status" style="margin-left:12px;display:none;">Connecting...</div>
@@ -3136,23 +3136,23 @@ function rioToggleNav() {
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px;">
           <div style="background:linear-gradient(135deg,#1565c0,#1976d2);border-radius:14px;padding:18px 20px;color:white;box-shadow:0 4px 18px rgba(21,101,192,0.35);">
             <div style="font-family:'Exo 2',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:1px;opacity:0.8;text-transform:uppercase;margin-bottom:8px;">Total Sales (FY)</div>
-            <div id="dash-total-sales" style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;">₹ 0</div>
-            <div id="dash-orders-count" style="font-size:0.72rem;opacity:0.75;margin-top:4px;">0 invoices</div>
+            <div id="bil-total-sales" style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;">₹ 0</div>
+            <div id="bil-orders-count" style="font-size:0.72rem;opacity:0.75;margin-top:4px;">0 invoices</div>
           </div>
           <div style="background:linear-gradient(135deg,#2e7d32,#388e3c);border-radius:14px;padding:18px 20px;color:white;box-shadow:0 4px 18px rgba(46,125,50,0.35);">
             <div style="font-family:'Exo 2',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:1px;opacity:0.8;text-transform:uppercase;margin-bottom:8px;">GST Invoices</div>
-            <div id="dash-gst-count" style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;">0</div>
-            <div id="dash-gst-amt" style="font-size:0.72rem;opacity:0.75;margin-top:4px;">₹ 0</div>
+            <div id="bil-gst-count" style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;">0</div>
+            <div id="bil-gst-amt" style="font-size:0.72rem;opacity:0.75;margin-top:4px;">₹ 0</div>
           </div>
           <div style="background:linear-gradient(135deg,#e65100,#f4511e);border-radius:14px;padding:18px 20px;color:white;box-shadow:0 4px 18px rgba(230,81,0,0.35);">
             <div style="font-family:'Exo 2',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:1px;opacity:0.8;text-transform:uppercase;margin-bottom:8px;">Non-GST Bills</div>
-            <div id="dash-nongst-count" style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;">0</div>
-            <div id="dash-nongst-amt" style="font-size:0.72rem;opacity:0.75;margin-top:4px;">₹ 0</div>
+            <div id="bil-nongst-count" style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;">0</div>
+            <div id="bil-nongst-amt" style="font-size:0.72rem;opacity:0.75;margin-top:4px;">₹ 0</div>
           </div>
           <div style="background:linear-gradient(135deg,#4a148c,#6a1b9a);border-radius:14px;padding:18px 20px;color:white;box-shadow:0 4px 18px rgba(74,20,140,0.35);">
             <div style="font-family:'Exo 2',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:1px;opacity:0.8;text-transform:uppercase;margin-bottom:8px;">Quotations (FY)</div>
-            <div id="dash-quot-count" style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;">0</div>
-            <div id="dash-quot-amt" style="font-size:0.72rem;opacity:0.75;margin-top:4px;">₹ 0</div>
+            <div id="bil-quot-count" style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;">0</div>
+            <div id="bil-quot-amt" style="font-size:0.72rem;opacity:0.75;margin-top:4px;">₹ 0</div>
           </div>
         </div>
 
@@ -5962,9 +5962,10 @@ function renderSales(data) {
 // ── Load ledger balances for dashboard ───────────────────────
 async function loadDashboardLedgerBalances() {
   const fy = selectedFY || currentFY();
+  if (!fy) return;
   try {
     const data = await api('/ledger?fy=' + encodeURIComponent(fy));
-    if (!Array.isArray(data)) return;
+    const arr = Array.isArray(data) ? data : (data ? [data] : []);
     const accounts = {
       'KVB MOM':      'kvbmom',
       'KVB Mani':     'kvbmani',
@@ -5972,16 +5973,17 @@ async function loadDashboardLedgerBalances() {
       'Cash Balance': 'cash'
     };
     Object.entries(accounts).forEach(([name, id]) => {
-      const entries = data.filter(r => r.AccountName === name);
+      const entries = arr.filter(r => r.AccountName === name);
       const el = document.getElementById('dash-bal-' + id);
       if (!el) return;
       if (!entries.length) { el.textContent = '₹ 0.00'; return; }
+      // Sort by date then id for latest
       const latest = entries.reduce((a,b) =>
         (a.EntryDate > b.EntryDate || (a.EntryDate===b.EntryDate && +a.Id > +b.Id)) ? a : b
       );
       el.textContent = '₹ ' + fn(+latest.Balance||0);
     });
-  } catch(e) { /* silent fail - ledger may not have data yet */ }
+  } catch(e) { console.warn('[DASH] ledger balance load failed:', e.message); }
 }
 
 // ── Load Products into Sales form dropdown ────────────────────
@@ -6825,6 +6827,11 @@ async function _saveSalesEntryInner() {
       const qty1 = parseInt(d.Qty1)||0;
       const qty2 = parseInt(d.Qty2)||0;
       const autoQty = qty1+qty2 || null;
+      const local = _jobsRead();
+      const newId = _jobsNextId();
+      const allJobIds = local.map(j=>j.Id||0);
+      const maxJobId = allJobIds.length ? Math.max(...allJobIds) : 0;
+      const autoJobNo = 'J' + String(maxJobId+1).padStart(3,'0');
       const jobEntry = {
         Customer:      d.Customer       || '',
         JobName:       d.JobName        || d.Category || '',
@@ -6832,10 +6839,9 @@ async function _saveSalesEntryInner() {
         ProductSize:   d.Size1 || '',
         Status:        'Color Correction',
         DispatchDate:  null,
-        Qty:           autoQty
+        Qty:           autoQty,
+        JobNo:         autoJobNo
       };
-      const local = _jobsRead();
-      const newId = _jobsNextId();
       local.push({...jobEntry, Id: newId});
       _jobsWrite(local);
       api('/jobs', { method:'POST', body: JSON.stringify(jobEntry) });
@@ -7937,14 +7943,21 @@ function submitJob() {
   const local=_jobsRead();
   if(jobEditId){
     const idx=local.findIndex(j=>j.Id===jobEditId);
+    // Preserve existing JobNo on edit
+    const existingJobNo = idx>=0 ? (local[idx].JobNo||'') : '';
     if(idx>=0) local[idx]={...local[idx],...entry}; else local.push({...entry,Id:jobEditId});
     toast('Job updated ✓','success');
-    api('/jobs/'+jobEditId,{method:'PUT',body:JSON.stringify(entry)});
+    api('/jobs/'+jobEditId,{method:'PUT',body:JSON.stringify({...entry,JobNo:existingJobNo})});
   } else {
     const newId = _jobsNextId();
-    local.push({...entry,Id:newId});
-    toast('Job saved ✓  — opening Job Card…','success');
-    api('/jobs',{method:'POST',body:JSON.stringify(entry)});
+    // Auto-assign incremental JobNo: J001, J002, ...
+    const allIds = local.map(j=>j.Id||0);
+    const maxId = allIds.length ? Math.max(...allIds) : 0;
+    const jobNo = 'J' + String(maxId+1).padStart(3,'0');
+    const entryWithNo = {...entry, Id:newId, JobNo:jobNo};
+    local.push(entryWithNo);
+    toast('Job saved ✓ (' + jobNo + ') — opening Job Card…','success');
+    api('/jobs',{method:'POST',body:JSON.stringify({...entry,JobNo:jobNo})});
     _jobsWrite(local); resetJobForm(); loadJobs();
     setTimeout(()=>openJobCardModal(newId), 350);
     return;
@@ -8245,40 +8258,48 @@ async function loadBillingDashboard() {
   if(badge) badge.textContent = 'Billing: Loading...';
   
   try {
-    // Use sales data instead of invoices API
-    const invData = salesData.filter(s => {
-      if (!selectedFY) return true; // All years
-      const d = s.OrderDate || '';
-      return d >= from && d <= to;
-    });
-    
+    // Fetch real invoices from API
+    let invData = [];
+    try {
+      const invResp = await api('/billing/invoices?pageSize=500' + (from?'&from='+from:'') + (to?'&to='+to:''));
+      invData = (invResp && invResp.data) ? invResp.data : [];
+    } catch(e) { invData = []; }
+
     const total=invData.reduce((s,r)=>s+(+r.TotalAmount||0),0);
-    const gst=invData.filter(r=>r.BillingType!=='NONGST' && r.BillingType!=='Non-GST');
-    const nongst=invData.filter(r=>r.BillingType==='NONGST' || r.BillingType==='Non-GST');
-    
-    if(el('dash-total-sales')) el('dash-total-sales').textContent='₹ '+fn(total);
-    if(el('dash-orders-count')) el('dash-orders-count').textContent=invData.length+' invoices';
-    if(el('dash-gst-count')) el('dash-gst-count').textContent=gst.length;
-    if(el('dash-gst-amt')) el('dash-gst-amt').textContent='₹ '+fn(gst.reduce((s,r)=>s+(+r.TotalAmount||0),0));
-    if(el('dash-nongst-count')) el('dash-nongst-count').textContent=nongst.length;
-    if(el('dash-nongst-amt')) el('dash-nongst-amt').textContent='₹ '+fn(nongst.reduce((s,r)=>s+(+r.TotalAmount||0),0));
-    
-    // Quotations - use sales data as placeholder
-    if(el('dash-quot-count')) el('dash-quot-count').textContent=Math.floor(invData.length * 0.3);
-    if(el('dash-quot-amt')) el('dash-quot-amt').textContent='₹ '+fn(total * 0.2);
-    
+    const gst=invData.filter(r=>r.BillingType==='GST'||r.BillingType==='IGST');
+    const nongst=invData.filter(r=>r.BillingType==='NON-GST'||r.BillingType==='Non-GST'||r.BillingType==='NONGST');
+
+    if(el('bil-total-sales')) el('bil-total-sales').textContent='₹ '+fn(total);
+    if(el('bil-orders-count')) el('bil-orders-count').textContent=invData.length+' invoices';
+    if(el('bil-gst-count')) el('bil-gst-count').textContent=gst.length;
+    if(el('bil-gst-amt')) el('bil-gst-amt').textContent='₹ '+fn(gst.reduce((s,r)=>s+(+r.TotalAmount||0),0));
+    if(el('bil-nongst-count')) el('bil-nongst-count').textContent=nongst.length;
+    if(el('bil-nongst-amt')) el('bil-nongst-amt').textContent='₹ '+fn(nongst.reduce((s,r)=>s+(+r.TotalAmount||0),0));
+
+    // Fetch real quotations count
+    let quotData = [];
+    try {
+      const quotResp = await api('/billing/quotations?pageSize=500' + (from?'&from='+from:'') + (to?'&to='+to:''));
+      quotData = (quotResp && quotResp.data) ? quotResp.data : [];
+    } catch(e) { quotData = []; }
+    if(el('bil-quot-count')) el('bil-quot-count').textContent=quotData.length;
+    if(el('bil-quot-amt')) el('bil-quot-amt').textContent='₹ '+fn(quotData.reduce((s,r)=>s+(+r.TotalAmount||0),0));
+
     // Customer/Product counts
-    const uniqueCustomers = [...new Set(invData.map(s => s.Customer))].filter(Boolean);
+    const uniqueCustomers = [...new Set(invData.map(r => r.CustomerName))].filter(Boolean);
     if(el('dash-cust-count')) el('dash-cust-count').textContent=uniqueCustomers.length+' total';
-    if(el('dash-prod-count')) el('dash-prod-count').textContent='N/A';
-    
-    // This month vs last month
+    try {
+      const prodResp = await api('/billing/products');
+      if(el('dash-prod-count')) el('dash-prod-count').textContent=Array.isArray(prodResp)?prodResp.length+' items':'';
+    } catch(e) {}
+
+    // This month vs last month (based on invoice data)
     const now=new Date(); const thisY=now.getFullYear(); const thisM=now.getMonth();
     const lastM=thisM===0?11:thisM-1; const lastY=thisM===0?thisY-1:thisY;
-    const pad=n=>String(n+1).padStart(2,'0');
-    const thisMStr=`${thisY}-${pad(thisM)}`; const lastMStr=`${lastY}-${pad(lastM)}`;
-    const thisInv=invData.filter(r=>(r.OrderDate||'').startsWith(thisMStr));
-    const lastInv=invData.filter(r=>(r.OrderDate||'').startsWith(lastMStr));
+    const pad=n=>String(n).padStart(2,'0');
+    const thisMStr=`${thisY}-${pad(thisM+1)}`; const lastMStr=`${lastY}-${pad(lastM+1)}`;
+    const thisInv=invData.filter(r=>(r.InvoiceDate||'').startsWith(thisMStr));
+    const lastInv=invData.filter(r=>(r.InvoiceDate||'').startsWith(lastMStr));
     const sumAmt=arr=>arr.reduce((s,r)=>s+(+r.TotalAmount||0),0);
     const thisLabel=now.toLocaleDateString('en-IN',{month:'short',year:'numeric'});
     const lastLabel=new Date(lastY,lastM,1).toLocaleDateString('en-IN',{month:'short',year:'numeric'});
@@ -8289,24 +8310,24 @@ async function loadBillingDashboard() {
       <tr style="border-bottom:1px solid #f0f0f0;"><td style="padding:7px 10px;color:#555;font-weight:600;">Invoices</td><td style="padding:7px 10px;text-align:right;font-weight:700;color:#1565c0;">${thisInv.length}</td><td style="padding:7px 10px;text-align:right;color:#888;">${lastInv.length}</td></tr>
       <tr style="border-bottom:1px solid #f0f0f0;"><td style="padding:7px 10px;color:#555;font-weight:600;">Sales</td><td style="padding:7px 10px;text-align:right;font-weight:700;color:#1565c0;">₹ ${fn(sumAmt(thisInv))}</td><td style="padding:7px 10px;text-align:right;color:#888;">₹ ${fn(sumAmt(lastInv))}</td></tr>
     `;
-    
-    // Top 5 customers by amount in FY
+
+    // Top 5 customers by amount in FY (from real invoice data)
     const custMap={};
-    invData.forEach(r=>{ if(r.Customer){if(!custMap[r.Customer])custMap[r.Customer]=0; custMap[r.Customer]+=(+r.TotalAmount||0);}});
+    invData.forEach(r=>{ const n=r.CustomerName||''; if(n){if(!custMap[n])custMap[n]=0; custMap[n]+=(+r.TotalAmount||0);}});
     const top5=Object.entries(custMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
     const tc=el('dash-top-customers');
     if(tc) tc.innerHTML=top5.length?top5.map(([name,amt],i)=>`
       <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:0.8rem;">
         <span><strong style="color:#e65100;">${i+1}.</strong> ${name}</span>
         <span style="font-weight:700;color:#1565c0;">₹ ${fn(amt)}</span>
-      </div>`).join(''):'<div style="color:#aaa;text-align:center;padding:16px;">No data for this FY</div>';
-    
-    if(badge) badge.style.background = 'linear-gradient(90deg,#1b5e20,#388e3c)';
-    if(badge) badge.textContent = `Billing: ✓ ${invData.length} invoices`;
-  } catch(e) { 
+      </div>`).join(''):'<div style="color:#aaa;text-align:center;padding:16px;">No invoices for this FY</div>';
+
+    if(badge) { badge.style.background='linear-gradient(90deg,#1b5e20,#388e3c)'; badge.style.color='white'; }
+    if(badge) badge.textContent=`Billing: ✓ ${invData.length} invoices · ${quotData.length} quotations`;
+  } catch(e) {
     console.error('Dashboard load error:',e);
-    if(badge) badge.style.background = '#c62828';
-    if(badge) badge.textContent = 'Billing: Error';
+    if(badge) { badge.style.background='#c62828'; badge.style.color='white'; }
+    if(badge) badge.textContent='Billing: Error — ' + e.message;
   }
 }
 
@@ -10292,69 +10313,86 @@ function populateBankDropdowns() {
 // Load Sales Report
 async function loadSalesReport() {
   const from = document.getElementById('sales-from')?.value || '';
-  const to = document.getElementById('sales-to')?.value || '';
+  const to   = document.getElementById('sales-to')?.value   || '';
   const type = document.getElementById('sales-type')?.value || '';
-  const customerInput = document.getElementById('sales-customer-search')?.value || '';
-  
+  const customerInput = (document.getElementById('sales-customer-search')?.value || '').trim().toLowerCase();
+
   const tableDiv = document.getElementById('sales-report-table');
   if (!tableDiv) return;
-  
-  tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading...</p>';
-  
+
+  tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading…</p>';
+
   try {
-    // Always fetch fresh from API
-    console.log('[SALES REPORT] Fetching from /api/sales');
-    const data = await api('/sales');
-    console.log('[SALES REPORT] API response:', typeof data, 'length:', data?.length);
-    
-    if (!data || !Array.isArray(data) || data.length === 0) {
-      tableDiv.innerHTML = '<p style="text-align:center;color:#f44336;padding:40px;">No sales found. Add sales records first.</p>';
+    // Fetch fresh data from API; fall back to in-memory salesData
+    let data = [];
+    try {
+      const fetched = await api('/sales?limit=2000');
+      data = Array.isArray(fetched) ? fetched : [];
+    } catch(e) {}
+    if (!data.length && Array.isArray(salesData) && salesData.length) {
+      data = salesData;
+    }
+
+    if (!data.length) {
+      tableDiv.innerHTML = '<p style="text-align:center;color:#f44336;padding:40px;">No sales records found.</p>';
       return;
     }
-    
-    console.log('[SALES REPORT] Fetched', data.length, 'records');
-    console.log('[SALES REPORT] Sample record:', data[0]);
-    
+
     // Apply filters
+    const typeNorm = type.toLowerCase().replace(/[-_ ]/g,'');
     let filtered = data.filter(s => {
-      if (from && s.OrderDate < from) return false;
-      if (to && s.OrderDate > to) return false;
-      if (type && s.BillingType !== type) return false;
-      if (customerInput && !s.Customer.toLowerCase().includes(customerInput.toLowerCase())) return false;
+      const d = (s.OrderDate||'').split('T')[0];
+      if (from && d < from) return false;
+      if (to   && d > to)   return false;
+      if (type) {
+        const bt = (s.BillingType||'').toLowerCase().replace(/[-_ ]/g,'');
+        if (bt !== typeNorm) return false;
+      }
+      if (customerInput && !(s.Customer||'').toLowerCase().includes(customerInput)) return false;
       return true;
     });
-    
-    if (filtered.length === 0) {
-      tableDiv.innerHTML = '<p style="text-align:center;color:#999;padding:40px;">No data found. Adjust filters and click "Load Report".</p>';
+
+    if (!filtered.length) {
+      tableDiv.innerHTML = '<p style="text-align:center;color:#999;padding:40px;">No records match the selected filters.</p>';
       return;
     }
-    
-    // Build table
-    let html = '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
-    html += '<thead><tr style="background:#5e72e4;color:white;">';
-    html += '<th style="padding:12px;text-align:left;">Date</th>';
-    html += '<th style="padding:12px;text-align:left;">Invoice No</th>';
-    html += '<th style="padding:12px;text-align:left;">Customer</th>';
-    html += '<th style="padding:12px;text-align:left;">Type</th>';
-    html += '<th style="padding:12px;text-align:right;">Amount</th>';
+
+    // Sort by date descending
+    filtered.sort((a,b) => (b.OrderDate||'').localeCompare(a.OrderDate||''));
+
+    const grandTotal = filtered.reduce((s,r) => s + (+r.TotalAmount||0), 0);
+
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;">';
+    html += '<thead><tr style="background:#3949ab;color:white;">';
+    html += '<th style="padding:10px 12px;text-align:left;">#</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Date</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Invoice No</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Customer</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Job Name</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Type</th>';
+    html += '<th style="padding:10px 12px;text-align:right;">Amount</th>';
     html += '</tr></thead><tbody>';
-    
+
     filtered.forEach((row, i) => {
       const bg = i % 2 ? '#f8f9fa' : 'white';
-      html += `<tr style="background:${bg};border-bottom:1px solid #e0e0e0;">`;
-      html += `<td style="padding:10px;">${row.OrderDate||''}</td>`;
-      html += `<td style="padding:10px;"><strong>${row.InvoiceNo || 'N/A'}</strong></td>`;
-      html += `<td style="padding:10px;">${row.Customer||''}</td>`;
-      html += `<td style="padding:10px;">${row.BillingType||''}</td>`;
-      html += `<td style="padding:10px;text-align:right;font-weight:700;">₹${(row.TotalAmount||0).toLocaleString('en-IN')}</td>`;
+      html += `<tr style="background:${bg};border-bottom:1px solid #e8eaf6;">`;
+      html += `<td style="padding:8px 12px;color:#aaa;font-size:0.75rem;">${i+1}</td>`;
+      html += `<td style="padding:8px 12px;white-space:nowrap;">${fd(row.OrderDate)||'—'}</td>`;
+      html += `<td style="padding:8px 12px;"><strong style="color:#1565c0;">${row.InvoiceNo||'—'}</strong></td>`;
+      html += `<td style="padding:8px 12px;">${row.Customer||'—'}</td>`;
+      html += `<td style="padding:8px 12px;color:#555;">${row.JobName||'—'}</td>`;
+      html += `<td style="padding:8px 12px;"><span style="font-size:0.7rem;padding:2px 7px;border-radius:8px;background:#e8eaf6;color:#3949ab;font-weight:700;">${row.BillingType||'—'}</span></td>`;
+      html += `<td style="padding:8px 12px;text-align:right;font-weight:700;color:#1565c0;">₹${fn(+row.TotalAmount||0)}</td>`;
       html += `</tr>`;
     });
-    
+
+    html += `<tr style="background:#3949ab;color:white;font-weight:800;">`;
+    html += `<td colspan="6" style="padding:10px 12px;text-align:right;">Grand Total (${filtered.length} records)</td>`;
+    html += `<td style="padding:10px 12px;text-align:right;">₹${fn(grandTotal)}</td>`;
+    html += `</tr>`;
     html += '</tbody></table>';
     tableDiv.innerHTML = html;
-    
-    console.log('[SALES REPORT] Rendered', filtered.length, 'rows');
-    
+    toast('Sales report: ' + filtered.length + ' records loaded', 'success');
   } catch(e) {
     console.error('[SALES REPORT] Error:', e);
     tableDiv.innerHTML = '<p style="text-align:center;color:#f44336;padding:40px;">Error: ' + e.message + '</p>';
@@ -10576,53 +10614,84 @@ async function loadCustomerReport() {
 
 // Load Jobs Report
 async function loadJobsReport() {
-  const from = document.getElementById('jobs-from')?.value || '';
-  const to = document.getElementById('jobs-to')?.value || '';
+  const from   = document.getElementById('jobs-from')?.value   || '';
+  const to     = document.getElementById('jobs-to')?.value     || '';
   const status = document.getElementById('jobs-status')?.value || '';
-  
+
   const tableDiv = document.getElementById('jobs-report-table');
   if (!tableDiv) return;
-  
-  tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading...</p>';
-  
+
+  tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading…</p>';
+
   try {
-    // Using sales data as job data placeholder
-    let filtered = salesData.filter(s => {
-      if (from && s.OrderDate < from) return false;
-      if (to && s.OrderDate > to) return false;
+    // Fetch real jobs from API
+    let jobs = [];
+    try {
+      const fetched = await api('/jobs' + (from?'?from='+from:'') + (from&&to?'&to='+to:(!from&&to?'?to='+to:'')));
+      jobs = Array.isArray(fetched) ? fetched : [];
+    } catch(e) {}
+    // Fall back to in-memory
+    if (!jobs.length && Array.isArray(jobsData) && jobsData.length) jobs = jobsData;
+
+    let filtered = jobs.filter(j => {
+      const d = (j.ConfirmedDate||'').split('T')[0];
+      if (from && d < from) return false;
+      if (to   && d > to)   return false;
+      if (status && j.Status !== status) return false;
       return true;
     });
-    
-    if (filtered.length === 0) {
-      tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">No jobs found</p>';
+
+    if (!filtered.length) {
+      tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">No jobs found for the selected filters.</p>';
       return;
     }
-    
+
+    // Sort by confirmed date desc
+    filtered.sort((a,b) => (b.ConfirmedDate||'').localeCompare(a.ConfirmedDate||''));
+
+    const STATUS_COLOR = {
+      'Completed':'#2e7d32','Dispatched':'#1565c0','In Progress':'#e65100',
+      'Color Correction':'#6a1b9a','Printing':'#00695c','Pending':'#c62828'
+    };
+
     let html = '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">';
-    html += '<thead><tr style="background:#11cdef;color:white;">';
-    html += '<th style="padding:10px;">Job ID</th><th style="padding:10px;">Customer</th><th style="padding:10px;">Name</th><th style="padding:10px;">Start</th><th style="padding:10px;">Due</th><th style="padding:10px;text-align:right;">Amount</th><th style="padding:10px;">Status</th>';
+    html += '<thead><tr style="background:#00695c;color:white;">';
+    html += '<th style="padding:10px 12px;text-align:left;">#</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Job No</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Customer</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Job Name</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Size</th>';
+    html += '<th style="padding:10px 12px;text-align:right;">Qty</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Confirmed</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Dispatch</th>';
+    html += '<th style="padding:10px 12px;text-align:left;">Status</th>';
     html += '</tr></thead><tbody>';
-    
+
     filtered.forEach((row, i) => {
-      const jobStatus = i % 3 === 0 ? 'Completed' : i % 3 === 1 ? 'In Progress' : 'Pending';
-      const statusColor = jobStatus === 'Completed' ? '#2dce89' : jobStatus === 'In Progress' ? '#fb6340' : '#f5365c';
+      const jobNo = row.JobNo || ('J' + String(row.Id||i+1).padStart(3,'0'));
+      const stColor = STATUS_COLOR[row.Status] || '#555';
       html += `<tr style="background:${i%2?'#f8f9fa':'white'};border-bottom:1px solid #e0e0e0;">`;
-      html += `<td style="padding:8px;">J${row.SNo || ''}</td>`;
-      html += `<td style="padding:8px;">${row.Customer || ''}</td>`;
-      html += `<td style="padding:8px;">${row.JobName || row.Category || 'Job'}</td>`;
-      html += `<td style="padding:8px;">${fd(row.OrderDate)}</td>`;
-      html += `<td style="padding:8px;">${fd(row.OrderDate)}</td>`;
-      html += `<td style="padding:8px;text-align:right;">₹${fn(row.TotalAmount || 0)}</td>`;
-      html += `<td style="padding:8px;"><span style="padding:4px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;background:${statusColor};color:white;">${jobStatus}</span></td>`;
+      html += `<td style="padding:8px 12px;color:#aaa;font-size:0.72rem;">${i+1}</td>`;
+      html += `<td style="padding:8px 12px;"><strong style="color:#00695c;font-family:'Exo 2',sans-serif;">${jobNo}</strong></td>`;
+      html += `<td style="padding:8px 12px;font-weight:600;">${row.Customer||'—'}</td>`;
+      html += `<td style="padding:8px 12px;">${row.JobName||'—'}</td>`;
+      html += `<td style="padding:8px 12px;color:#555;">${row.ProductSize||'—'}</td>`;
+      html += `<td style="padding:8px 12px;text-align:right;">${row.Qty?fn(row.Qty):'—'}</td>`;
+      html += `<td style="padding:8px 12px;white-space:nowrap;">${fd(row.ConfirmedDate)||'—'}</td>`;
+      html += `<td style="padding:8px 12px;white-space:nowrap;">${row.DispatchDate?fd(row.DispatchDate):'—'}</td>`;
+      html += `<td style="padding:8px 12px;"><span style="font-size:0.7rem;padding:3px 9px;border-radius:8px;background:${stColor}18;color:${stColor};border:1px solid ${stColor}44;font-weight:700;">${row.Status||'—'}</span></td>`;
       html += `</tr>`;
     });
-    
+
+    html += `<tr style="background:#00695c;color:white;font-weight:700;">`;
+    html += `<td colspan="9" style="padding:10px 12px;">Total: ${filtered.length} jobs</td>`;
+    html += `</tr>`;
     html += '</tbody></table>';
     tableDiv.innerHTML = html;
-    toast('Jobs report loaded: ' + filtered.length + ' records', 'success');
+    toast('Jobs report: ' + filtered.length + ' records loaded', 'success');
   } catch (e) {
     console.error('Load jobs report error:', e);
-    tableDiv.innerHTML = '<p style="text-align:center;color:#f5365c;padding:40px;">Error loading report</p>';
+    tableDiv.innerHTML = '<p style="text-align:center;color:#f5365c;padding:40px;">Error: ' + e.message + '</p>';
   }
 }
 
@@ -10675,22 +10744,35 @@ async function loadBankReport() {
     html += '<th style="padding:10px;">Date</th><th style="padding:10px;">Account</th><th style="padding:10px;">Description</th><th style="padding:10px;text-align:right;">Credit IN</th><th style="padding:10px;text-align:right;">Debit OUT</th><th style="padding:10px;text-align:right;">Balance</th><th style="padding:10px;">Type</th>';
     html += '</tr></thead><tbody>';
     
-    let balance = 50000;
+    // Running totals
+    let totalCredit = 0, totalDebit = 0;
     filtered.forEach((row, i) => {
-      const isCredit = i % 2 === 0;
-      const amount = +(row.TotalAmount || 0);
-      balance = isCredit ? balance + amount : balance - amount;
-      
+      const cr = +row.CreditAmt || 0;
+      const dr = +row.DebitAmt  || 0;
+      const bal = +row.Balance  || 0;
+      totalCredit += cr;
+      totalDebit  += dr;
+      const isCredit = cr > 0;
+      const ACCT_COLOR = {'KVB MOM':'#1a237e','KVB Mani':'#00695c','Indian Bank':'#e65100','Cash Balance':'#558b2f'};
+      const acctColor = ACCT_COLOR[row.AccountName] || '#283593';
+
       html += `<tr style="background:${i%2?'#f8f9fa':'white'};border-bottom:1px solid #e0e0e0;">`;
-      html += `<td style="padding:8px;">${fd(row.OrderDate)}</td>`;
-      html += `<td style="padding:8px;">${account || 'Main Account'}</td>`;
-      html += `<td style="padding:8px;">${row.Customer || 'Transaction'}</td>`;
-      html += `<td style="padding:8px;text-align:right;color:#2dce89;font-weight:${isCredit?'700':'400'};">${isCredit ? '₹'+fn(amount) : '-'}</td>`;
-      html += `<td style="padding:8px;text-align:right;color:#f5365c;font-weight:${!isCredit?'700':'400'};">${!isCredit ? '₹'+fn(amount) : '-'}</td>`;
-      html += `<td style="padding:8px;text-align:right;font-weight:700;">₹${fn(balance)}</td>`;
-      html += `<td style="padding:8px;">${isCredit ? 'Credit' : 'Debit'}</td>`;
+      html += `<td style="padding:8px 10px;white-space:nowrap;">${fd(row.EntryDate)||'—'}</td>`;
+      html += `<td style="padding:8px 10px;"><span style="font-size:0.68rem;padding:2px 7px;border-radius:8px;background:${acctColor}15;color:${acctColor};font-weight:700;">${row.AccountName||'—'}</span></td>`;
+      html += `<td style="padding:8px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${row.Description||'—'}</td>`;
+      html += `<td style="padding:8px 10px;text-align:right;color:#2e7d32;font-weight:${cr>0?'700':'400'};">${cr>0?'₹'+fn(cr):'—'}</td>`;
+      html += `<td style="padding:8px 10px;text-align:right;color:#c62828;font-weight:${dr>0?'700':'400'};">${dr>0?'₹'+fn(dr):'—'}</td>`;
+      html += `<td style="padding:8px 10px;text-align:right;font-weight:800;color:${bal>=0?'#283593':'#c62828'};">₹${fn(bal)}</td>`;
+      html += `<td style="padding:8px 10px;"><span style="font-size:0.68rem;padding:2px 7px;border-radius:8px;background:${isCredit?'#e8f5e9':'#fff3e0'};color:${isCredit?'#2e7d32':'#e65100'};font-weight:700;">${row.EntryType||'Manual'}</span></td>`;
       html += `</tr>`;
     });
+    // Totals row
+    html += `<tr style="background:#b71c1c;color:white;font-weight:700;">`;
+    html += `<td colspan="3" style="padding:10px 12px;text-align:right;">Totals (${filtered.length} entries)</td>`;
+    html += `<td style="padding:10px 12px;text-align:right;">₹${fn(totalCredit)}</td>`;
+    html += `<td style="padding:10px 12px;text-align:right;">₹${fn(totalDebit)}</td>`;
+    html += `<td colspan="2" style="padding:10px 12px;text-align:right;">Net: ₹${fn(totalCredit-totalDebit)}</td>`;
+    html += `</tr>`;
     
     html += '</tbody></table>';
     tableDiv.innerHTML = html;
@@ -11755,19 +11837,27 @@ function ledgerCurrentFY() {
 // ── Load ledger panel ─────────────────────────────────────────
 async function loadLedgerPanel() {
   console.log('[LEDGER] loadLedgerPanel() starting');
-  
+
   // Populate ledger FY select (no "All Years")
   buildLedgerFYOptions();
-  
-  const fy = ledgerCurrentFY();
+
+  // Ensure a FY is always selected — default to current FY
+  const fyEl = document.getElementById('ledger-fy-select');
+  if (fyEl && !fyEl.value) fyEl.value = currentFY();
+
+  const fy = ledgerCurrentFY() || currentFY();
   console.log('[LEDGER] Loading for FY:', fy);
-  
+
   const obLabel = document.getElementById('ob-fy-label');
   if (obLabel) obLabel.textContent = 'FY ' + fy;
 
   // Set default date to today
   const dateEl = document.getElementById('ledger-date');
   if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().split('T')[0];
+
+  // Show loading state in table
+  const tbodyL = document.getElementById('ledger-tbody');
+  if (tbodyL) tbodyL.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#aaa;padding:30px;font-family:'Exo 2',sans-serif;">Loading ledger entries for FY ' + fy + '...</td></tr>';
 
   // Load entries
   _ledgerData = []; // Reset before loading
