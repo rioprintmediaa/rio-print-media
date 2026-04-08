@@ -2622,23 +2622,40 @@ body.role-guest #s-edit-bar { display:none !important; }
   <div id="rio-login-logo">🖨 RIO PRINT MEDIA</div>
   <div id="rio-login-box">
     <h2>Welcome Back</h2>
-    <p>Sign in to access the Sales Tracker</p>
+    <p>Sign in to RIO PRINT MEDIA</p>
     <input id="rio-login-user" class="rio-login-field" type="text"
            placeholder="Username" autocomplete="username"
            onkeydown="if(event.key==='Enter') document.getElementById('rio-login-pass').focus()">
-    <input id="rio-login-pass" class="rio-login-field" type="password"
-           placeholder="Password" autocomplete="current-password"
-           onkeydown="if(event.key==='Enter') rioDoLogin()">
+    <div style="position:relative;">
+      <input id="rio-login-pass" class="rio-login-field" type="password"
+             placeholder="Password" autocomplete="current-password"
+             style="padding-right:42px;"
+             onkeydown="if(event.key==='Enter') rioDoLogin()">
+      <span onclick="toggleLoginPass()" title="Show/hide password"
+        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:1.1rem;color:#aaa;user-select:none;" id="login-eye">👁</span>
+    </div>
     <button id="rio-login-btn" onclick="rioDoLogin()">Sign In</button>
     <div id="rio-login-err"></div>
-    <div style="margin-top:18px;font-size:0.72rem;color:#bbb;text-align:center;font-family:Nunito,sans-serif;">
-      Default: admin / rio@admin
+    <div style="margin-top:14px;text-align:center;">
+      <span onclick="toggleChangePass()" style="font-size:0.75rem;color:#3949ab;cursor:pointer;text-decoration:underline;font-family:Nunito,sans-serif;">🔑 Forgot / Change Password</span>
+    </div>
+    <div id="rio-change-pass-box" style="display:none;margin-top:14px;border-top:1px solid #eee;padding-top:14px;">
+      <p style="font-size:0.75rem;color:#555;margin-bottom:8px;font-family:Nunito,sans-serif;">Enter your username and new password:</p>
+      <input id="cp-user" class="rio-login-field" type="text" placeholder="Username" style="margin-bottom:8px;">
+      <input id="cp-old" class="rio-login-field" type="password" placeholder="Current Password">
+      <input id="cp-new" class="rio-login-field" type="password" placeholder="New Password">
+      <input id="cp-confirm" class="rio-login-field" type="password" placeholder="Confirm New Password">
+      <button onclick="rioChangePassword()" style="width:100%;padding:10px;background:linear-gradient(90deg,#2e7d32,#43a047);color:white;border:none;border-radius:10px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;margin-top:4px;">Change Password</button>
+      <div id="cp-err" style="color:#c62828;font-size:0.78rem;text-align:center;margin-top:6px;min-height:16px;"></div>
     </div>
   </div>
 </div>
 
 <!-- ── LOGOUT BUTTON ─────────────────────────────────────────── -->
-<button id="rio-logout-btn" onclick="rioLogout()" style="display:none;">⎋ Logout</button>
+<div id="rio-logout-wrap" style="display:none;position:fixed;top:8px;right:12px;z-index:9100;flex-direction:column;align-items:stretch;gap:0;border-radius:9px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.18);min-width:130px;">
+  <div id="rio-logged-userbox" style="background:#1a237e;color:#c5cae9;font-size:0.7rem;font-weight:700;padding:6px 12px;font-family:Exo 2,sans-serif;letter-spacing:0.3px;white-space:nowrap;text-align:center;"></div>
+  <button id="rio-logout-btn" onclick="rioLogout()" style="background:#c62828;color:white;border:none;padding:7px 12px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.72rem;cursor:pointer;width:100%;text-align:center;">⎋ Logout</button>
+</div>
 
 <div id="rio-mobile-bar">
   <button id="rio-hamburger" onclick="rioToggleNav()">&#9776;</button>
@@ -2939,13 +2956,13 @@ function rioToggleNav() {
       <div class="addr-line"><strong>Ph: 9962011515</strong> &nbsp;|&nbsp; GST: 33BCFPR3860P1Z2</div>
     </div>
     <!-- Daily Proverb & Quote (single line quote + author 2nd line, bottom aligned) -->
-    <div id="daily-wisdom" style="margin-left:12px;max-width:500px;display:flex;gap:18px;align-items:flex-end;align-self:flex-end;padding-bottom:2px;">
+    <div id="daily-wisdom" style="margin-left:8px;margin-right:155px;max-width:400px;display:flex;gap:14px;align-items:flex-end;align-self:flex-end;padding-bottom:2px;">
       <div style="flex:1;text-align:left;border-right:2px solid #d0d0d0;padding-right:16px;">
-        <div id="proverb-text" style="font-size:0.78rem;color:#e65100;line-height:1.4;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">"A journey of a thousand miles begins with a single step."</div>
+        <div id="proverb-text" style="font-size:0.78rem;color:#e65100;line-height:1.4;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px;">"A journey of a thousand miles begins with a single step."</div>
         <div id="proverb-author" style="font-size:0.68rem;color:#e65100;font-weight:400;margin-top:2px;">—Medieval Proverb</div>
       </div>
       <div style="flex:1;text-align:left;">
-        <div id="quote-text" style="font-size:0.78rem;color:#6a1b9a;line-height:1.4;font-style:italic;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;">"Success is not final, failure is not fatal: it is the courage to continue that counts."</div>
+        <div id="quote-text" style="font-size:0.78rem;color:#6a1b9a;line-height:1.4;font-style:italic;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px;">"Success is not final, failure is not fatal: it is the courage to continue that counts."</div>
         <div id="quote-author" style="font-size:0.68rem;color:#6a1b9a;font-style:normal;font-weight:400;margin-top:2px;">—Winston Churchill</div>
       </div>
     </div>
@@ -4486,13 +4503,17 @@ function rioToggleNav() {
               </select>
             </div>
             <div>
+              <div>
               <label style="display:block;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.82rem;color:#555;margin-bottom:6px;">Customer</label>
-              <div style="position:relative;">
-                <input type="text" id="sales-customer-search" placeholder="🔍 Search customer..." oninput="filterReportCustomer('sales', this.value)" onfocus="showReportCustDrop('sales')" onblur="setTimeout(()=>hideReportCustDrop('sales'),200)"
-                  style="width:100%;padding:10px 32px 10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
-                <span onclick="clearReportCustomer('sales')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#999;font-size:1.2rem;display:none;" id="sales-customer-clear">✕</span>
-                <select id="sales-customer" style="display:none;"><option value="">All Customers</option></select>
-                <div id="sales-cust-drop" style="display:none;position:absolute;top:100%;left:0;width:100%;max-height:200px;overflow-y:auto;background:white;border:1.5px solid #5e72e4;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:500;margin-top:4px;"></div>
+              <div style="position:relative;" id="sales-cust-wrap">
+                <input type="text" id="sales-cust-val" placeholder="Type to search or select..." autocomplete="off"
+                  style="width:100%;padding:10px 36px 10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;box-sizing:border-box;"
+                  oninput="buildReportCustDrop('sales')" onfocus="buildReportCustDrop('sales')"
+                  onblur="setTimeout(()=>hideReportCustDrop2('sales'),200)">
+                <span onclick="clearReportCust('sales')" title="Clear" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:0.9rem;color:#aaa;">✕</span>
+                <div id="sales-cust-drop" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #d1d5db;border-top:none;border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+              </div>
+            </div>
               </div>
             </div>
           </div>
@@ -4581,13 +4602,17 @@ function rioToggleNav() {
               <input type="date" id="invoice-to" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
             </div>
             <div>
+              <div>
               <label style="display:block;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.82rem;color:#555;margin-bottom:6px;">Customer</label>
-              <div style="position:relative;">
-                <input type="text" id="invoice-customer-search" placeholder="🔍 Search customer..." oninput="filterReportCustomer('invoice', this.value)" onfocus="showReportCustDrop('invoice')" onblur="setTimeout(()=>hideReportCustDrop('invoice'),200)"
-                  style="width:100%;padding:10px 32px 10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
-                <span onclick="clearReportCustomer('invoice')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#999;font-size:1.2rem;display:none;" id="invoice-customer-clear">✕</span>
-                <select id="invoice-customer" style="display:none;"><option value="">All Customers</option></select>
-                <div id="invoice-cust-drop" style="display:none;position:absolute;top:100%;left:0;width:100%;max-height:200px;overflow-y:auto;background:white;border:1.5px solid #8965e0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:500;margin-top:4px;"></div>
+              <div style="position:relative;" id="invoice-cust-wrap">
+                <input type="text" id="invoice-cust-val" placeholder="Type to search or select..." autocomplete="off"
+                  style="width:100%;padding:10px 36px 10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;box-sizing:border-box;"
+                  oninput="buildReportCustDrop('invoice')" onfocus="buildReportCustDrop('invoice')"
+                  onblur="setTimeout(()=>hideReportCustDrop2('invoice'),200)">
+                <span onclick="clearReportCust('invoice')" title="Clear" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:0.9rem;color:#aaa;">✕</span>
+                <div id="invoice-cust-drop" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #d1d5db;border-top:none;border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+              </div>
+            </div>
               </div>
             </div>
             <div>
@@ -4630,13 +4655,17 @@ function rioToggleNav() {
               <input type="date" id="quotation-to" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
             </div>
             <div>
+              <div>
               <label style="display:block;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.82rem;color:#555;margin-bottom:6px;">Customer</label>
-              <div style="position:relative;">
-                <input type="text" id="quotation-customer-search" placeholder="🔍 Search customer..." oninput="filterReportCustomer('quotation', this.value)" onfocus="showReportCustDrop('quotation')" onblur="setTimeout(()=>hideReportCustDrop('quotation'),200)"
-                  style="width:100%;padding:10px 32px 10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
-                <span onclick="clearReportCustomer('quotation')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#999;font-size:1.2rem;display:none;" id="quotation-customer-clear">✕</span>
-                <select id="quotation-customer" style="display:none;"><option value="">All Customers</option></select>
-                <div id="quotation-cust-drop" style="display:none;position:absolute;top:100%;left:0;width:100%;max-height:200px;overflow-y:auto;background:white;border:1.5px solid #f4511e;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:500;margin-top:4px;"></div>
+              <div style="position:relative;" id="quotation-cust-wrap">
+                <input type="text" id="quotation-cust-val" placeholder="Type to search or select..." autocomplete="off"
+                  style="width:100%;padding:10px 36px 10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;box-sizing:border-box;"
+                  oninput="buildReportCustDrop('quotation')" onfocus="buildReportCustDrop('quotation')"
+                  onblur="setTimeout(()=>hideReportCustDrop2('quotation'),200)">
+                <span onclick="clearReportCust('quotation')" title="Clear" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:0.9rem;color:#aaa;">✕</span>
+                <div id="quotation-cust-drop" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #d1d5db;border-top:none;border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+              </div>
+            </div>
               </div>
             </div>
             <div>
@@ -4679,13 +4708,17 @@ function rioToggleNav() {
               <input type="date" id="customer-to" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
             </div>
             <div>
+              <div>
               <label style="display:block;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.82rem;color:#555;margin-bottom:6px;">Customer</label>
-              <div style="position:relative;">
-                <input type="text" id="customer-customer-search" placeholder="🔍 Search customer..." oninput="filterReportCustomer('customer', this.value)" onfocus="showReportCustDrop('customer')" onblur="setTimeout(()=>hideReportCustDrop('customer'),200)"
-                  style="width:100%;padding:10px 32px 10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
-                <span onclick="clearReportCustomer('customer')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#999;font-size:1.2rem;display:none;" id="customer-customer-clear">✕</span>
-                <select id="customer-customer" style="display:none;"><option value="">All Customers</option></select>
-                <div id="customer-cust-drop" style="display:none;position:absolute;top:100%;left:0;width:100%;max-height:200px;overflow-y:auto;background:white;border:1.5px solid #1976d2;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:500;margin-top:4px;"></div>
+              <div style="position:relative;" id="customer-cust-wrap">
+                <input type="text" id="customer-cust-val" placeholder="Type to search or select..." autocomplete="off"
+                  style="width:100%;padding:10px 36px 10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;box-sizing:border-box;"
+                  oninput="buildReportCustDrop('customer')" onfocus="buildReportCustDrop('customer')"
+                  onblur="setTimeout(()=>hideReportCustDrop2('customer'),200)">
+                <span onclick="clearReportCust('customer')" title="Clear" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:0.9rem;color:#aaa;">✕</span>
+                <div id="customer-cust-drop" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #d1d5db;border-top:none;border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+              </div>
+            </div>
               </div>
             </div>
             <div>
@@ -4866,7 +4899,14 @@ function rioToggleNav() {
             </div>
             <div>
               <label style="display:block;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.82rem;color:#555;margin-bottom:6px;">Password</label>
-              <input id="um-password" type="password" placeholder="••••••••" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
+              <div style="position:relative;">
+              <div style="position:relative;">
+              <input id="um-password" type="password" placeholder="••••••••" style="width:100%;padding:10px 42px 10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;box-sizing:border-box;">
+                <span onclick="var e=document.getElementById('um-password');e.type=e.type==='password'?'text':'password';this.textContent=e.type==='password'?'👁':'🙈';" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:1rem;color:#aaa;user-select:none;">👁</span>
+              </div>
+              <span onclick="var p=document.getElementById('um-password');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'👁':'🙈';"
+                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:1rem;color:#aaa;user-select:none;">👁</span>
+            </div>
             </div>
             <div>
               <label style="display:block;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.82rem;color:#555;margin-bottom:6px;">Role</label>
@@ -5397,18 +5437,35 @@ function buildLedgerFYOptions() {
   const lsel = document.getElementById('ledger-fy-select');
   if (!lsel) return;
   const fySet = new Set();
-  [...salesData, ...expenseData].forEach(r => {
-    const d = parseLocalDate(r.OrderDate || r.ExpDate || r.ExpenseDate || '');
-    if (d) fySet.add(dateToFY(d));
-  });
-  fySet.add(currentFY());
-  const sorted = [...fySet].sort().reverse();
-  const activeFY = (selectedFY && selectedFY !== '') ? selectedFY : currentFY();
-  if (!lsel.options.length || lsel.innerHTML === '') {
-    lsel.innerHTML = sorted.map(fy =>
-      `<option value="${fy}"${fy === activeFY ? ' selected' : ''}>${fy}</option>`
-    ).join('');
+  // Always add a range of FYs around current
+  const now = new Date();
+  const cFY = currentFY();
+  fySet.add(cFY);
+  // Add prev 3 and next 1 FY
+  const yr = parseInt(cFY.split('-')[0]);
+  for (let i = -3; i <= 1; i++) {
+    const y = yr + i;
+    fySet.add(y + '-' + String(y+1).slice(-2));
   }
+  // Also add from data if available
+  if (Array.isArray(salesData)) {
+    salesData.forEach(r => {
+      const d = parseLocalDate(r.OrderDate || '');
+      if (d) fySet.add(dateToFY(d));
+    });
+  }
+  if (Array.isArray(expenseData)) {
+    expenseData.forEach(r => {
+      const d = parseLocalDate(r.ExpDate || r.ExpenseDate || '');
+      if (d) fySet.add(dateToFY(d));
+    });
+  }
+  const sorted = [...fySet].filter(Boolean).sort().reverse();
+  const activeFY = (lsel.value && lsel.value !== '') ? lsel.value :
+                   (selectedFY && selectedFY !== '') ? selectedFY : cFY;
+  lsel.innerHTML = sorted.map(fy =>
+    `<option value="${fy}"${fy === activeFY ? ' selected' : ''}>${fy}</option>`
+  ).join('');
   if (!lsel.value) lsel.value = activeFY;
 }
 
@@ -7365,7 +7422,12 @@ document.addEventListener('DOMContentLoaded', () => {
     form.parentNode.insertBefore(bar, form);
   }
 
-  // Connect to cloud API then load all data
+  // App start deferred until after login — see rioStartApp()
+  // (called from login success handler)
+});
+
+// Called once after successful login
+window.rioStartApp = function() {
   setTimeout(function(){
     detectPort().then(function(ok){
       loadAll();
@@ -7375,8 +7437,8 @@ document.addEventListener('DOMContentLoaded', () => {
       loadAll();
       loadJobs();
     });
-  }, 500);
-});
+  }, 300);
+};
 
 // ─── Delete selected note (last clicked) ─────────────────────
 let selectedNoteId = null;
@@ -8819,55 +8881,50 @@ function syncCustSearch() {
 
 function renderInvCustDrop(q) {
   const drop = document.getElementById('inv-cust-drop'); if (!drop) return;
-  const filtered = q ? _customers.filter(c=>(c.Name||c.name||'').toLowerCase().includes(q.toLowerCase())) : _customers;
-  if (!filtered.length) { drop.innerHTML='<div style="padding:10px 14px;color:#aaa;font-size:0.8rem;">No customers found</div>'; return; }
-  drop.innerHTML = filtered.map(c=>`<div onclick="selectInvCustFromDrop(${c.Id||c.id},'${(c.Name||c.name||'').replace(/'/g,"\\'")}')"
-    style="padding:7px 14px;cursor:pointer;font-size:0.82rem;border-bottom:1px solid #f0f0f0;"
-    onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
-    <strong>${c.Name||c.name||''}</strong>
-    <span style="color:#888;font-size:0.7rem;margin-left:8px;">${c.Mobile||c.mobile||''}</span>
-    <span style="color:#1565c0;font-size:0.68rem;margin-left:6px;font-family:monospace;">${c.GSTNo||c.gstno||''}</span>
-  </div>`).join('');
+  const query = (q||'').trim().toLowerCase();
+  const all = Array.isArray(clientsList) && clientsList.length ? clientsList : (_customers||[]).map(c=>c.Name||c.name||'');
+  const matches = query ? all.filter(n=>n.toLowerCase().includes(query)) : all;
+  if (!matches.length) { drop.innerHTML='<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;">No customers found</div>'; return; }
+  drop.innerHTML = matches.map(name=>{
+    const hi = query ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;padding:0 1px;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })() : name;
+    return '<div onmousedown="selectInvCustFromDrop(null,\''+name.replace(/\'/g,"\\'")+'\')"; style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;" onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'\'">'+hi+'</div>';
+  }).join('');
 }
 
 function selectInvCustFromDrop(id, name) {
-  const sel = document.getElementById('inv-customer');
-  if (sel) sel.value = id;
   const srch = document.getElementById('inv-cust-search');
   if (srch) srch.value = name;
-  document.getElementById('inv-cust-drop').style.display = 'none';
-  onInvCustomerChange();
-
+  // Sync the hidden select by matching customer name
+  const sel = document.getElementById('inv-customer');
+  if (sel) { const opt = [...sel.options].find(o=>o.text===name||o.value===name); if(opt) sel.value=opt.value; }
+  const drop = document.getElementById('inv-cust-drop');
+  if (drop) drop.style.display='none';
+  if (typeof onInvCustomerChange==='function') onInvCustomerChange();
+}
 
 // ═══════════════════════════════════════════════════════════
 // QUOTATION CUSTOMER SEARCHABLE DROPDOWN
 // ═══════════════════════════════════════════════════════════
 function renderQuotCustDrop(q) {
   const drop = document.getElementById('quot-cust-drop'); if (!drop) return;
-  const filtered = (!q || q.trim() === '') ? _customers : _customers.filter(c => {
-    const name = (c.Name || c.name || '').toLowerCase();
-    const mobile = (c.Mobile || c.mobile || '').toLowerCase();
-    const gst = (c.GSTNo || c.gstno || '').toLowerCase();
-    const query = q.toLowerCase();
-    return name.includes(query) || mobile.includes(query) || gst.includes(query);
-  });
-  if (!filtered.length) { drop.innerHTML = '<div style="padding:10px 14px;color:#aaa;font-size:0.8rem;">No customers found</div>'; return; }
-  drop.innerHTML = filtered.map(c => `<div onclick="selectQuotCustFromDrop(${c.Id || c.id},'${(c.Name || c.name || '').replace(/'/g, "\\'")}')"
-    style="padding:7px 14px;cursor:pointer;font-size:0.82rem;border-bottom:1px solid #f0f0f0;"
-    onmouseover="this.style.background='#fce4ec'" onmouseout="this.style.background=''">
-    <strong>${c.Name || c.name || ''}</strong>
-    <span style="color:#888;font-size:0.7rem;margin-left:8px;">${c.Mobile || c.mobile || ''}</span>
-    <span style="color:#7b1fa2;font-size:0.68rem;margin-left:6px;font-family:monospace;">${c.GSTNo || c.gstno || ''}</span>
-  </div>`).join('');
+  const query = (q||'').trim().toLowerCase();
+  const all = Array.isArray(clientsList) && clientsList.length ? clientsList : (_customers||[]).map(c=>c.Name||c.name||'');
+  const matches = query ? all.filter(n=>n.toLowerCase().includes(query)) : all;
+  if (!matches.length) { drop.innerHTML='<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;">No customers found</div>'; return; }
+  drop.innerHTML = matches.map(name=>{
+    const hi = query ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;padding:0 1px;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })() : name;
+    return '<div onmousedown="selectQuotCustFromDrop(null,\''+name.replace(/\'/g,"\\'")+'\')"; style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;" onmouseover="this.style.background=\'#f3e5f5\'" onmouseout="this.style.background=\'\'">'+hi+'</div>';
+  }).join('');
 }
 
 function selectQuotCustFromDrop(id, name) {
-  const sel = document.getElementById('quot-customer');
-  if (sel) sel.value = id;
   const srch = document.getElementById('quot-cust-search');
   if (srch) srch.value = name;
-  document.getElementById('quot-cust-drop').style.display = 'none';
-  onQuotCustomerChange();
+  const sel = document.getElementById('quot-customer');
+  if (sel) { const opt=[...sel.options].find(o=>o.text===name||o.value===name); if(opt) sel.value=opt.value; }
+  const drop = document.getElementById('quot-cust-drop');
+  if (drop) drop.style.display='none';
+  if (typeof onQuotCustomerChange==='function') onQuotCustomerChange();
 }
 
 function filterQuotCustomer(q) {
@@ -8893,32 +8950,40 @@ function hideQuotCustDrop() {
 // REPORT FILTERS CUSTOMER SEARCHABLE DROPDOWN (GENERIC)
 // ═══════════════════════════════════════════════════════════
 function renderReportCustDrop(type, q) {
-  const drop = document.getElementById(`${type}-cust-drop`); if (!drop) return;
-  const filtered = (!q || q.trim() === '') ? _customers : _customers.filter(c => {
-    const name = (c.Name || c.name || '').toLowerCase();
-    const mobile = (c.Mobile || c.mobile || '').toLowerCase();
-    const gst = (c.GSTNo || c.gstno || '').toLowerCase();
-    const query = q.toLowerCase();
-    return name.includes(query) || mobile.includes(query) || gst.includes(query);
-  });
-  if (!filtered.length) { drop.innerHTML = '<div style="padding:10px 14px;color:#aaa;font-size:0.8rem;">No customers found</div>'; return; }
-  drop.innerHTML = filtered.map(c => `<div onclick="selectReportCustFromDrop('${type}', ${c.Id || c.id},'${(c.Name || c.name || '').replace(/'/g, "\\'")}')"
-    style="padding:7px 14px;cursor:pointer;font-size:0.82rem;border-bottom:1px solid #f0f0f0;"
-    onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
-    <strong>${c.Name || c.name || ''}</strong>
-    <span style="color:#888;font-size:0.7rem;margin-left:8px;">${c.Mobile || c.mobile || ''}</span>
-    <span style="color:#1565c0;font-size:0.68rem;margin-left:6px;font-family:monospace;">${c.GSTNo || c.gstno || ''}</span>
-  </div>`).join('');
+  const drop = document.getElementById(type + '-cust-drop');
+  if (!drop) return;
+  const query = (q || '').trim().toLowerCase();
+  // Use clientsList (same source as sales tracker customer dropdown)
+  const allClients = Array.isArray(clientsList) && clientsList.length
+    ? clientsList
+    : (Array.isArray(_customers) ? _customers.map(c => c.Name || c.name || '') : []);
+  const matches = query
+    ? allClients.filter(c => c.toLowerCase().includes(query))
+    : allClients;
+  if (!matches.length) {
+    drop.innerHTML = '<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;font-family:Nunito,sans-serif;">No customers found</div>';
+    return;
+  }
+  drop.innerHTML = matches.map(name => {
+    const hi = query
+      ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;border-radius:2px;padding:0 1px;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })()
+      : name;
+    return '<div onmousedown="selectReportCustFromDrop('' + type + '','' + name.replace(/'/g,"\'") + '')" '
+      + 'style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;'
+      + 'font-family:Nunito,sans-serif;transition:background 0.1s;" '
+      + 'onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">'
+      + hi + '</div>';
+  }).join('');
 }
 
-function selectReportCustFromDrop(type, id, name) {
-  const sel = document.getElementById(`${type}-customer`);
-  if (sel) sel.value = name; // For reports, store the name not ID
-  const srch = document.getElementById(`${type}-customer-search`);
+function selectReportCustFromDrop(type, name) {
+  const srch = document.getElementById(type + '-customer-search');
   if (srch) srch.value = name;
-  const clear = document.getElementById(`${type}-customer-clear`);
+  const sel = document.getElementById(type + '-customer');
+  if (sel) sel.value = name;
+  const clear = document.getElementById(type + '-customer-clear');
   if (clear) clear.style.display = name ? 'inline' : 'none';
-  const drop = document.getElementById(`${type}-cust-drop`);
+  const drop = document.getElementById(type + '-cust-drop');
   if (drop) drop.style.display = 'none';
 }
 
@@ -10337,27 +10402,68 @@ function populateBankDropdowns() {
 // ═══════════════════════════════════════════════════════
 
 // Load Sales Report
+
+// ── Report customer dropdown (same as sales tracker style) ─────
+function buildReportCustDrop(type) {
+  const wrap = document.getElementById(type + '-cust-wrap');
+  if (!wrap) return;
+  const q = (document.getElementById(type + '-cust-val')?.value || '').trim().toLowerCase();
+  const matches = q ? clientsList.filter(c => c.toLowerCase().includes(q)) : clientsList;
+  let h = matches.map(c => {
+    const isSel = c.toLowerCase() === q;
+    return `<div onmousedown="selectReportCust('${type}','${c.replace(/'/g,"\\'")}');event.preventDefault();"
+      style="padding:8px 12px;cursor:pointer;font-family:Nunito,sans-serif;font-size:0.84rem;
+      background:${isSel?'#e8edf8':'white'};font-weight:${isSel?'700':'400'};
+      border-bottom:1px solid #f0f0f0;"
+      onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='${isSel?'#e8edf8':'white'}'">
+      ${c}
+    </div>`;
+  }).join('');
+  if (!h) h = '<div style="padding:8px 12px;color:#aaa;font-size:0.8rem;">No clients found</div>';
+  const dd = document.getElementById(type + '-cust-drop');
+  if (dd) { dd.innerHTML = h; dd.style.display = 'block'; }
+}
+function selectReportCust(type, name) {
+  const inp = document.getElementById(type + '-cust-val');
+  const dd  = document.getElementById(type + '-cust-drop');
+  if (inp) inp.value = name;
+  if (dd)  dd.style.display = 'none';
+}
+function hideReportCustDrop2(type) {
+  const dd = document.getElementById(type + '-cust-drop');
+  if (dd) dd.style.display = 'none';
+}
+function clearReportCust(type) {
+  const inp = document.getElementById(type + '-cust-val');
+  if (inp) { inp.value = ''; }
+  hideReportCustDrop2(type);
+}
+// Helper to get selected customer for a report type
+function getReportCust(type) {
+  return (document.getElementById(type + '-cust-val')?.value || '').trim();
+}
+
 async function loadSalesReport() {
   const from = document.getElementById('sales-from')?.value || '';
   const to   = document.getElementById('sales-to')?.value   || '';
   const type = document.getElementById('sales-type')?.value || '';
-  const customerInput = (document.getElementById('sales-customer-search')?.value || '').trim().toLowerCase();
+  const customerInput = (document.getElementById('sales-cust-val')?.value || '').trim().toLowerCase();
 
   const tableDiv = document.getElementById('sales-report-table');
   if (!tableDiv) return;
 
+  if (!from && !to) {
+    tableDiv.innerHTML = '<p style="text-align:center;color:#e65100;padding:40px;">Please select a date range (From / To) and click Load Report.</p>';
+    return;
+  }
+
   tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading…</p>';
 
   try {
-    // Fetch fresh data from API; fall back to in-memory salesData
-    let data = [];
-    try {
-      const fetched = await api('/sales?limit=2000');
-      data = Array.isArray(fetched) ? fetched : [];
-    } catch(e) {}
-    if (!data.length && Array.isArray(salesData) && salesData.length) {
-      data = salesData;
-    }
+    // Build API query with date range for efficiency
+    let url = '/sales?limit=2000';
+    const fetched = await api(url);
+    let data = Array.isArray(fetched) ? fetched : (Array.isArray(salesData) ? salesData : []);
 
     if (!data.length) {
       tableDiv.innerHTML = '<p style="text-align:center;color:#f44336;padding:40px;">No sales records found.</p>';
@@ -12234,22 +12340,7 @@ function exportLedgerCSV() {
 }
 
 // ── Dashboard balance loader ──────────────────────────────────
-async function loadDashboardLedgerBalances() {
-  const fy = selectedFY || currentFY();
-  try {
-    const data = await api('/ledger?fy=' + encodeURIComponent(fy));
-    const arr = Array.isArray(data) ? data : (data ? [data] : []);
-    if (!arr.length) return;
-    const dashMap = {'KVB MOM':'kvbmom','KVB Mani':'kvbmani','Indian Bank':'indianbank','Cash Balance':'cash'};
-    LEDGER_ACCOUNTS.forEach(name => {
-      const entries = arr.filter(r => r.AccountName === name);
-      const dashEl = document.getElementById('dash-bal-' + dashMap[name]);
-      if (!dashEl || !entries.length) return;
-      const latest = entries[entries.length - 1];
-      dashEl.textContent = '₹ ' + fn(+latest.Balance||0);
-    });
-  } catch(e) {}
-}
+// loadDashboardLedgerBalances: defined above — no duplicate needed
 
 // ── All functions below are defined in first/second script blocks — no re-declaration ──
 
@@ -12565,9 +12656,13 @@ document.addEventListener('DOMContentLoaded', function() {
   function hideLoginOverlay() {
     var ov = document.getElementById('rio-login-overlay');
     if (ov) ov.style.display = 'none';
-    var lb = document.getElementById('rio-logout-btn');
-    if (lb) lb.style.display = 'block';
+    // Show logout wrap with user info
+    var wrap = document.getElementById('rio-logout-wrap');
+    if (wrap) wrap.style.display = 'flex';
     var u = window._rioUser;
+    var userbox = document.getElementById('rio-logged-userbox');
+    if (userbox && u) userbox.textContent = '👤 ' + u.name + ' (' + u.role + ')';
+    // Header badge
     var nameEl = document.getElementById('rio-logged-user');
     if (nameEl && u) nameEl.textContent = u.name + ' (' + u.role + ')';
   }
@@ -12575,8 +12670,8 @@ document.addEventListener('DOMContentLoaded', function() {
   function showLoginOverlay() {
     var ov = document.getElementById('rio-login-overlay');
     if (ov) ov.style.display = 'flex';
-    var lb = document.getElementById('rio-logout-btn');
-    if (lb) lb.style.display = 'none';
+    var wrap = document.getElementById('rio-logout-wrap');
+    if (wrap) wrap.style.display = 'none';
     var nameEl = document.getElementById('rio-logged-user');
     if (nameEl) nameEl.textContent = '';
     setTimeout(function() {
@@ -12601,12 +12696,82 @@ document.addEventListener('DOMContentLoaded', function() {
   if (saved && saved.token && saved.username) {
     window._rioUser = saved;
     hideLoginOverlay();
+    // Start app immediately for returning sessions
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof window.rioStartApp === 'function') window.rioStartApp();
+    });
   } else {
     showLoginOverlay();
   }
 
   // Expose login/logout globally for button onclick
-  window.rioDoLogin = async function() {
+  
+  // Toggle login password visibility
+  window.toggleLoginPass = function() {
+    var p = document.getElementById('rio-login-pass');
+    var eye = document.getElementById('login-eye');
+    if (!p) return;
+    p.type = p.type === 'password' ? 'text' : 'password';
+    if (eye) eye.textContent = p.type === 'password' ? '👁' : '🙈';
+  };
+
+  // Toggle change-password box
+  window.toggleChangePass = function() {
+    var box = document.getElementById('rio-change-pass-box');
+    if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  };
+
+  // Change password via API
+  window.rioChangePassword = async function() {
+    var username = (document.getElementById('cp-user')?.value || '').trim();
+    var oldPass  = (document.getElementById('cp-old')?.value || '').trim();
+    var newPass  = (document.getElementById('cp-new')?.value || '').trim();
+    var confirm  = (document.getElementById('cp-confirm')?.value || '').trim();
+    var errEl    = document.getElementById('cp-err');
+    if (!username) { if(errEl) errEl.textContent = 'Enter username'; return; }
+    if (!oldPass)  { if(errEl) errEl.textContent = 'Enter current password'; return; }
+    if (!newPass)  { if(errEl) errEl.textContent = 'Enter new password'; return; }
+    if (newPass.length < 6) { if(errEl) errEl.textContent = 'New password must be at least 6 characters'; return; }
+    if (newPass !== confirm) { if(errEl) errEl.textContent = 'Passwords do not match'; return; }
+    if(errEl) errEl.textContent = 'Changing...';
+    try {
+      // First login to verify old password
+      var apiBase = window.location.origin + '/api';
+      var res = await fetch(apiBase + '/auth/login', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({username: username, password: oldPass})
+      });
+      var data = await res.json();
+      if (!res.ok || !data.ok) {
+        if(errEl) errEl.textContent = 'Current password is incorrect';
+        return;
+      }
+      // Then update password
+      var res2 = await fetch(apiBase + '/auth/users/' + encodeURIComponent(username), {
+        method: 'PUT', headers: {'Content-Type':'application/json', 'Authorization':'Bearer '+data.token},
+        body: JSON.stringify({password: newPass})
+      });
+      var data2 = await res2.json();
+      if (res2.ok) {
+        if(errEl) errEl.style.color = '#2e7d32';
+        if(errEl) errEl.textContent = '✓ Password changed! Please login with new password.';
+        setTimeout(function() {
+          document.getElementById('rio-change-pass-box').style.display = 'none';
+          document.getElementById('cp-user').value = '';
+          document.getElementById('cp-old').value = '';
+          document.getElementById('cp-new').value = '';
+          document.getElementById('cp-confirm').value = '';
+          if(errEl) { errEl.textContent = ''; errEl.style.color = '#c62828'; }
+        }, 2500);
+      } else {
+        if(errEl) errEl.textContent = data2.error || 'Change failed';
+      }
+    } catch(e) {
+      if(errEl) errEl.textContent = 'Connection error';
+    }
+  };
+
+window.rioDoLogin = async function() {
     var uEl = document.getElementById('rio-login-user');
     var pEl = document.getElementById('rio-login-pass');
     var username = (uEl ? uEl.value : '').trim();
@@ -12640,6 +12805,11 @@ document.addEventListener('DOMContentLoaded', function() {
         try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(user)); } catch(e) {}
         hideLoginOverlay();
         if (typeof applyRoleRestrictions === 'function') applyRoleRestrictions(user.role);
+        if (typeof window.rioStartApp === 'function') window.rioStartApp();
+        // Refresh ledger balances after a delay
+        setTimeout(function() {
+          if (typeof loadDashboardLedgerBalances === 'function') loadDashboardLedgerBalances();
+        }, 3000);
         setTimeout(function() {
           if (typeof toast === 'function') toast('Welcome, ' + user.name + '!', 'success');
         }, 500);
@@ -12657,12 +12827,46 @@ document.addEventListener('DOMContentLoaded', function() {
   window.rioLogout = function() {
     window._rioUser = null;
     try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
+    var wrap = document.getElementById('rio-logout-wrap');
+    if (wrap) wrap.style.display = 'none';
     showLoginOverlay();
     var uEl = document.getElementById('rio-login-user');
     var pEl = document.getElementById('rio-login-pass');
     if (uEl) uEl.value = '';
     if (pEl) pEl.value = '';
     setLoginErr('');
+  };
+
+
+  // ── Change password functionality ────────────────────────
+  window.toggleChangePass = function() {
+    var box = document.getElementById('rio-change-pass-box');
+    if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  };
+
+  window.rioChangePass = async function() {
+    var u = (document.getElementById('cp-user') ? document.getElementById('cp-user').value : '').trim();
+    var p = (document.getElementById('cp-pass') ? document.getElementById('cp-pass').value : '').trim();
+    var errEl = document.getElementById('cp-err');
+    if (!u || !p) { if(errEl) errEl.textContent='Enter username and new password.'; return; }
+    if (p.length < 4) { if(errEl) errEl.textContent='Password must be at least 4 characters.'; return; }
+    if(errEl) errEl.textContent='Saving...';
+    try {
+      var res = await fetch(window.location.origin + '/api/auth/users/' + encodeURIComponent(u), {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({password: p})
+      });
+      var data = await res.json();
+      if (res.ok) {
+        if(errEl) { errEl.style.color='#2e7d32'; errEl.textContent='✓ Password changed! Login with new password.'; }
+        setTimeout(function(){ window.toggleChangePass(); if(errEl){errEl.textContent='';errEl.style.color='';} }, 2000);
+      } else {
+        if(errEl) errEl.textContent = data.error || data.detail || 'Failed to change password.';
+      }
+    } catch(e) {
+      if(errEl) errEl.textContent='Connection error.';
+    }
   };
 
 });
