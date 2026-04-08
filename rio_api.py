@@ -2013,12 +2013,33 @@ def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode(), hashed.encode())
 
 def ensure_default_users():
-    """Create only one default admin user if no users exist."""
-    if col("rio_users").count_documents({}) == 0:
+    """Always ensure admin user exists — upsert so it survives even if other users exist."""
+    existing = col("rio_users").find_one({"username": "admin"})
+    if not existing:
         col("rio_users").insert_one(
             {"username": "admin", "password": hash_password("rio@admin"), "role": "admin", "name": "Administrator"}
         )
-        logger.info("✓ Default admin user created: username=admin password=rio@admin")
+        logger.info("✓ Admin user created: username=admin password=rio@admin")
+    else:
+        # Ensure role is admin (fix any corruption)
+        if existing.get("role") != "admin":
+            col("rio_users").update_one({"username": "admin"}, {"$set": {"role": "admin"}})
+            logger.info("✓ Admin role corrected")
+
+
+# ─────────────────────────────────────────────
+#  AUTH — Emergency admin reset (upsert admin user)
+# ─────────────────────────────────────────────
+@app.post("/api/auth/reset-admin")
+async def reset_admin():
+    """Force-upsert admin user with default password. Use if locked out."""
+    hashed = hash_password("rio@admin")
+    col("rio_users").update_one(
+        {"username": "admin"},
+        {"$set": {"username": "admin", "password": hashed, "role": "admin", "name": "Administrator"}},
+        upsert=True
+    )
+    return JSONResponse(content={"ok": True, "message": "Admin user reset. Login: admin / rio@admin"})
 
 @app.post("/api/auth/login")
 async def login(request: Request):
