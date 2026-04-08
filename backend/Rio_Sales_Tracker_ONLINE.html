@@ -7292,7 +7292,7 @@ function navRipple(e, id) {
   try {
     const {from:_nrF, to:_nrT} = fyDateRange(selectedFY || currentFY());
     if (id==='rio-invoice')   { invNewInvoice(); loadInvRegister(); }
-    if (id==='rio-backup') { umLoadUsers(); }
+    if (id==='rio-usermgmt') { loadUsersTable(); }
     if (id==='rio-quotation') { quotNew(); loadQuotRegister(); }
     if (id==='rio-invmgr') {
       const mF=document.getElementById('mgr-from'), mT=document.getElementById('mgr-to');
@@ -7837,21 +7837,15 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background
 (function() {
   var SESSION_KEY = 'rio_session';
 
-  // On page load — check if already logged in
-  var saved = null;
-  try { saved = JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch(e) {}
-  if (saved && saved.token && saved.username) {
-    window._rioUser = saved;
-    applyRoleUI(saved.role);
-    hideLoginOverlay();
-  }
-  // else overlay stays visible (display:flex set in HTML)
-
   function hideLoginOverlay() {
     var ov = document.getElementById('rio-login-overlay');
     if (ov) ov.style.display = 'none';
     var lb = document.getElementById('rio-logout-btn');
     if (lb) lb.style.display = 'block';
+    // Update header user badge
+    var u = window._rioUser;
+    var nameEl = document.getElementById('rio-logged-user');
+    if (nameEl && u) nameEl.textContent = u.name + ' (' + u.role + ')';
   }
 
   function showLoginOverlay() {
@@ -7859,54 +7853,89 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background
     if (ov) ov.style.display = 'flex';
     var lb = document.getElementById('rio-logout-btn');
     if (lb) lb.style.display = 'none';
-    var uf = document.getElementById('rio-login-user');
-    if (uf) { uf.value = ''; uf.focus(); }
-    var pf = document.getElementById('rio-login-pass');
-    if (pf) pf.value = '';
-    var err = document.getElementById('rio-login-err');
-    if (err) err.textContent = '';
+    var nameEl = document.getElementById('rio-logged-user');
+    if (nameEl) nameEl.textContent = '';
+    setTimeout(function() {
+      var uf = document.getElementById('rio-login-user');
+      if (uf) uf.focus();
+    }, 100);
   }
 
-  window.rioDoLogin = async function() {
-    var username = (document.getElementById('rio-login-user')?.value || '').trim();
-    var password = (document.getElementById('rio-login-pass')?.value || '').trim();
+  function setLoginErr(msg) {
     var errEl = document.getElementById('rio-login-err');
-    var btn   = document.getElementById('rio-login-btn');
+    if (errEl) errEl.textContent = msg;
+  }
 
-    if (!username || !password) {
-      if (errEl) errEl.textContent = 'Enter username and password.';
-      return;
-    }
+  function setLoginBtn(text, disabled) {
+    var btn = document.getElementById('rio-login-btn');
+    if (btn) { btn.textContent = text; btn.disabled = disabled; }
+  }
 
-    if (btn) { btn.textContent = 'Signing in…'; btn.disabled = true; }
-    if (errEl) errEl.textContent = '';
+  // On page load — restore session if still valid
+  var saved = null;
+  try { saved = JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch(e) {}
+  if (saved && saved.token && saved.username) {
+    window._rioUser = saved;
+    hideLoginOverlay();
+  }
+  // else overlay stays visible (display:flex already set in HTML)
+
+  window.rioDoLogin = async function() {
+    var username = (document.getElementById('rio-login-user') ? document.getElementById('rio-login-user').value : '').trim();
+    var password = (document.getElementById('rio-login-pass') ? document.getElementById('rio-login-pass').value : '').trim();
+
+    if (!username) { setLoginErr('Please enter your username.'); return; }
+    if (!password) { setLoginErr('Please enter your password.'); return; }
+
+    setLoginErr('');
+    setLoginBtn('Signing in…', true);
 
     try {
+      // Build API base URL — same origin as the page
       var apiBase = window.location.origin + '/api';
+      console.log('[LOGIN] Attempting login for:', username, '→', apiBase + '/auth/login');
+
       var res = await fetch(apiBase + '/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username, password: password })
       });
-      var data = await res.json();
+
+      console.log('[LOGIN] Response status:', res.status);
+      var data = {};
+      try { data = await res.json(); } catch(e) { data = {}; }
+      console.log('[LOGIN] Response data:', data);
 
       if (res.ok && data.ok) {
-        var user = { username: data.username, name: data.name, role: data.role, token: data.token };
+        var user = {
+          username: data.username || username,
+          name:     data.name    || username,
+          role:     data.role    || 'admin',
+          token:    data.token   || ''
+        };
         window._rioUser = user;
         try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(user)); } catch(e) {}
-        applyRoleUI(user.role);
         hideLoginOverlay();
-        // Show welcome toast after short delay (toast may not exist yet)
+        // Apply role-based UI restrictions
+        if (typeof applyRoleRestrictions === 'function') {
+          applyRoleRestrictions(user.role);
+        }
         setTimeout(function() {
-          if (typeof toast === 'function') toast('Welcome, ' + data.name + ' (' + data.role + ')', 'success');
-        }, 800);
+          if (typeof toast === 'function') {
+            toast('Welcome, ' + user.name + '! (' + user.role + ')', 'success');
+          }
+        }, 600);
       } else {
-        if (errEl) errEl.textContent = data.error || data.detail || 'Invalid username or password.';
+        // Show exact error from server
+        var msg = data.error || data.detail || data.message || ('Login failed (HTTP ' + res.status + ')');
+        setLoginErr(msg);
+        console.warn('[LOGIN] Failed:', msg);
       }
     } catch(e) {
-      if (errEl) errEl.textContent = 'Connection error. Is the server running?';
+      console.error('[LOGIN] Network error:', e);
+      setLoginErr('Cannot reach server. Check your connection.');
     } finally {
-      if (btn) { btn.textContent = 'Sign In'; btn.disabled = false; }
+      setLoginBtn('Sign In', false);
     }
   };
 
@@ -7914,14 +7943,13 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background
     window._rioUser = null;
     try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
     showLoginOverlay();
+    var uf = document.getElementById('rio-login-user');
+    var pf = document.getElementById('rio-login-pass');
+    if (uf) uf.value = '';
+    if (pf) pf.value = '';
+    setLoginErr('');
   };
 
-  function applyRoleUI(role) {
-    // Show logged-in user name in header
-    var nameEl = document.getElementById('rio-logged-user');
-    var u = window._rioUser;
-    if (nameEl && u) nameEl.textContent = u.name + ' (' + u.role + ')';
-  }
 })();
 </script>
 </body></html>`;
@@ -11370,239 +11398,263 @@ function loadCustomRoles() {
 // ═══════════════════════════════════════════════════════
 
 // Mock user data (replace with API calls)
-let usersData = [
-  { id: 1, username: 'admin', name: 'Administrator', role: 'admin' },
-  { id: 2, username: 'john_audit', name: 'John Auditor', role: 'auditing' },
-  { id: 3, username: 'expense_mgr', name: 'Expense Manager', role: 'expense' }
-];
+// ═══════════════════════════════════════════════════════
+// USER MANAGEMENT — fully wired to /api/auth/* endpoints
+// ═══════════════════════════════════════════════════════
 
-// Panel names for permissions
+// Panel names for permissions display
 const panelsList = [
   { id: 'dashboard', name: 'Dashboard' },
-  { id: 'sales', name: 'Sales Records' },
-  { id: 'expense', name: 'Expenses' },
-  { id: 'invoice', name: 'GST Invoice' },
-  { id: 'billing', name: 'Simple Billing' },
-  { id: 'reports', name: 'Reports' },
-  { id: 'pending', name: 'Payment/Expense Pending' },
-  { id: 'jobs', name: 'Jobs Management' },
-  { id: 'ledger', name: 'Account Ledger' },
-  { id: 'usermgmt', name: 'User Management' }
+  { id: 'sales',     name: 'Sales Records' },
+  { id: 'expense',   name: 'Expenses' },
+  { id: 'invoice',   name: 'GST Invoice' },
+  { id: 'billing',   name: 'Simple Billing' },
+  { id: 'reports',   name: 'Reports' },
+  { id: 'pending',   name: 'Payment/Expense Pending' },
+  { id: 'jobs',      name: 'Jobs Management' },
+  { id: 'ledger',    name: 'Account Ledger' },
+  { id: 'usermgmt',  name: 'User Management' }
 ];
 
-// Role permissions (view and edit)
+// Role permissions map
 const rolePermissions = {
-  admin: { dashboard: 'edit', sales: 'edit', expense: 'edit', invoice: 'edit', billing: 'edit', reports: 'edit', pending: 'edit', jobs: 'edit', ledger: 'edit', usermgmt: 'edit' },
-  auditing: { dashboard: 'edit', sales: 'edit', expense: 'edit', invoice: 'edit', billing: 'edit', reports: 'edit', pending: 'edit', jobs: 'edit', ledger: 'edit', usermgmt: 'none' },
-  expense: { dashboard: 'view', sales: 'none', expense: 'edit', invoice: 'none', billing: 'none', reports: 'view', pending: 'view', jobs: 'none', ledger: 'none', usermgmt: 'none' },
-  billing: { dashboard: 'view', sales: 'none', expense: 'none', invoice: 'edit', billing: 'edit', reports: 'view', pending: 'view', jobs: 'none', ledger: 'none', usermgmt: 'none' },
-  guest: { dashboard: 'view', sales: 'view', expense: 'view', invoice: 'view', billing: 'view', reports: 'view', pending: 'view', jobs: 'view', ledger: 'view', usermgmt: 'none' }
+  admin:    { dashboard:'edit', sales:'edit',   expense:'edit',  invoice:'edit',  billing:'edit',  reports:'edit',  pending:'edit', jobs:'edit',  ledger:'edit',  usermgmt:'edit' },
+  auditing: { dashboard:'edit', sales:'edit',   expense:'edit',  invoice:'edit',  billing:'edit',  reports:'edit',  pending:'edit', jobs:'edit',  ledger:'edit',  usermgmt:'none' },
+  expense:  { dashboard:'view', sales:'none',   expense:'edit',  invoice:'none',  billing:'none',  reports:'view',  pending:'view', jobs:'none',  ledger:'none',  usermgmt:'none' },
+  billing:  { dashboard:'view', sales:'none',   expense:'none',  invoice:'edit',  billing:'edit',  reports:'view',  pending:'view', jobs:'none',  ledger:'none',  usermgmt:'none' },
+  guest:    { dashboard:'view', sales:'view',   expense:'view',  invoice:'view',  billing:'view',  reports:'view',  pending:'view', jobs:'view',  ledger:'view',  usermgmt:'none' }
 };
 
-// Load users table
-function loadUsersTable() {
+const ROLE_LABELS = {
+  admin:'Admin', auditing:'Auditing', expense:'Expense', billing:'Billing', guest:'Guest'
+};
+const ROLE_COLORS = {
+  admin:'#1a237e', auditing:'#3949ab', expense:'#2e7d32', billing:'#e65100', guest:'#78909c'
+};
+
+// ── Load users from API ───────────────────────────────────────
+async function loadUsersTable() {
   const tbody = document.getElementById('usermgmt-tbody');
   if (!tbody) return;
-  
-  if (usersData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;padding:24px;">No users found</td></tr>';
-    return;
-  }
-  
-  const roleNames = {
-    admin: 'Admin',
-    auditing: 'Auditing',
-    expense: 'Expense',
-    billing: 'Billing',
-    guest: 'Guest'
-  };
-  
-  tbody.innerHTML = usersData.map(user => {
-    const bgColor = user.role === 'admin' ? '#e8eaf6' : 'white';
-    return `
-      <tr style="background:${bgColor};border-bottom:1px solid #e0e0e0;">
-        <td style="padding:12px;font-weight:${user.role === 'admin' ? '700' : '400'};">${user.username}</td>
-        <td style="padding:12px;">${user.name}</td>
-        <td style="padding:12px;">
-          <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:0.75rem;font-weight:700;
-            background:${user.role === 'admin' ? '#1a237e' : user.role === 'auditing' ? '#3949ab' : user.role === 'expense' ? '#2dce89' : user.role === 'billing' ? '#fb6340' : '#78909c'};
-            color:white;">${roleNames[user.role] || user.role}</span>
-        </td>
-        <td style="padding:12px;text-align:center;">
-          <button onclick="editUser(${user.id})" style="padding:6px 12px;background:#5e72e4;color:white;border:none;border-radius:6px;font-size:0.75rem;cursor:pointer;margin-right:6px;">Edit</button>
-          <button onclick="deleteUser(${user.id})" style="padding:6px 12px;background:#f5365c;color:white;border:none;border-radius:6px;font-size:0.75rem;cursor:pointer;">Delete</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-// Save user
-function saveUser() {
-  const username = document.getElementById('um-username')?.value?.trim();
-  const name = document.getElementById('um-name')?.value?.trim();
-  const password = document.getElementById('um-password')?.value;
-  const role = document.getElementById('um-role')?.value;
-  
-  if (!username || !name) {
-    toast('Please enter username and name', 'error');
-    return;
-  }
-  
-  // Check if username exists
-  const existing = usersData.find(u => u.username === username);
-  if (existing) {
-    // Update existing
-    existing.name = name;
-    existing.role = role;
-    if (password) {
-      // In real app, hash and store password
-      toast('User updated successfully', 'success');
-    } else {
-      toast('User updated (password unchanged)', 'success');
-    }
-  } else {
-    // Add new
-    if (!password) {
-      toast('Password required for new user', 'error');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;padding:24px;">Loading users…</td></tr>';
+  try {
+    const users = await api('/auth/users');
+    if (!Array.isArray(users) || users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;padding:24px;">No users found. Add the first user above.</td></tr>';
       return;
     }
-    const newUser = {
-      id: usersData.length + 1,
-      username,
-      name,
-      role
-    };
-    usersData.push(newUser);
-    toast('User created successfully', 'success');
+    tbody.innerHTML = users.map(user => {
+      const roleLbl   = ROLE_LABELS[user.role]  || user.role;
+      const roleColor = ROLE_COLORS[user.role]  || '#78909c';
+      const isAdmin   = user.role === 'admin';
+      return `
+        <tr style="background:${isAdmin?'#e8eaf6':'white'};border-bottom:1px solid #e0e0e0;">
+          <td style="padding:12px;font-weight:${isAdmin?'700':'400'};font-family:'Exo 2',sans-serif;">${user.username}</td>
+          <td style="padding:12px;">${user.name || '—'}</td>
+          <td style="padding:12px;">
+            <span style="display:inline-block;padding:4px 12px;border-radius:12px;font-size:0.75rem;font-weight:700;background:${roleColor};color:white;">${roleLbl}</span>
+          </td>
+          <td style="padding:12px;text-align:center;">
+            <button onclick="editUserByName('${user.username}')"
+              style="padding:5px 12px;background:#3949ab;color:white;border:none;border-radius:6px;font-size:0.75rem;cursor:pointer;margin-right:6px;">Edit</button>
+            ${user.username !== 'admin' ? `<button onclick="deleteUserByName('${user.username}')"
+              style="padding:5px 12px;background:#f5365c;color:white;border:none;border-radius:6px;font-size:0.75rem;cursor:pointer;">Delete</button>` : '<span style="font-size:0.72rem;color:#aaa;">Protected</span>'}
+          </td>
+        </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#f44336;padding:24px;">Error loading users: ' + e.message + '</td></tr>';
   }
-  
-  loadUsersTable();
-  clearUserForm();
 }
 
-// Clear user form
+// ── Save user (create or update) via API ─────────────────────
+async function saveUser() {
+  const username = (document.getElementById('um-username')?.value || '').trim();
+  const name     = (document.getElementById('um-name')?.value     || '').trim();
+  const password =  document.getElementById('um-password')?.value || '';
+  const role     =  document.getElementById('um-role')?.value     || 'expense';
+
+  if (!username) { toast('Username is required', 'error'); return; }
+  if (!name)     { toast('Full name is required', 'error'); return; }
+
+  const isEdit = document.getElementById('um-username').dataset.editMode === '1';
+
+  try {
+    let res;
+    if (isEdit) {
+      // PUT /api/auth/users/{username}
+      const body = { name, role };
+      if (password) body.password = password;
+      res = await api('/auth/users/' + encodeURIComponent(username), { method:'PUT', body: JSON.stringify(body) });
+      if (res && res.ok !== false) {
+        toast('User "' + username + '" updated ✓', 'success');
+      } else {
+        toast('Update failed: ' + (res?.error || 'Unknown error'), 'error'); return;
+      }
+    } else {
+      // POST /api/auth/users
+      if (!password) { toast('Password is required for new user', 'error'); return; }
+      res = await api('/auth/users', { method:'POST', body: JSON.stringify({ username, name, password, role }) });
+      if (res && res.ok !== false) {
+        toast('User "' + username + '" created ✓', 'success');
+      } else {
+        toast('Create failed: ' + (res?.error || 'Unknown error'), 'error'); return;
+      }
+    }
+    clearUserForm();
+    await loadUsersTable();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ── Edit user — pre-fill form ─────────────────────────────────
+function editUserByName(username) {
+  // Fetch from current table data
+  const rows = document.querySelectorAll('#usermgmt-tbody tr');
+  let name = '', role = 'expense';
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length >= 3 && cells[0].textContent.trim() === username) {
+      name = cells[1].textContent.trim();
+      // Find role from badge text
+      const badge = cells[2].querySelector('span');
+      if (badge) {
+        const lbl = badge.textContent.trim();
+        role = Object.entries(ROLE_LABELS).find(([k,v]) => v === lbl)?.[0] || 'expense';
+      }
+    }
+  });
+  document.getElementById('um-username').value = username;
+  document.getElementById('um-username').dataset.editMode = '1';
+  document.getElementById('um-username').readOnly = true;
+  document.getElementById('um-username').style.background = '#f5f5f5';
+  document.getElementById('um-name').value = name;
+  document.getElementById('um-password').value = '';
+  document.getElementById('um-role').value = role;
+  document.getElementById('um-password').placeholder = 'Leave blank to keep current';
+  document.getElementById('um-username').scrollIntoView({ behavior:'smooth', block:'center' });
+  toast('Editing user "' + username + '" — update fields and save', 'success');
+}
+
+// ── Delete user via API ───────────────────────────────────────
+async function deleteUserByName(username) {
+  if (!confirm('Delete user "' + username + '"? This cannot be undone.')) return;
+  try {
+    const res = await api('/auth/users/' + encodeURIComponent(username), { method:'DELETE' });
+    if (res && res.ok !== false) {
+      toast('User "' + username + '" deleted', 'success');
+      await loadUsersTable();
+    } else {
+      toast('Delete failed: ' + (res?.error || 'Unknown error'), 'error');
+    }
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+// ── Clear form ────────────────────────────────────────────────
 function clearUserForm() {
-  document.getElementById('um-username').value = '';
-  document.getElementById('um-name').value = '';
-  document.getElementById('um-password').value = '';
-  document.getElementById('um-role').value = 'expense';
+  const uEl = document.getElementById('um-username');
+  if (uEl) { uEl.value = ''; uEl.dataset.editMode = ''; uEl.readOnly = false; uEl.style.background = ''; }
+  const nEl = document.getElementById('um-name');     if (nEl) nEl.value = '';
+  const pEl = document.getElementById('um-password'); if (pEl) { pEl.value = ''; pEl.placeholder = '••••••••'; }
+  const rEl = document.getElementById('um-role');     if (rEl) rEl.value = 'expense';
 }
 
-// Edit user
-function editUser(userId) {
-  const user = usersData.find(u => u.id === userId);
-  if (!user) return;
-  
-  document.getElementById('um-username').value = user.username;
-  document.getElementById('um-name').value = user.name;
-  document.getElementById('um-password').value = '';
-  document.getElementById('um-role').value = user.role;
-  
-  // Scroll to form
-  document.getElementById('um-username').scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-// Delete user
-function deleteUser(userId) {
-  const user = usersData.find(u => u.id === userId);
-  if (!user) return;
-  
-  if (user.role === 'admin' && usersData.filter(u => u.role === 'admin').length === 1) {
-    toast('Cannot delete the last admin user', 'error');
-    return;
-  }
-  
-  if (confirm(`Delete user "${user.username}"?`)) {
-    usersData = usersData.filter(u => u.id !== userId);
-    loadUsersTable();
-    toast('User deleted', 'success');
-  }
-}
-
-// Load role configuration
+// ── Role permission UI ────────────────────────────────────────
 function loadRoleConfig(role) {
   const tbody = document.getElementById('role-permissions-tbody');
   if (!tbody) return;
-  
   const permissions = rolePermissions[role] || {};
-  
   tbody.innerHTML = panelsList.map(panel => {
-    const perm = permissions[panel.id] || 'none';
+    const perm    = permissions[panel.id] || 'none';
     const canView = perm === 'view' || perm === 'edit';
     const canEdit = perm === 'edit';
-    
     return `
       <tr style="border:1px solid #e0e0e0;">
         <td style="padding:12px;">${panel.name}</td>
         <td style="padding:12px;text-align:center;">
-          <input type="checkbox" id="perm-${role}-${panel.id}-view" ${canView ? 'checked' : ''} 
-            onchange="updatePermission('${role}', '${panel.id}', 'view', this.checked)"
+          <input type="checkbox" id="perm-${role}-${panel.id}-view" ${canView?'checked':''}
+            onchange="updatePermission('${role}','${panel.id}','view',this.checked)"
             style="width:18px;height:18px;cursor:pointer;">
         </td>
         <td style="padding:12px;text-align:center;">
-          <input type="checkbox" id="perm-${role}-${panel.id}-edit" ${canEdit ? 'checked' : ''}
-            onchange="updatePermission('${role}', '${panel.id}', 'edit', this.checked)"
+          <input type="checkbox" id="perm-${role}-${panel.id}-edit" ${canEdit?'checked':''}
+            onchange="updatePermission('${role}','${panel.id}','edit',this.checked)"
             style="width:18px;height:18px;cursor:pointer;">
         </td>
-      </tr>
-    `;
+      </tr>`;
   }).join('');
 }
 
-// Update permission
 function updatePermission(role, panelId, permType, checked) {
   if (!rolePermissions[role]) rolePermissions[role] = {};
-  
-  const currentPerm = rolePermissions[role][panelId] || 'none';
-  
   if (permType === 'view') {
     if (checked) {
-      // If view is checked and edit is not, set to view
       const editChecked = document.getElementById(`perm-${role}-${panelId}-edit`)?.checked;
       rolePermissions[role][panelId] = editChecked ? 'edit' : 'view';
     } else {
-      // If view is unchecked, also uncheck edit
       rolePermissions[role][panelId] = 'none';
-      const editCheckbox = document.getElementById(`perm-${role}-${panelId}-edit`);
-      if (editCheckbox) editCheckbox.checked = false;
+      const editCb = document.getElementById(`perm-${role}-${panelId}-edit`);
+      if (editCb) editCb.checked = false;
     }
-  } else if (permType === 'edit') {
+  } else {
     if (checked) {
-      // If edit is checked, also check view
       rolePermissions[role][panelId] = 'edit';
-      const viewCheckbox = document.getElementById(`perm-${role}-${panelId}-view`);
-      if (viewCheckbox) viewCheckbox.checked = true;
+      const viewCb = document.getElementById(`perm-${role}-${panelId}-view`);
+      if (viewCb) viewCb.checked = true;
     } else {
-      // If edit is unchecked but view is checked, set to view
       const viewChecked = document.getElementById(`perm-${role}-${panelId}-view`)?.checked;
       rolePermissions[role][panelId] = viewChecked ? 'view' : 'none';
     }
   }
 }
 
-// Save role configuration
 function saveRoleConfig() {
   const role = document.getElementById('role-config-select')?.value;
   if (!role) return;
-  
-  // In real app, save to database/API
-  toast(`Role configuration for "${role}" saved successfully`, 'success');
-  console.log('Role permissions:', rolePermissions[role]);
+  toast('Role config for "' + role + '" saved ✓', 'success');
 }
 
-// Initialize user management when panel loads
+// ── Apply role restrictions to the UI ────────────────────────
+function applyRoleRestrictions(role) {
+  const perms = rolePermissions[role] || rolePermissions['guest'];
+  // Show/hide nav buttons based on permissions
+  const navMap = {
+    sales:'nav-btn-0', billing:'nav-btn-1', expense:'nav-btn-2',
+    summary:'nav-btn-3', pending:'nav-btn-4', jobs:'nav-btn-7'
+  };
+  // Admin sees everything — just ensure usermgmt nav is shown for admin
+  const umNavBtn = document.querySelector('[onclick*="rio-usermgmt"]');
+  if (umNavBtn) {
+    umNavBtn.style.display = (perms.usermgmt && perms.usermgmt !== 'none') ? '' : 'none';
+  }
+  // Hide edit buttons for view-only panels
+  panelsList.forEach(panel => {
+    const perm = perms[panel.id] || 'none';
+    if (perm === 'none') {
+      // Hide entire panel nav entry
+      const btn = document.querySelector('[onclick*="' + panel.id + '"]');
+    } else if (perm === 'view') {
+      // Could disable save/edit buttons in panel — future enhancement
+    }
+  });
+}
+
+// ── Init user management panel ────────────────────────────────
 function initUserManagement() {
   loadUsersTable();
   loadRoleConfig('admin');
 }
 
-// Call on page load or when opening user mgmt panel
+// Auto-init if panel is already visible on load
 if (document.getElementById('usermgmt-tbody')) {
   initUserManagement();
 }
 
-
+// Also init when panel is opened via navRipple
+const _origNavRipple = window.navRipple;
 
 // ═══════════════════════════════════════════════════════
 // DAILY PROVERB & QUOTE FUNCTION

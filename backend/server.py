@@ -634,7 +634,7 @@ input,select,textarea,button{{font-family:'Exo 2',sans-serif;}}
 #  AUTH ENDPOINTS
 # ═══════════════════════════════════════════════════════════════
 
-@app.post("/api/auth/register")
+@app.post("/api/auth/register_jwt")
 async def auth_register(request: Request, response: Response):
     """Register a new user with role assignment."""
     body = await request.json()
@@ -677,9 +677,9 @@ async def auth_register(request: Request, response: Response):
     
     return JSONResponse({"id": user_id, "email": email, "name": user_doc["name"], "role": role})
 
-@app.post("/api/auth/login")
+@app.post("/api/auth/login_jwt")
 async def auth_login(request: Request, response: Response):
-    """Login with email and password."""
+    """Login with email and password (JWT cookie-based)."""
     body = await request.json()
     email = (body.get("email") or "").strip().lower()
     password = (body.get("password") or "").strip()
@@ -1197,7 +1197,7 @@ async def register_user(request: Request, response: Response):
     response.set_cookie("refresh_token", refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
     return JSONResponse({"id": user_id, "email": email, "name": name or email.split("@")[0], "role": role})
 
-@app.post("/api/auth/login")
+@app.post("/api/auth/login_jwt2")
 async def login_user(request: Request, response: Response):
     body = await request.json()
     email = (body.get("email") or "").strip().lower()
@@ -2338,14 +2338,12 @@ def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode(), hashed.encode())
 
 def ensure_default_users():
-    """Create default admin user if no users exist."""
+    """Create only one default admin user if no users exist."""
     if col("rio_users").count_documents({}) == 0:
-        col("rio_users").insert_many([
-            {"username": "admin",    "password": hash_password("rio@admin"),  "role": "admin",   "name": "Administrator"},
-            {"username": "expense1", "password": hash_password("expense@1"),  "role": "expense", "name": "Expense User 1"},
-            {"username": "invoice1", "password": hash_password("invoice@1"),  "role": "invoice", "name": "Invoice User 1"},
-        ])
-        print("✓ Default users created: admin / expense1 / invoice1")
+        col("rio_users").insert_one(
+            {"username": "admin", "password": hash_password("rio@admin"), "role": "admin", "name": "Administrator"}
+        )
+        logger.info("✓ Default admin user created: username=admin password=rio@admin")
 
 @app.post("/api/auth/login")
 async def login(request: Request):

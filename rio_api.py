@@ -2013,14 +2013,12 @@ def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode(), hashed.encode())
 
 def ensure_default_users():
-    """Create default admin user if no users exist."""
+    """Create only one default admin user if no users exist."""
     if col("rio_users").count_documents({}) == 0:
-        col("rio_users").insert_many([
-            {"username": "admin",    "password": hash_password("rio@admin"),  "role": "admin",   "name": "Administrator"},
-            {"username": "expense1", "password": hash_password("expense@1"),  "role": "expense", "name": "Expense User 1"},
-            {"username": "invoice1", "password": hash_password("invoice@1"),  "role": "invoice", "name": "Invoice User 1"},
-        ])
-        print("✓ Default users created: admin / expense1 / invoice1")
+        col("rio_users").insert_one(
+            {"username": "admin", "password": hash_password("rio@admin"), "role": "admin", "name": "Administrator"}
+        )
+        logger.info("✓ Default admin user created: username=admin password=rio@admin")
 
 @app.post("/api/auth/login")
 async def login(request: Request):
