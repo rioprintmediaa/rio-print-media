@@ -7832,126 +7832,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background
 </div>
 
 
-<script>
-// ── RIO LOGIN / AUTH ─────────────────────────────────────────
-(function() {
-  var SESSION_KEY = 'rio_session';
 
-  function hideLoginOverlay() {
-    var ov = document.getElementById('rio-login-overlay');
-    if (ov) ov.style.display = 'none';
-    var lb = document.getElementById('rio-logout-btn');
-    if (lb) lb.style.display = 'block';
-    // Update header user badge
-    var u = window._rioUser;
-    var nameEl = document.getElementById('rio-logged-user');
-    if (nameEl && u) nameEl.textContent = u.name + ' (' + u.role + ')';
-  }
-
-  function showLoginOverlay() {
-    var ov = document.getElementById('rio-login-overlay');
-    if (ov) ov.style.display = 'flex';
-    var lb = document.getElementById('rio-logout-btn');
-    if (lb) lb.style.display = 'none';
-    var nameEl = document.getElementById('rio-logged-user');
-    if (nameEl) nameEl.textContent = '';
-    setTimeout(function() {
-      var uf = document.getElementById('rio-login-user');
-      if (uf) uf.focus();
-    }, 100);
-  }
-
-  function setLoginErr(msg) {
-    var errEl = document.getElementById('rio-login-err');
-    if (errEl) errEl.textContent = msg;
-  }
-
-  function setLoginBtn(text, disabled) {
-    var btn = document.getElementById('rio-login-btn');
-    if (btn) { btn.textContent = text; btn.disabled = disabled; }
-  }
-
-  // On page load — restore session if still valid
-  var saved = null;
-  try { saved = JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch(e) {}
-  if (saved && saved.token && saved.username) {
-    window._rioUser = saved;
-    hideLoginOverlay();
-  }
-  // else overlay stays visible (display:flex already set in HTML)
-
-  window.rioDoLogin = async function() {
-    var username = (document.getElementById('rio-login-user') ? document.getElementById('rio-login-user').value : '').trim();
-    var password = (document.getElementById('rio-login-pass') ? document.getElementById('rio-login-pass').value : '').trim();
-
-    if (!username) { setLoginErr('Please enter your username.'); return; }
-    if (!password) { setLoginErr('Please enter your password.'); return; }
-
-    setLoginErr('');
-    setLoginBtn('Signing in…', true);
-
-    try {
-      // Build API base URL — same origin as the page
-      var apiBase = window.location.origin + '/api';
-      console.log('[LOGIN] Attempting login for:', username, '→', apiBase + '/auth/login');
-
-      var res = await fetch(apiBase + '/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username, password: password })
-      });
-
-      console.log('[LOGIN] Response status:', res.status);
-      var data = {};
-      try { data = await res.json(); } catch(e) { data = {}; }
-      console.log('[LOGIN] Response data:', data);
-
-      if (res.ok && data.ok) {
-        var user = {
-          username: data.username || username,
-          name:     data.name    || username,
-          role:     data.role    || 'admin',
-          token:    data.token   || ''
-        };
-        window._rioUser = user;
-        try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(user)); } catch(e) {}
-        hideLoginOverlay();
-        // Apply role-based UI restrictions
-        if (typeof applyRoleRestrictions === 'function') {
-          applyRoleRestrictions(user.role);
-        }
-        setTimeout(function() {
-          if (typeof toast === 'function') {
-            toast('Welcome, ' + user.name + '! (' + user.role + ')', 'success');
-          }
-        }, 600);
-      } else {
-        // Show exact error from server
-        var msg = data.error || data.detail || data.message || ('Login failed (HTTP ' + res.status + ')');
-        setLoginErr(msg);
-        console.warn('[LOGIN] Failed:', msg);
-      }
-    } catch(e) {
-      console.error('[LOGIN] Network error:', e);
-      setLoginErr('Cannot reach server. Check your connection.');
-    } finally {
-      setLoginBtn('Sign In', false);
-    }
-  };
-
-  window.rioLogout = function() {
-    window._rioUser = null;
-    try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
-    showLoginOverlay();
-    var uf = document.getElementById('rio-login-user');
-    var pf = document.getElementById('rio-login-pass');
-    if (uf) uf.value = '';
-    if (pf) pf.value = '';
-    setLoginErr('');
-  };
-
-})();
-</script>
 </body></html>`;
 
   const pw = window.open('', '_blank', 'width=960,height=820');
@@ -12674,5 +12555,117 @@ async function loadDashboardLedgerBalances() {
   </div>
 
 
+
+<script>
+// ── RIO PRINT MEDIA LOGIN ────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+
+  var SESSION_KEY = 'rio_session';
+
+  function hideLoginOverlay() {
+    var ov = document.getElementById('rio-login-overlay');
+    if (ov) ov.style.display = 'none';
+    var lb = document.getElementById('rio-logout-btn');
+    if (lb) lb.style.display = 'block';
+    var u = window._rioUser;
+    var nameEl = document.getElementById('rio-logged-user');
+    if (nameEl && u) nameEl.textContent = u.name + ' (' + u.role + ')';
+  }
+
+  function showLoginOverlay() {
+    var ov = document.getElementById('rio-login-overlay');
+    if (ov) ov.style.display = 'flex';
+    var lb = document.getElementById('rio-logout-btn');
+    if (lb) lb.style.display = 'none';
+    var nameEl = document.getElementById('rio-logged-user');
+    if (nameEl) nameEl.textContent = '';
+    setTimeout(function() {
+      var uf = document.getElementById('rio-login-user');
+      if (uf) uf.focus();
+    }, 200);
+  }
+
+  function setLoginErr(msg) {
+    var el = document.getElementById('rio-login-err');
+    if (el) el.textContent = msg;
+  }
+
+  function setLoginBtn(text, disabled) {
+    var btn = document.getElementById('rio-login-btn');
+    if (btn) { btn.textContent = text; btn.disabled = disabled; }
+  }
+
+  // Restore session from sessionStorage
+  var saved = null;
+  try { saved = JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch(e) {}
+  if (saved && saved.token && saved.username) {
+    window._rioUser = saved;
+    hideLoginOverlay();
+  } else {
+    showLoginOverlay();
+  }
+
+  // Expose login/logout globally for button onclick
+  window.rioDoLogin = async function() {
+    var uEl = document.getElementById('rio-login-user');
+    var pEl = document.getElementById('rio-login-pass');
+    var username = (uEl ? uEl.value : '').trim();
+    var password = (pEl ? pEl.value : '').trim();
+
+    if (!username) { setLoginErr('Please enter your username.'); return; }
+    if (!password) { setLoginErr('Please enter your password.'); return; }
+
+    setLoginErr('');
+    setLoginBtn('Signing in...', true);
+
+    try {
+      var apiBase = window.location.origin + '/api';
+      var res = await fetch(apiBase + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username, password: password })
+      });
+
+      var data = {};
+      try { data = await res.json(); } catch(e) {}
+
+      if (res.ok && data.ok) {
+        var user = {
+          username: data.username || username,
+          name:     data.name     || username,
+          role:     data.role     || 'admin',
+          token:    data.token    || ''
+        };
+        window._rioUser = user;
+        try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(user)); } catch(e) {}
+        hideLoginOverlay();
+        if (typeof applyRoleRestrictions === 'function') applyRoleRestrictions(user.role);
+        setTimeout(function() {
+          if (typeof toast === 'function') toast('Welcome, ' + user.name + '!', 'success');
+        }, 500);
+      } else {
+        var msg = data.error || data.detail || ('Login failed — HTTP ' + res.status);
+        setLoginErr(msg);
+      }
+    } catch(e) {
+      setLoginErr('Cannot reach server. Please try again.');
+    } finally {
+      setLoginBtn('Sign In', false);
+    }
+  };
+
+  window.rioLogout = function() {
+    window._rioUser = null;
+    try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
+    showLoginOverlay();
+    var uEl = document.getElementById('rio-login-user');
+    var pEl = document.getElementById('rio-login-pass');
+    if (uEl) uEl.value = '';
+    if (pEl) pEl.value = '';
+    setLoginErr('');
+  };
+
+});
+</script>
 </body>
 </html>
