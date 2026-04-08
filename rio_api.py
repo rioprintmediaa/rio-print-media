@@ -2030,6 +2030,40 @@ def ensure_default_users():
 # ─────────────────────────────────────────────
 #  AUTH — Emergency admin reset (upsert admin user)
 # ─────────────────────────────────────────────
+
+@app.get("/api/auth/debug-users")
+async def debug_users():
+    """Debug: show users in rio_users collection (no passwords)."""
+    if not ensure_db():
+        return JSONResponse(content={"error": "DB not connected"}, status_code=503)
+    users = list(col("rio_users").find({}, {"_id": 0, "password": 0, "session_token": 0}))
+    total = col("rio_users").count_documents({})
+    return JSONResponse(content={"total": total, "users": users})
+
+@app.get("/api/auth/test-login")
+async def test_login(username: str = "admin", password: str = "rio@admin"):
+    """Debug: test login and show exactly what happens."""
+    if not ensure_db():
+        return JSONResponse(content={"step": "FAILED", "reason": "DB not connected"})
+    user = col("rio_users").find_one({"username": username.lower()}, {"_id": 0})
+    if not user:
+        all_users = [u.get("username") for u in col("rio_users").find({}, {"username": 1})]
+        return JSONResponse(content={"step": "USER_NOT_FOUND", "searched_for": username.lower(), "all_usernames_in_db": all_users})
+    has_password_field = "password" in user
+    password_value_preview = str(user.get("password", ""))[:20] if user.get("password") else "EMPTY"
+    try:
+        pw_match = verify_password(password, user["password"])
+    except Exception as e:
+        pw_match = f"ERROR: {str(e)}"
+    return JSONResponse(content={
+        "step": "FOUND_USER",
+        "username_in_db": user.get("username"),
+        "role": user.get("role"),
+        "has_password_field": has_password_field,
+        "password_preview": password_value_preview,
+        "password_match": pw_match
+    })
+
 @app.get("/api/auth/reset-admin")
 async def reset_admin():
     """Force-upsert admin user with default password. Use if locked out."""
