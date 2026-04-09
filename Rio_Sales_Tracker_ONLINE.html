@@ -7428,16 +7428,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Called once after successful login
 window.rioStartApp = function() {
+  if (window._rioAppStarted) return; // prevent double-start
+  window._rioAppStarted = true;
+  // Small delay to let browser paint the page first
   setTimeout(function(){
-    detectPort().then(function(ok){
-      loadAll();
-      loadJobs();
-      setInterval(loadAll, 60000);
-    }).catch(function(){
-      loadAll();
-      loadJobs();
-    });
-  }, 300);
+    try { loadAll(); } catch(e) { console.error('[RIO] loadAll error:', e); }
+    try { loadJobs(); } catch(e) {}
+    setInterval(function(){ try { loadAll(); } catch(e){} }, 60000);
+  }, 400);
 };
 
 // ─── Delete selected note (last clicked) ─────────────────────
@@ -12696,10 +12694,15 @@ document.addEventListener('DOMContentLoaded', function() {
   if (saved && saved.token && saved.username) {
     window._rioUser = saved;
     hideLoginOverlay();
-    // Start app immediately for returning sessions
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof window.rioStartApp === 'function') window.rioStartApp();
-    });
+    // DOM is already loaded by the time this script runs — call directly
+    if (typeof window.rioStartApp === 'function') {
+      window.rioStartApp();
+    } else {
+      // Fallback: rioStartApp not yet defined, wait a tick
+      setTimeout(function() {
+        if (typeof window.rioStartApp === 'function') window.rioStartApp();
+      }, 100);
+    }
   } else {
     showLoginOverlay();
   }
