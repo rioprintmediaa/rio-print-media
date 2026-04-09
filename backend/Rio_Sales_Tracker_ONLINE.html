@@ -8879,13 +8879,15 @@ function syncCustSearch() {
 
 function renderInvCustDrop(q) {
   const drop = document.getElementById('inv-cust-drop'); if (!drop) return;
-  const query = (q||'').trim().toLowerCase();
+  const query = (q || '').trim().toLowerCase();
   const all = Array.isArray(clientsList) && clientsList.length ? clientsList : (_customers||[]).map(c=>c.Name||c.name||'');
-  const matches = query ? all.filter(n=>n.toLowerCase().includes(query)) : all;
-  if (!matches.length) { drop.innerHTML='<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;">No customers found</div>'; return; }
-  drop.innerHTML = matches.map(name=>{
-    const hi = query ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;padding:0 1px;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })() : name;
-    return '<div onmousedown="selectInvCustFromDrop(null,\''+name.replace(/\'/g,"\\'")+'\')"; style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;" onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'\'">'+hi+'</div>';
+  const matches = query ? all.filter(n => n.toLowerCase().includes(query)) : all;
+  if (!matches.length) { drop.innerHTML = '<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;">No customers found</div>'; return; }
+  drop.innerHTML = matches.map(function(name) {
+    const hi = query ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })() : name;
+    return '<div onmousedown="selectInvCustFromDrop(null,' + JSON.stringify(name) + ')"'
+      + ' style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;"'
+      + ' onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'\'">'+hi+'</div>';
   }).join('');
 }
 
@@ -8905,13 +8907,15 @@ function selectInvCustFromDrop(id, name) {
 // ═══════════════════════════════════════════════════════════
 function renderQuotCustDrop(q) {
   const drop = document.getElementById('quot-cust-drop'); if (!drop) return;
-  const query = (q||'').trim().toLowerCase();
+  const query = (q || '').trim().toLowerCase();
   const all = Array.isArray(clientsList) && clientsList.length ? clientsList : (_customers||[]).map(c=>c.Name||c.name||'');
-  const matches = query ? all.filter(n=>n.toLowerCase().includes(query)) : all;
-  if (!matches.length) { drop.innerHTML='<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;">No customers found</div>'; return; }
-  drop.innerHTML = matches.map(name=>{
-    const hi = query ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;padding:0 1px;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })() : name;
-    return '<div onmousedown="selectQuotCustFromDrop(null,\''+name.replace(/\'/g,"\\'")+'\')"; style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;" onmouseover="this.style.background=\'#f3e5f5\'" onmouseout="this.style.background=\'\'">'+hi+'</div>';
+  const matches = query ? all.filter(n => n.toLowerCase().includes(query)) : all;
+  if (!matches.length) { drop.innerHTML = '<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;">No customers found</div>'; return; }
+  drop.innerHTML = matches.map(function(name) {
+    const hi = query ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })() : name;
+    return '<div onmousedown="selectQuotCustFromDrop(null,' + JSON.stringify(name) + ')"'
+      + ' style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;"'
+      + ' onmouseover="this.style.background=\'#f3e5f5\'" onmouseout="this.style.background=\'\'">'+hi+'</div>';
   }).join('');
 }
 
@@ -8951,26 +8955,20 @@ function renderReportCustDrop(type, q) {
   const drop = document.getElementById(type + '-cust-drop');
   if (!drop) return;
   const query = (q || '').trim().toLowerCase();
-  // Use clientsList (same source as sales tracker customer dropdown)
   const allClients = Array.isArray(clientsList) && clientsList.length
     ? clientsList
     : (Array.isArray(_customers) ? _customers.map(c => c.Name || c.name || '') : []);
-  const matches = query
-    ? allClients.filter(c => c.toLowerCase().includes(query))
-    : allClients;
+  const matches = query ? allClients.filter(c => c.toLowerCase().includes(query)) : allClients;
   if (!matches.length) {
-    drop.innerHTML = '<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;font-family:Nunito,sans-serif;">No customers found</div>';
+    drop.innerHTML = '<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;">No customers found</div>';
     return;
   }
-  drop.innerHTML = matches.map(name => {
-    const hi = query
-      ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;border-radius:2px;padding:0 1px;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })()
-      : name;
-    return '<div onmousedown="selectReportCustFromDrop('' + type + '','' + name.replace(/'/g,"\'") + '')" '
-      + 'style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;'
-      + 'font-family:Nunito,sans-serif;transition:background 0.1s;" '
-      + 'onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">'
-      + hi + '</div>';
+  drop.innerHTML = matches.map(function(name) {
+    const safe = name.replace(/"/g, '&quot;');
+    const hi = query ? (function(){ var i = name.toLowerCase().indexOf(query); return i >= 0 ? name.slice(0,i) + '<mark style="background:#fff176;">' + name.slice(i, i+query.length) + '</mark>' + name.slice(i+query.length) : name; })() : name;
+    return '<div onmousedown="selectReportCustFromDrop(' + JSON.stringify(type) + ',' + JSON.stringify(name) + ')"'
+      + ' style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;"'
+      + ' onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'\'">'+hi+'</div>';
   }).join('');
 }
 
