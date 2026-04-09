@@ -2652,9 +2652,9 @@ body.role-guest #s-edit-bar { display:none !important; }
 </div>
 
 <!-- ── LOGOUT BUTTON ─────────────────────────────────────────── -->
-<div id="rio-logout-wrap" style="display:none;position:fixed;top:8px;right:12px;z-index:9100;flex-direction:column;align-items:stretch;gap:0;border-radius:9px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.18);min-width:130px;">
-  <div id="rio-logged-userbox" style="background:#1a237e;color:#c5cae9;font-size:0.7rem;font-weight:700;padding:6px 12px;font-family:Exo 2,sans-serif;letter-spacing:0.3px;white-space:nowrap;text-align:center;"></div>
-  <button id="rio-logout-btn" onclick="rioLogout()" style="background:#c62828;color:white;border:none;padding:7px 12px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.72rem;cursor:pointer;width:100%;text-align:center;">⎋ Logout</button>
+<div id="rio-logout-wrap" style="display:none;position:fixed;top:62px;right:12px;z-index:9100;flex-direction:column;align-items:flex-end;gap:3px;">
+  <div id="rio-logged-userbox" style="background:rgba(26,35,126,0.88);color:#c5cae9;font-size:0.65rem;font-weight:700;padding:3px 10px;border-radius:6px;font-family:Exo 2,sans-serif;white-space:nowrap;"></div>
+  <button id="rio-logout-btn" onclick="rioLogout()" style="background:#c62828;color:white;border:none;padding:4px 12px;border-radius:6px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.72rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2);">⎋ Logout</button>
 </div>
 
 <div id="rio-mobile-bar">
@@ -12645,7 +12645,8 @@ function exportLedgerCSV() {
 
 <script>
 // ── RIO PRINT MEDIA LOGIN ────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
+// Script is at page bottom — DOM is already ready, run immediately
+(function() {
 
   var SESSION_KEY = 'rio_session';
 
@@ -12870,7 +12871,7 @@ window.rioDoLogin = async function() {
     }
   };
 
-});
-</script>
+})();
+/script>
 </body>
 </html>
