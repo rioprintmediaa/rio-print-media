@@ -2647,7 +2647,7 @@ body.role-guest #s-edit-bar { display:none !important; }
 </div>
 
 <!-- ── LOGOUT BUTTON ─────────────────────────────────────────── -->
-<div id="rio-logout-wrap" style="display:none;position:fixed;top:14px;right:14px;z-index:9200;flex-direction:row;align-items:center;gap:8px;background:white;border:1.5px solid #e0e0e0;border-radius:20px;padding:4px 6px 4px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+<div id="rio-logout-wrap" style="display:none;position:fixed;top:52px;right:14px;z-index:9200;flex-direction:row;align-items:center;gap:8px;background:white;border:1.5px solid #e0e0e0;border-radius:20px;padding:4px 6px 4px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
   <div id="rio-logged-userbox" style="font-size:0.72rem;font-weight:700;color:#1a237e;font-family:Exo 2,sans-serif;white-space:nowrap;"></div>
   <button id="rio-logout-btn" onclick="rioLogout()" style="background:#c62828;color:white;border:none;padding:4px 10px;border-radius:14px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.68rem;cursor:pointer;white-space:nowrap;">⎋ Logout</button>
 </div>
@@ -2951,7 +2951,7 @@ function rioToggleNav() {
       <div class="addr-line"><strong>Ph: 9962011515</strong> &nbsp;|&nbsp; GST: 33BCFPR3860P1Z2</div>
     </div>
     <!-- Daily Proverb & Quote (single line quote + author 2nd line, bottom aligned) -->
-    <div id="daily-wisdom" style="margin-left:8px;margin-right:155px;max-width:400px;display:flex;gap:14px;align-items:flex-end;align-self:flex-end;padding-bottom:2px;">
+    <div id="daily-wisdom" style="margin-left:auto;margin-right:170px;max-width:420px;display:flex;gap:14px;align-items:flex-end;align-self:flex-end;padding-bottom:4px;">
       <div style="flex:1;text-align:left;border-right:2px solid #d0d0d0;padding-right:16px;">
         <div id="proverb-text" style="font-size:0.78rem;color:#e65100;line-height:1.4;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px;">"A journey of a thousand miles begins with a single step."</div>
         <div id="proverb-author" style="font-size:0.68rem;color:#e65100;font-weight:400;margin-top:2px;">—Medieval Proverb</div>
@@ -2971,7 +2971,7 @@ function rioToggleNav() {
     <!-- ════════════════════════════════════════════════════════
          0. DASHBOARD — landing page
     ════════════════════════════════════════════════════════ -->
-    <div id="panel-dashboard" class="panel active" style="background:linear-gradient(160deg,#fff8f0 0%,#fff3e0 100%);border-top:3px solid #ffa726;">
+    <div id="panel-dashboard" class="panel" style="background:linear-gradient(160deg,#fff8f0 0%,#fff3e0 100%);border-top:3px solid #ffa726;">
 
       <!-- Header -->
       <div class="panel-header" style="border-bottom-color:#ffe0b2;position:relative;min-height:64px;">
@@ -6933,8 +6933,23 @@ async function _saveSalesEntryInner() {
       _jobsWrite(local);
       api('/jobs', { method:'POST', body: JSON.stringify(jobEntry) });
 
-      // Invoice is created manually from the Invoice page (auto-creation removed)
-      toast('Sales entry saved ✓ — SNo ' + savedSNo, 'success');
+      // ── AUTO-GENERATE INVOICE if product selected ─────────────
+      const prodId = gv('s-product-id');
+      if (prodId && prodId !== '0' && prodId !== '') {
+        d.SNo = savedSNo;
+        try {
+          const invNo = await autoSaveInvoiceFromSales(d);
+          if (invNo) {
+            toast('✓ Saved (SNo ' + savedSNo + ') — Invoice ' + invNo + ' auto-generated ✓', 'success');
+          } else {
+            toast('Sales entry saved ✓ (SNo ' + savedSNo + ')', 'success');
+          }
+        } catch(e) {
+          toast('Sales entry saved ✓ (SNo ' + savedSNo + ') — Invoice failed: ' + e.message, 'success');
+        }
+      } else {
+        toast('Sales entry saved ✓ — SNo ' + savedSNo, 'success');
+      }
     }
     else if (res?.error) return toast('Error: '+res.error,'error');
   }
@@ -7421,6 +7436,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.rioStartApp = function() {
   if (window._rioAppStarted) return; // prevent double-start
   window._rioAppStarted = true;
+  // Show dashboard panel first
+  if (typeof showPanel === 'function') showPanel('dashboard');
   // Small delay to let browser paint the page first
   setTimeout(function(){
     try { loadAll(); } catch(e) { console.error('[RIO] loadAll error:', e); }
