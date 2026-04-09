@@ -2483,12 +2483,7 @@ tbody td:last-child { border-right: none; }
 }
 
 /* ── LOGOUT BUTTON ────────────────────────────────────────── */
-#rio-logout-btn {
-  position:fixed;top:10px;right:12px;z-index:9000;
-  background:#c62828;color:white;border:none;border-radius:8px;
-  padding:7px 16px;font-family:Exo 2,sans-serif;font-weight:700;
-  font-size:0.78rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);
-}
+/* #rio-logout-btn styling is now inline on the element */
 
 /* ── ROLE RESTRICTIONS ────────────────────────────────────── */
 body.role-expense #nav { display:none !important; }
@@ -2652,9 +2647,9 @@ body.role-guest #s-edit-bar { display:none !important; }
 </div>
 
 <!-- ── LOGOUT BUTTON ─────────────────────────────────────────── -->
-<div id="rio-logout-wrap" style="display:none;position:fixed;top:62px;right:12px;z-index:9100;flex-direction:column;align-items:flex-end;gap:3px;">
-  <div id="rio-logged-userbox" style="background:rgba(26,35,126,0.88);color:#c5cae9;font-size:0.65rem;font-weight:700;padding:3px 10px;border-radius:6px;font-family:Exo 2,sans-serif;white-space:nowrap;"></div>
-  <button id="rio-logout-btn" onclick="rioLogout()" style="background:#c62828;color:white;border:none;padding:4px 12px;border-radius:6px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.72rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2);">⎋ Logout</button>
+<div id="rio-logout-wrap" style="display:none;position:fixed;top:14px;right:14px;z-index:9200;flex-direction:row;align-items:center;gap:8px;background:white;border:1.5px solid #e0e0e0;border-radius:20px;padding:4px 6px 4px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+  <div id="rio-logged-userbox" style="font-size:0.72rem;font-weight:700;color:#1a237e;font-family:Exo 2,sans-serif;white-space:nowrap;"></div>
+  <button id="rio-logout-btn" onclick="rioLogout()" style="background:#c62828;color:white;border:none;padding:4px 10px;border-radius:14px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.68rem;cursor:pointer;white-space:nowrap;">⎋ Logout</button>
 </div>
 
 <div id="rio-mobile-bar">
@@ -2966,7 +2961,7 @@ function rioToggleNav() {
         <div id="quote-author" style="font-size:0.68rem;color:#6a1b9a;font-style:normal;font-weight:400;margin-top:2px;">—Winston Churchill</div>
       </div>
     </div>
-    <span id="rio-logged-user" style="margin-left:auto;font-family:Exo 2,sans-serif;font-size:0.72rem;font-weight:700;color:#555;white-space:nowrap;"></span>
+    
     <div class="sql-status" id="sql-status" style="margin-left:12px;display:none;">Connecting...</div>
   </header>
 
@@ -6035,9 +6030,9 @@ function renderSales(data) {
         <td>${r.Balance3Amt?'₹'+fn(r.Balance3Amt):'–'}</td>
         <td class="${rem>0?'td-pending':'td-green'}">₹${fn(rem)}</td>
         <td style="white-space:nowrap;">
-          <button onclick="saveInvoiceFromSales(${r.SNo})" title="Generate &amp; save invoice"
+          <button onclick="generateInvoiceFromSales(${r.SNo})" title="Open in Invoice page"
             style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border:1.5px solid #005073;border-radius:6px;background:#e0f4ff;color:#005073;font-family:Exo 2,sans-serif;font-size:0.65rem;font-weight:700;cursor:pointer;">
-            <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>Invoice
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>→ Invoice
           </button>
         </td>
       </tr>`;
@@ -6938,23 +6933,8 @@ async function _saveSalesEntryInner() {
       _jobsWrite(local);
       api('/jobs', { method:'POST', body: JSON.stringify(jobEntry) });
 
-      // ── AUTO-GENERATE INVOICE if product selected ─────────────
-      const prodId = gv('s-product-id');
-      if (prodId && prodId !== '0' && prodId !== '') {
-        d.SNo = savedSNo;
-        try {
-          const invNo = await autoSaveInvoiceFromSales(d);
-          if (invNo) {
-            toast('✓ Saved (SNo ' + savedSNo + ') — Invoice ' + invNo + ' auto-generated ✓', 'success');
-          } else {
-            toast('Sales entry saved ✓ (SNo ' + savedSNo + ')', 'success');
-          }
-        } catch(e) {
-          toast('Sales entry saved ✓ (SNo ' + savedSNo + ') — Invoice failed: ' + e.message, 'success');
-        }
-      } else {
-        toast('Sales entry saved ✓ — SNo ' + savedSNo, 'success');
-      }
+      // Invoice is created manually from the Invoice page (auto-creation removed)
+      toast('Sales entry saved ✓ — SNo ' + savedSNo, 'success');
     }
     else if (res?.error) return toast('Error: '+res.error,'error');
   }
@@ -12005,11 +11985,16 @@ async function loadLedgerPanel() {
   // Populate ledger FY select (no "All Years")
   buildLedgerFYOptions();
 
-  // Ensure a FY is always selected — default to current FY
+  // Always force a valid FY value
   const fyEl = document.getElementById('ledger-fy-select');
-  if (fyEl && !fyEl.value) fyEl.value = currentFY();
+  const defaultFY = currentFY();
+  if (fyEl && !fyEl.value) fyEl.value = defaultFY;
+  if (fyEl && fyEl.options.length === 0) {
+    fyEl.innerHTML = '<option value="' + defaultFY + '">' + defaultFY + '</option>';
+    fyEl.value = defaultFY;
+  }
 
-  const fy = ledgerCurrentFY() || currentFY();
+  const fy = ledgerCurrentFY() || defaultFY;
   console.log('[LEDGER] Loading for FY:', fy);
 
   const obLabel = document.getElementById('ob-fy-label');
@@ -12672,8 +12657,7 @@ function exportLedgerCSV() {
     var userbox = document.getElementById('rio-logged-userbox');
     if (userbox && u) userbox.textContent = '👤 ' + u.name + ' (' + u.role + ')';
     // Header badge
-    var nameEl = document.getElementById('rio-logged-user');
-    if (nameEl && u) nameEl.textContent = u.name + ' (' + u.role + ')';
+    // rio-logged-userbox is used instead of rio-logged-user
   }
 
   function showLoginOverlay() {
@@ -12681,8 +12665,7 @@ function exportLedgerCSV() {
     if (ov) ov.style.display = 'flex';
     var wrap = document.getElementById('rio-logout-wrap');
     if (wrap) wrap.style.display = 'none';
-    var nameEl = document.getElementById('rio-logged-user');
-    if (nameEl) nameEl.textContent = '';
+    // rio-logged-userbox cleared in showLoginOverlay via wrap.style.display=none
     setTimeout(function() {
       var uf = document.getElementById('rio-login-user');
       if (uf) uf.focus();
