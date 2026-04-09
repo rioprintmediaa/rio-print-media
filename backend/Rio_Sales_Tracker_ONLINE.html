@@ -2442,44 +2442,67 @@ tbody td:last-child { border-right: none; }
 /* ── LOGIN OVERLAY ────────────────────────────────────────── */
 #rio-login-overlay {
   position:fixed;top:0;left:0;width:100vw;height:100vh;
-  background:linear-gradient(135deg,#0e1220 0%,#1a237e 100%);
+  background:linear-gradient(145deg,#cfd8dc 0%,#b0bec5 40%,#90a4ae 100%);
   display:none;align-items:center;justify-content:center;
   z-index:99999;flex-direction:column;
 }
 #rio-login-box {
-  background:white;border-radius:18px;padding:36px 32px 28px;
-  width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  background:#eceff1;border-radius:6px;padding:32px 36px 28px;
+  width:90%;max-width:360px;
+  box-shadow:0 8px 32px rgba(55,71,79,0.22),0 2px 8px rgba(0,0,0,0.12);
+  border:1px solid #b0bec5;
 }
 #rio-login-box h2 {
-  margin:0 0 4px;font-family:Exo 2,sans-serif;font-size:1.4rem;
-  color:#1a237e;text-align:center;
+  margin:0 0 28px;font-family:Exo 2,sans-serif;font-size:1.05rem;
+  font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+  color:#546e7a;text-align:center;
 }
-#rio-login-box p {
-  margin:0 0 24px;font-size:0.82rem;color:#888;text-align:center;
-  font-family:Nunito,sans-serif;
-}
+#rio-login-box p { display:none; }
 .rio-login-field {
-  width:100%;margin-bottom:14px;box-sizing:border-box;
-  border:1.5px solid #e0e0e0;border-radius:10px;
-  padding:12px 14px;font-size:1rem;font-family:Nunito,sans-serif;
-  outline:none;transition:border 0.2s;
+  width:100%;margin-bottom:0;box-sizing:border-box;
+  border:none;border-radius:4px;
+  padding:12px 14px 12px 46px;font-size:0.92rem;font-family:Nunito,sans-serif;
+  outline:none;background:#4a6278;color:white;
+  transition:background 0.2s;
 }
-.rio-login-field:focus { border-color:#3949ab; }
+.rio-login-field::placeholder { color:rgba(255,255,255,0.65); }
+.rio-login-field:focus { background:#37536a;outline:none; }
+.rio-login-field-wrap {
+  position:relative;margin-bottom:14px;
+}
+.rio-login-field-wrap .field-icon {
+  position:absolute;left:13px;top:50%;transform:translateY(-50%);
+  font-size:1rem;color:rgba(255,255,255,0.7);pointer-events:none;
+  line-height:1;
+}
 #rio-login-btn {
-  width:100%;padding:13px;
-  background:linear-gradient(90deg,#1a237e,#3949ab);
-  color:white;border:none;border-radius:10px;font-size:1rem;
+  padding:11px 22px;
+  background:linear-gradient(135deg,#37536a,#4a6278);
+  color:white;border:none;border-radius:4px;font-size:0.82rem;
   font-family:Exo 2,sans-serif;font-weight:700;cursor:pointer;
-  margin-top:4px;letter-spacing:0.5px;
+  letter-spacing:1.5px;text-transform:uppercase;
+  transition:background 0.2s;min-width:90px;
 }
+#rio-login-btn:hover { background:linear-gradient(135deg,#2c4357,#37536a); }
 #rio-login-btn:active { opacity:0.85; }
 #rio-login-err {
-  color:#c62828;font-size:0.82rem;text-align:center;
-  margin-top:10px;font-family:Nunito,sans-serif;min-height:18px;
+  color:#c62828;font-size:0.78rem;text-align:center;
+  margin-top:8px;font-family:Nunito,sans-serif;min-height:16px;
 }
 #rio-login-logo {
   font-family:Exo 2,sans-serif;font-size:1.1rem;font-weight:900;
-  color:white;margin-bottom:22px;letter-spacing:2px;text-align:center;opacity:0.9;
+  color:#37474f;margin-bottom:18px;letter-spacing:2px;text-align:center;opacity:0.95;
+}
+#rio-login-remember-row {
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:6px;margin-bottom:4px;
+}
+#rio-login-remember-row label {
+  display:flex;align-items:center;gap:7px;
+  font-family:Nunito,sans-serif;font-size:0.82rem;color:#546e7a;cursor:pointer;
+}
+#rio-login-remember-row input[type=checkbox] {
+  width:15px;height:15px;accent-color:#4a6278;cursor:pointer;
 }
 
 /* ── LOGOUT BUTTON ────────────────────────────────────────── */
@@ -2614,46 +2637,63 @@ body.role-guest #s-edit-bar { display:none !important; }
 
 <!-- ── LOGIN OVERLAY ────────────────────────────────────────── -->
 <div id="rio-login-overlay" style="display:flex;">
-  <div id="rio-login-logo">🖨 RIO PRINT MEDIA</div>
+  <div id="rio-login-logo">🖨&nbsp; RIO PRINT MEDIA</div>
   <div id="rio-login-box">
-    <h2>Welcome Back</h2>
-    <p>Sign in to RIO PRINT MEDIA</p>
-    <input id="rio-login-user" class="rio-login-field" type="text"
-           placeholder="Username" autocomplete="username"
-           onkeydown="if(event.key==='Enter') document.getElementById('rio-login-pass').focus()">
-    <div style="position:relative;">
+    <h2>Member Login</h2>
+
+    <!-- Username -->
+    <div class="rio-login-field-wrap">
+      <span class="field-icon">👤</span>
+      <input id="rio-login-user" class="rio-login-field" type="text"
+             placeholder="Username" autocomplete="username"
+             onkeydown="if(event.key==='Enter') document.getElementById('rio-login-pass').focus()">
+    </div>
+
+    <!-- Password -->
+    <div class="rio-login-field-wrap">
+      <span class="field-icon">🔒</span>
       <input id="rio-login-pass" class="rio-login-field" type="password"
              placeholder="Password" autocomplete="current-password"
              style="padding-right:42px;"
              onkeydown="if(event.key==='Enter') rioDoLogin()">
-      <span onclick="toggleLoginPass()" title="Show/hide password"
-        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:1.1rem;color:#aaa;user-select:none;" id="login-eye">👁</span>
+      <span onclick="toggleLoginPass()" id="login-eye" title="Show/hide password"
+        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:0.95rem;color:rgba(255,255,255,0.6);user-select:none;">👁</span>
     </div>
-    <button id="rio-login-btn" onclick="rioDoLogin()">Sign In</button>
+
+    <!-- Remember me + Login button row -->
+    <div id="rio-login-remember-row">
+      <label>
+        <input type="checkbox" id="rio-login-remember">
+        Remember me
+      </label>
+      <button id="rio-login-btn" onclick="rioDoLogin()">LOGIN</button>
+    </div>
+
     <div id="rio-login-err"></div>
-    <div style="margin-top:14px;text-align:center;">
-      <span onclick="toggleChangePass()" style="font-size:0.75rem;color:#3949ab;cursor:pointer;text-decoration:underline;font-family:Nunito,sans-serif;">🔑 Forgot / Change Password</span>
+
+    <!-- Change password section -->
+    <div style="margin-top:16px;text-align:center;border-top:1px solid #b0bec5;padding-top:12px;">
+      <span onclick="toggleChangePass()" style="font-size:0.72rem;color:#546e7a;cursor:pointer;text-decoration:underline;font-family:Nunito,sans-serif;">🔑 Forgot / Change Password</span>
     </div>
-    <div id="rio-change-pass-box" style="display:none;margin-top:14px;border-top:1px solid #eee;padding-top:14px;">
-      <p style="font-size:0.75rem;color:#555;margin-bottom:8px;font-family:Nunito,sans-serif;">Enter your username and new password:</p>
-      <input id="cp-user" class="rio-login-field" type="text" placeholder="Username" style="margin-bottom:8px;">
-      <input id="cp-old" class="rio-login-field" type="password" placeholder="Current Password">
-      <input id="cp-new" class="rio-login-field" type="password" placeholder="New Password">
-      <input id="cp-confirm" class="rio-login-field" type="password" placeholder="Confirm New Password">
-      <button onclick="rioChangePassword()" style="width:100%;padding:10px;background:linear-gradient(90deg,#2e7d32,#43a047);color:white;border:none;border-radius:10px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;margin-top:4px;">Change Password</button>
+    <div id="rio-change-pass-box" style="display:none;margin-top:12px;">
+      <p style="font-size:0.75rem;color:#546e7a;margin-bottom:8px;font-family:Nunito,sans-serif;">Enter your username and new password:</p>
+      <div class="rio-login-field-wrap"><span class="field-icon">👤</span><input id="cp-user" class="rio-login-field" type="text" placeholder="Username"></div>
+      <div class="rio-login-field-wrap"><span class="field-icon">🔒</span><input id="cp-old" class="rio-login-field" type="password" placeholder="Current Password"></div>
+      <div class="rio-login-field-wrap"><span class="field-icon">🔑</span><input id="cp-new" class="rio-login-field" type="password" placeholder="New Password"></div>
+      <div class="rio-login-field-wrap"><span class="field-icon">✅</span><input id="cp-confirm" class="rio-login-field" type="password" placeholder="Confirm New Password"></div>
+      <button onclick="rioChangePassword()" style="width:100%;padding:10px;background:linear-gradient(135deg,#2e7d32,#43a047);color:white;border:none;border-radius:4px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.82rem;letter-spacing:1px;cursor:pointer;margin-top:4px;text-transform:uppercase;">Change Password</button>
       <div id="cp-err" style="color:#c62828;font-size:0.78rem;text-align:center;margin-top:6px;min-height:16px;"></div>
     </div>
   </div>
 </div>
 
-<!-- ── USER BADGE (username, top-right) ─────────────────────── -->
-<div id="rio-user-badge" style="display:none;position:fixed;top:8px;right:56px;z-index:9201;background:white;border:1.5px solid #c5cae9;border-radius:16px;padding:4px 12px;box-shadow:0 2px 6px rgba(0,0,0,0.10);">
+<!-- ── LOGOUT / USER PILL ────────────────────────────────────── -->
+<div id="rio-logout-wrap" style="display:none;position:fixed;top:8px;right:14px;z-index:9200;flex-direction:row;align-items:center;gap:8px;background:white;border:1.5px solid #e0e0e0;border-radius:20px;padding:4px 6px 4px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
   <div id="rio-logged-userbox" style="font-size:0.72rem;font-weight:700;color:#1a237e;font-family:Exo 2,sans-serif;white-space:nowrap;"></div>
+  <button id="rio-logout-btn" onclick="rioLogout()" title="Logout" style="background:#c62828;color:white;border:none;padding:4px 10px;border-radius:14px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.68rem;cursor:pointer;white-space:nowrap;">⎋ Logout</button>
 </div>
-<!-- ── LOGOUT BUTTON (icon only, separate) ───────────────────── -->
-<div id="rio-logout-wrap" style="display:none;position:fixed;top:8px;right:10px;z-index:9200;flex-direction:row;align-items:center;">
-  <button id="rio-logout-btn" onclick="rioLogout()" title="Logout" style="background:#c62828;color:white;border:none;width:36px;height:36px;border-radius:50%;font-family:Exo 2,sans-serif;font-weight:700;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(198,40,40,0.35);">⎋</button>
-</div>
+<!-- hidden badge shim (kept for JS compatibility) -->
+<div id="rio-user-badge" style="display:none;"></div>
 
 <div id="rio-mobile-bar">
   <button id="rio-hamburger" onclick="rioToggleNav()">&#9776;</button>
@@ -2954,7 +2994,7 @@ function rioToggleNav() {
       <div class="addr-line"><strong>Ph: 9962011515</strong> &nbsp;|&nbsp; GST: 33BCFPR3860P1Z2</div>
     </div>
     <!-- Daily Proverb & Quote (single line quote + author 2nd line, bottom aligned) -->
-    <div id="daily-wisdom" style="margin-left:auto;margin-right:60px;max-width:480px;display:flex;gap:14px;align-items:flex-end;align-self:flex-end;padding-bottom:4px;">
+    <div id="daily-wisdom" style="margin:0 auto;max-width:480px;display:flex;gap:14px;align-items:flex-end;align-self:flex-end;padding-bottom:4px;">
       <div style="flex:1;text-align:left;border-right:2px solid #d0d0d0;padding-right:16px;">
         <div id="proverb-text" style="font-size:0.78rem;color:#e65100;line-height:1.4;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px;">"A journey of a thousand miles begins with a single step."</div>
         <div id="proverb-author" style="font-size:0.68rem;color:#e65100;font-weight:400;margin-top:2px;">—Medieval Proverb</div>
@@ -4017,10 +4057,13 @@ function rioToggleNav() {
           <div style="display:flex;align-items:center;gap:5px;">
             <span style="font-size:0.75rem;font-weight:700;color:#005073;white-space:nowrap;">Customer:</span>
             <div style="position:relative;display:inline-flex;align-items:center;gap:6px;">
-              <select id="inv-customer" onchange="onInvCustomerChange();syncCustSearch()" style="width:220px;height:32px;border:1.5px solid #ccc;border-radius:6px;padding:0 8px;font-size:0.82rem;background:white;box-sizing:border-box;"></select>
-              <input type="text" id="inv-cust-search" placeholder="🔍 Type to filter…" oninput="filterInvCustomer(this.value)" onfocus="showInvCustDrop()" onblur="setTimeout(hideInvCustDrop,200)"
-                style="width:150px;height:32px;border:1.5px solid #90caf9;border-radius:6px;padding:0 8px;font-size:0.82rem;background:#f0f8ff;box-sizing:border-box;">
-              <div id="inv-cust-drop" style="display:none;position:absolute;top:34px;left:0;width:380px;max-height:220px;overflow-y:auto;background:white;border:1.5px solid #90caf9;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,0.13);z-index:500;"></div>
+              <select id="inv-customer" style="display:none;"></select>
+              <input type="text" id="inv-cust-search" placeholder="🔍 Search customer…"
+                oninput="filterInvCustomer(this.value)" onfocus="showInvCustDrop()" onblur="setTimeout(hideInvCustDrop,200)"
+                autocomplete="off"
+                style="width:100%;min-width:280px;height:36px;border:1.5px solid #90caf9;border-radius:8px;padding:0 32px 0 10px;font-size:0.85rem;font-family:Nunito,sans-serif;background:#f0f8ff;box-sizing:border-box;">
+              <span onclick="clearInvCustSearch()" title="Clear" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;color:#aaa;font-size:0.9rem;user-select:none;">✕</span>
+              <div id="inv-cust-drop" style="display:none;position:absolute;top:38px;left:0;width:100%;min-width:300px;max-height:240px;overflow-y:auto;background:white;border:1.5px solid #90caf9;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,0.13);z-index:500;"></div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:5px;">
@@ -4908,9 +4951,11 @@ function rioToggleNav() {
             </div>
           </div>
           
-          <div style="display:flex;gap:12px;">
+          <div id="um-edit-banner" style="display:none;background:#fff3e0;border:1.5px solid #ffb74d;border-radius:8px;padding:8px 14px;font-family:Exo 2,sans-serif;font-size:0.82rem;font-weight:700;color:#e65100;margin-bottom:10px;"></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
             <button onclick="saveUser()" class="btn-action success"><span class="btx-only">Save User</span></button>
             <button onclick="clearUserForm()" class="btn-action secondary"><span class="btx-only">Clear</span></button>
+            <button id="um-cancel-edit-btn" onclick="clearUserForm()" style="display:none;padding:8px 16px;background:#546e7a;color:white;border:none;border-radius:8px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">✕ Cancel Edit</button>
           </div>
         </div>
 
@@ -9044,6 +9089,15 @@ function hideInvCustDrop() {
   const drop = document.getElementById('inv-cust-drop'); if(drop) drop.style.display='none';
 }
 
+function clearInvCustSearch() {
+  const srch = document.getElementById('inv-cust-search'); if (srch) srch.value = '';
+  const sel  = document.getElementById('inv-customer');    if (sel)  sel.value  = '';
+  hideInvCustDrop();
+  const ci = document.getElementById('inv-cust-info'); if (ci) ci.value = '';
+  ['inv-cust-address','inv-cust-mobile','inv-cust-gst','inv-cust-state','inv-cust-state-code']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+}
+
 async function ensureProducts() {
   try {
     // FIX: use window._BILLING_BASE (set after port detection) not BILLING_API
@@ -9664,12 +9718,28 @@ async function _loadInvoiceIntoForm(r) {
   const typeEl=document.getElementById('inv-type');
   if(typeEl) typeEl.value=(billing==='NON-GST')?'NONGST':'GST';
   await rioLoadCustomerDrop('inv-customer');
-  const custEl=document.getElementById('inv-customer');
-  if(custEl&&custId) {
-    custEl.value=custId;
-    const cust=_customers.find(c=>(c.Id||c.id)==custId);
-    const srchEl=document.getElementById('inv-cust-search');
-    if(srchEl) srchEl.value=cust?(cust.Name||cust.name):(r.CustomerName||r.customername||'');
+  const custEl = document.getElementById('inv-customer');
+  const srchEl = document.getElementById('inv-cust-search');
+  const custNameFromRecord = r.CustomerName || r.customername || '';
+  if (custEl) {
+    // Try to match by Id first, then by name
+    let matched = false;
+    if (custId) {
+      const byId = _customers.find(c => (c.Id||c.id) == custId);
+      if (byId) {
+        custEl.value = custId;
+        if (srchEl) srchEl.value = byId.Name || byId.name || custNameFromRecord;
+        matched = true;
+      }
+    }
+    if (!matched && custNameFromRecord) {
+      const byName = _customers.find(c => (c.Name||c.name||'').toLowerCase() === custNameFromRecord.toLowerCase());
+      if (byName) {
+        custEl.value = byName.Id || byName.id || '';
+        matched = true;
+      }
+    }
+    if (srchEl && !srchEl.value) srchEl.value = custNameFromRecord;
     onInvCustomerChange();
   }
 
@@ -10476,14 +10546,18 @@ async function loadSalesReport() {
     }
 
     // Apply filters
+    // sales_records stores BillingType as "With Bill"/"Without Bill" (from sales form)
+    // Report dropdown uses "GST"/"NON-GST" — map them for comparison
+    const typeMap = { 'gst': ['gst','withbill','with bill'], 'nongst': ['nongst','non-gst','withoutbill','without bill'] };
     const typeNorm = type.toLowerCase().replace(/[-_ ]/g,'');
+    const typeAliases = typeMap[typeNorm] || (typeNorm ? [typeNorm] : []);
     let filtered = data.filter(s => {
       const d = (s.OrderDate||'').split('T')[0];
       if (from && d < from) return false;
       if (to   && d > to)   return false;
       if (type) {
         const bt = (s.BillingType||'').toLowerCase().replace(/[-_ ]/g,'');
-        if (bt !== typeNorm) return false;
+        if (!typeAliases.includes(bt)) return false;
       }
       if (customerInput && !(s.Customer||'').toLowerCase().includes(customerInput)) return false;
       return true;
@@ -10618,7 +10692,12 @@ async function loadInvoiceReport() {
       if (type) {
         const bt = (r.BillingType || '').toUpperCase().replace(/[-_ ]/g, '');
         const tv = type.toUpperCase().replace(/[-_ ]/g, '');
-        if (bt !== tv) return false;
+        // "GST" selection should include both GST and IGST records; "NON-GST" exact match
+        if (tv === 'GST') {
+          if (bt !== 'GST' && bt !== 'IGST') return false;
+        } else {
+          if (bt !== tv) return false;
+        }
       }
       return true;
     });
@@ -11581,7 +11660,6 @@ function editUserByName(username) {
     const cells = row.querySelectorAll('td');
     if (cells.length >= 3 && cells[0].textContent.trim() === username) {
       name = cells[1].textContent.trim();
-      // Find role from badge text
       const badge = cells[2].querySelector('span');
       if (badge) {
         const lbl = badge.textContent.trim();
@@ -11597,6 +11675,11 @@ function editUserByName(username) {
   document.getElementById('um-password').value = '';
   document.getElementById('um-role').value = role;
   document.getElementById('um-password').placeholder = 'Leave blank to keep current';
+  // Show cancel edit button & edit mode banner
+  const cancelBtn = document.getElementById('um-cancel-edit-btn');
+  if (cancelBtn) cancelBtn.style.display = 'inline-flex';
+  const banner = document.getElementById('um-edit-banner');
+  if (banner) { banner.textContent = '✏️ Editing: ' + username; banner.style.display = 'block'; }
   document.getElementById('um-username').scrollIntoView({ behavior:'smooth', block:'center' });
   toast('Editing user "' + username + '" — update fields and save', 'success');
 }
@@ -11619,6 +11702,10 @@ async function deleteUserByName(username) {
 
 // ── Clear form ────────────────────────────────────────────────
 function clearUserForm() {
+  const cancelBtn = document.getElementById('um-cancel-edit-btn');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+  const banner = document.getElementById('um-edit-banner');
+  if (banner) banner.style.display = 'none';
   const uEl = document.getElementById('um-username');
   if (uEl) { uEl.value = ''; uEl.dataset.editMode = ''; uEl.readOnly = false; uEl.style.background = ''; }
   const nEl = document.getElementById('um-name');     if (nEl) nEl.value = '';
