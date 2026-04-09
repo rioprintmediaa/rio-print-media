@@ -2646,10 +2646,13 @@ body.role-guest #s-edit-bar { display:none !important; }
   </div>
 </div>
 
-<!-- ── LOGOUT BUTTON ─────────────────────────────────────────── -->
-<div id="rio-logout-wrap" style="display:none;position:fixed;top:52px;right:14px;z-index:9200;flex-direction:row;align-items:center;gap:8px;background:white;border:1.5px solid #e0e0e0;border-radius:20px;padding:4px 6px 4px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+<!-- ── USER BADGE (username, top-right) ─────────────────────── -->
+<div id="rio-user-badge" style="display:none;position:fixed;top:8px;right:56px;z-index:9201;background:white;border:1.5px solid #c5cae9;border-radius:16px;padding:4px 12px;box-shadow:0 2px 6px rgba(0,0,0,0.10);">
   <div id="rio-logged-userbox" style="font-size:0.72rem;font-weight:700;color:#1a237e;font-family:Exo 2,sans-serif;white-space:nowrap;"></div>
-  <button id="rio-logout-btn" onclick="rioLogout()" style="background:#c62828;color:white;border:none;padding:4px 10px;border-radius:14px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.68rem;cursor:pointer;white-space:nowrap;">⎋ Logout</button>
+</div>
+<!-- ── LOGOUT BUTTON (icon only, separate) ───────────────────── -->
+<div id="rio-logout-wrap" style="display:none;position:fixed;top:8px;right:10px;z-index:9200;flex-direction:row;align-items:center;">
+  <button id="rio-logout-btn" onclick="rioLogout()" title="Logout" style="background:#c62828;color:white;border:none;width:36px;height:36px;border-radius:50%;font-family:Exo 2,sans-serif;font-weight:700;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(198,40,40,0.35);">⎋</button>
 </div>
 
 <div id="rio-mobile-bar">
@@ -2951,7 +2954,7 @@ function rioToggleNav() {
       <div class="addr-line"><strong>Ph: 9962011515</strong> &nbsp;|&nbsp; GST: 33BCFPR3860P1Z2</div>
     </div>
     <!-- Daily Proverb & Quote (single line quote + author 2nd line, bottom aligned) -->
-    <div id="daily-wisdom" style="margin-left:auto;margin-right:170px;max-width:420px;display:flex;gap:14px;align-items:flex-end;align-self:flex-end;padding-bottom:4px;">
+    <div id="daily-wisdom" style="margin-left:auto;margin-right:60px;max-width:480px;display:flex;gap:14px;align-items:flex-end;align-self:flex-end;padding-bottom:4px;">
       <div style="flex:1;text-align:left;border-right:2px solid #d0d0d0;padding-right:16px;">
         <div id="proverb-text" style="font-size:0.78rem;color:#e65100;line-height:1.4;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px;">"A journey of a thousand miles begins with a single step."</div>
         <div id="proverb-author" style="font-size:0.68rem;color:#e65100;font-weight:400;margin-top:2px;">—Medieval Proverb</div>
@@ -4116,7 +4119,7 @@ function rioToggleNav() {
           <div style="display:flex;align-items:center;gap:5px;">
             <span style="font-size:0.75rem;font-weight:700;color:#5c17e6;white-space:nowrap;">Type:</span>
             <select id="quot-type" onchange="recalcTotals('quot')" style="height:32px;border:1.5px solid #ccc;border-radius:6px;padding:0 8px;font-size:0.82rem;background:white;box-sizing:border-box;">
-              <option value="GST">GST Invoice</option><option value="NONGST">Non-GST</option></select>
+              <option value="GST">GST Invoice</option><option value="NON-GST">Non-GST</option></select>
           </div>
           <div style="display:flex;align-items:center;gap:5px;">
             <span style="font-size:0.75rem;font-weight:700;color:#5c17e6;white-space:nowrap;">Date:</span>
@@ -4225,7 +4228,7 @@ function rioToggleNav() {
           <input type="date" id="mgr-to" style="border:1px solid #ddd;border-radius:7px;padding:5px 8px;font-size:0.8rem;">
           <button onclick="document.getElementById('mgr-from').value='';document.getElementById('mgr-to').value='';mgrPage=1;loadInvManager();" style="padding:4px 10px;border:1px solid #aaa;border-radius:6px;background:white;color:#666;font-size:0.75rem;cursor:pointer;" title="Clear dates — show all">✕ All</button>
           <label style="font-weight:700;font-size:0.82rem;color:#555;">Type</label>
-          <select id="mgr-type" style="border:1px solid #ddd;border-radius:7px;padding:5px 8px;font-size:0.8rem;"><option value="">All</option><option value="GST">GST</option><option value="NONGST">Non-GST</option></select>
+          <select id="mgr-type" style="border:1px solid #ddd;border-radius:7px;padding:5px 8px;font-size:0.8rem;"><option value="">All</option><option value="GST">GST</option><option value="NON-GST">Non-GST</option></select>
           <button onclick="mgrPage=1;loadInvManager()" style="padding:5px 12px;border:1.5px solid #006494;border-radius:8px;background:#006494;color:white;font-size:0.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search</button>
           <div style="position:relative;margin-left:auto;"><input type="text" id="mgr-search" placeholder="🔍 Search invoice / customer…" oninput="mgrPage=1;loadInvManager()" style="border:1px solid #ddd;border-radius:7px;padding:5px 28px 5px 10px;font-size:0.8rem;width:220px;"><span onclick="document.getElementById('mgr-search').value='';mgrPage=1;loadInvManager()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;color:#aaa;font-size:0.9rem;" title="Clear">✕</span></div>
           <span id="mgr-count" style="font-size:0.78rem;color:#888;font-weight:700;"></span>
@@ -4494,7 +4497,7 @@ function rioToggleNav() {
               <select id="sales-type" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
                 <option value="">All Types</option>
                 <option value="GST">GST</option>
-                <option value="NONGST">Non-GST</option>
+                <option value="NON-GST">Non-GST</option>
               </select>
             </div>
             <div>
@@ -4611,7 +4614,7 @@ function rioToggleNav() {
               <select id="invoice-type" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
                 <option value="">All Types</option>
                 <option value="GST">GST</option>
-                <option value="NONGST">Non-GST</option>
+                <option value="NON-GST">Non-GST</option>
               </select>
             </div>
           </div>
@@ -4662,7 +4665,7 @@ function rioToggleNav() {
               <select id="quotation-type" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
                 <option value="">All Types</option>
                 <option value="GST">GST</option>
-                <option value="NONGST">Non-GST</option>
+                <option value="NON-GST">Non-GST</option>
               </select>
             </div>
           </div>
@@ -4711,7 +4714,7 @@ function rioToggleNav() {
               <select id="customer-type" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Nunito,sans-serif;font-size:0.88rem;">
                 <option value="">All Types</option>
                 <option value="GST">GST</option>
-                <option value="NONGST">Non-GST</option>
+                <option value="NON-GST">Non-GST</option>
               </select>
             </div>
           </div>
@@ -7404,9 +7407,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Show page URL in dashboard status bar
   const du = document.getElementById('debug-url');
   if (du) du.textContent = location.href;
-  // Set today on all empty date inputs
+  // Set today on all empty date inputs — but skip report filter inputs (those get month range below)
   const today = new Date().toISOString().split('T')[0];
-  document.querySelectorAll('input[type="date"]').forEach(el=>{ if(!el.value) el.value=today; });
+  const reportDateIds = new Set(['sales-from','sales-to','invoice-from','invoice-to','quotation-from','quotation-to','customer-from','customer-to','expense-from','expense-to','jobs-from','jobs-to','bank-from','bank-to','breakdown-from','breakdown-to']);
+  document.querySelectorAll('input[type="date"]').forEach(el=>{ if(!el.value && !reportDateIds.has(el.id)) el.value=today; });
+  // Set report date inputs to current month range by default
+  const now = new Date();
+  const monthFirst = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  const monthLast  = new Date(now.getFullYear(), now.getMonth()+1, 0).toISOString().split('T')[0];
+  reportDateIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.value) el.value = id.endsWith('-from') ? monthFirst : monthLast;
+  });
 
   // Add edit bar to sales panel
   const form = document.querySelector('.form-section.indigo-top');
@@ -10578,133 +10590,205 @@ async function loadExpenseReport() {
   }
 }
 
-// Load Invoice Report
+// Load Invoice Report — fetches from /billing/invoices API
 async function loadInvoiceReport() {
-  const from = document.getElementById('invoice-from')?.value || '';
-  const to = document.getElementById('invoice-to')?.value || '';
-  const customer = document.getElementById('invoice-customer')?.value || '';
-  const type = document.getElementById('invoice-type')?.value || '';
-  
+  const from     = document.getElementById('invoice-from')?.value || '';
+  const to       = document.getElementById('invoice-to')?.value   || '';
+  const custVal  = (document.getElementById('invoice-cust-val')?.value || document.getElementById('invoice-customer')?.value || '').trim().toLowerCase();
+  const type     = document.getElementById('invoice-type')?.value || '';
+
   const tableDiv = document.getElementById('invoice-report-table');
   if (!tableDiv) return;
-  
-  tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading...</p>';
-  
+
+  tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading…</p>';
+
   try {
-    let filtered = salesData.filter(s => {
-      if (from && s.OrderDate < from) return false;
-      if (to && s.OrderDate > to) return false;
-      if (customer && s.Customer !== customer) return false;
-      if (type && s.BillingType !== type) return false;
+    let url = '/billing/invoices?pageSize=1000';
+    if (from) url += '&from=' + from;
+    if (to)   url += '&to='   + to;
+    const resp = await api(url);
+    let data = (resp && resp.data) ? resp.data : (Array.isArray(resp) ? resp : []);
+
+    // Client-side filters
+    let filtered = data.filter(r => {
+      const d = (r.InvoiceDate || '').split('T')[0];
+      if (from && d < from) return false;
+      if (to   && d > to)   return false;
+      if (custVal && !(r.CustomerName || '').toLowerCase().includes(custVal)) return false;
+      if (type) {
+        const bt = (r.BillingType || '').toUpperCase().replace(/[-_ ]/g, '');
+        const tv = type.toUpperCase().replace(/[-_ ]/g, '');
+        if (bt !== tv) return false;
+      }
       return true;
     });
-    
-    if (filtered.length === 0) {
-      tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">No data found</p>';
+
+    if (!filtered.length) {
+      tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">No invoices found for the selected filters.</p>';
       return;
     }
-    
+
+    filtered.sort((a, b) => (b.InvoiceDate || '').localeCompare(a.InvoiceDate || ''));
+
+    let totalTaxable = 0, totalCGST = 0, totalSGST = 0, totalIGST = 0, grandTotal = 0;
+
     let html = '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">';
     html += '<thead><tr style="background:#8965e0;color:white;">';
-    html += '<th style="padding:10px;">Invoice No</th><th style="padding:10px;">Date</th><th style="padding:10px;">Customer</th><th style="padding:10px;">Type</th><th style="padding:10px;text-align:right;">Taxable</th><th style="padding:10px;text-align:right;">CGST</th><th style="padding:10px;text-align:right;">SGST</th><th style="padding:10px;text-align:right;">IGST</th><th style="padding:10px;text-align:right;">Total</th>';
+    html += '<th style="padding:10px;">#</th><th style="padding:10px;">Invoice No</th><th style="padding:10px;">Date</th><th style="padding:10px;">Customer</th><th style="padding:10px;">Type</th><th style="padding:10px;text-align:right;">Taxable</th><th style="padding:10px;text-align:right;">CGST</th><th style="padding:10px;text-align:right;">SGST</th><th style="padding:10px;text-align:right;">IGST</th><th style="padding:10px;text-align:right;">Total</th>';
     html += '</tr></thead><tbody>';
-    
+
     filtered.forEach((row, i) => {
+      const taxable = +(row.SubTotal || row.Taxable || 0);
+      const cgst    = +(row.CGST || 0);
+      const sgst    = +(row.SGST || 0);
+      const igst    = +(row.IGST || 0);
+      const total   = +(row.TotalAmount || 0);
+      totalTaxable += taxable; totalCGST += cgst; totalSGST += sgst; totalIGST += igst; grandTotal += total;
       html += `<tr style="background:${i%2?'#f8f9fa':'white'};border-bottom:1px solid #e0e0e0;">`;
-      html += `<td style="padding:8px;"><strong>${row.InvoiceNo || row.SNo || '-'}</strong></td>`;
-      html += `<td style="padding:8px;">${fd(row.OrderDate)}</td>`;
-      html += `<td style="padding:8px;">${row.Customer || ''}</td>`;
-      html += `<td style="padding:8px;">${row.BillingType || ''}</td>`;
-      html += `<td style="padding:8px;text-align:right;">₹${fn(row.TotalAmount || 0)}</td>`;
-      html += `<td style="padding:8px;text-align:right;">₹0.00</td>`;
-      html += `<td style="padding:8px;text-align:right;">₹0.00</td>`;
-      html += `<td style="padding:8px;text-align:right;">₹0.00</td>`;
-      html += `<td style="padding:8px;text-align:right;font-weight:700;">₹${fn(row.TotalAmount || 0)}</td>`;
+      html += `<td style="padding:8px;color:#aaa;font-size:0.75rem;">${i+1}</td>`;
+      html += `<td style="padding:8px;"><strong style="color:#6a11cb;">${row.InvoiceNo || row.invoiceno || '—'}</strong></td>`;
+      html += `<td style="padding:8px;white-space:nowrap;">${fd(row.InvoiceDate) || '—'}</td>`;
+      html += `<td style="padding:8px;">${row.CustomerName || '—'}</td>`;
+      html += `<td style="padding:8px;"><span style="font-size:0.7rem;padding:2px 7px;border-radius:8px;background:#ede7f6;color:#6a1b9a;font-weight:700;">${row.BillingType || '—'}</span></td>`;
+      html += `<td style="padding:8px;text-align:right;">₹${fn(taxable)}</td>`;
+      html += `<td style="padding:8px;text-align:right;">₹${fn(cgst)}</td>`;
+      html += `<td style="padding:8px;text-align:right;">₹${fn(sgst)}</td>`;
+      html += `<td style="padding:8px;text-align:right;">₹${fn(igst)}</td>`;
+      html += `<td style="padding:8px;text-align:right;font-weight:700;color:#6a11cb;">₹${fn(total)}</td>`;
       html += `</tr>`;
     });
-    
+
+    html += `<tr style="background:#8965e0;color:white;font-weight:800;">`;
+    html += `<td colspan="5" style="padding:10px;text-align:right;">Grand Total (${filtered.length} invoices)</td>`;
+    html += `<td style="padding:10px;text-align:right;">₹${fn(totalTaxable)}</td>`;
+    html += `<td style="padding:10px;text-align:right;">₹${fn(totalCGST)}</td>`;
+    html += `<td style="padding:10px;text-align:right;">₹${fn(totalSGST)}</td>`;
+    html += `<td style="padding:10px;text-align:right;">₹${fn(totalIGST)}</td>`;
+    html += `<td style="padding:10px;text-align:right;">₹${fn(grandTotal)}</td>`;
+    html += `</tr>`;
     html += '</tbody></table>';
     tableDiv.innerHTML = html;
-    toast('Invoice report loaded: ' + filtered.length + ' records', 'success');
+    toast('Invoice report: ' + filtered.length + ' records loaded', 'success');
   } catch (e) {
     console.error('Load invoice report error:', e);
-    tableDiv.innerHTML = '<p style="text-align:center;color:#f5365c;padding:40px;">Error loading report</p>';
+    tableDiv.innerHTML = '<p style="text-align:center;color:#f5365c;padding:40px;">Error: ' + e.message + '</p>';
   }
 }
 
-// Load Quotation Report
+// Load Quotation Report — fetches from /billing/quotations API
 async function loadQuotationReport() {
-  const from = document.getElementById('quotation-from')?.value || '';
-  const to = document.getElementById('quotation-to')?.value || '';
-  const customer = document.getElementById('quotation-customer')?.value || '';
-  const type = document.getElementById('quotation-type')?.value || '';
-  
+  const from    = document.getElementById('quotation-from')?.value || '';
+  const to      = document.getElementById('quotation-to')?.value   || '';
+  const custVal = (document.getElementById('quotation-cust-val')?.value || document.getElementById('quotation-customer')?.value || '').trim().toLowerCase();
+  const type    = document.getElementById('quotation-type')?.value || '';
+
   const tableDiv = document.getElementById('quotation-report-table');
   if (!tableDiv) return;
-  
-  tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading...</p>';
-  
+
+  tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading…</p>';
+
   try {
-    // Using sales data as quotation data placeholder
-    let filtered = salesData.filter(s => {
-      if (from && s.OrderDate < from) return false;
-      if (to && s.OrderDate > to) return false;
-      if (customer && s.Customer !== customer) return false;
-      if (type && s.BillingType !== type) return false;
+    let url = '/billing/quotations?pageSize=1000';
+    if (from) url += '&from=' + from;
+    if (to)   url += '&to='   + to;
+    const resp = await api(url);
+    let data = (resp && resp.data) ? resp.data : (Array.isArray(resp) ? resp : []);
+
+    // Client-side filters
+    let filtered = data.filter(r => {
+      const d = (r.QuotationDate || r.InvoiceDate || '').split('T')[0];
+      if (from && d < from) return false;
+      if (to   && d > to)   return false;
+      if (custVal && !(r.CustomerName || '').toLowerCase().includes(custVal)) return false;
+      if (type) {
+        const bt = (r.BillingType || '').toUpperCase().replace(/[-_ ]/g, '');
+        const tv = type.toUpperCase().replace(/[-_ ]/g, '');
+        if (bt !== tv) return false;
+      }
       return true;
     });
-    
-    if (filtered.length === 0) {
-      tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">No quotations found</p>';
+
+    if (!filtered.length) {
+      tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">No quotations found for the selected filters.</p>';
       return;
     }
-    
+
+    filtered.sort((a, b) => ((b.QuotationDate || b.InvoiceDate || '')).localeCompare((a.QuotationDate || a.InvoiceDate || '')));
+
+    let totalTaxable = 0, totalCGST = 0, totalSGST = 0, totalIGST = 0, grandTotal = 0;
+
     let html = '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">';
     html += '<thead><tr style="background:#fb6340;color:white;">';
-    html += '<th style="padding:10px;">Quotation No</th><th style="padding:10px;">Date</th><th style="padding:10px;">Customer</th><th style="padding:10px;">Type</th><th style="padding:10px;text-align:right;">Taxable</th><th style="padding:10px;text-align:right;">CGST</th><th style="padding:10px;text-align:right;">SGST</th><th style="padding:10px;text-align:right;">IGST</th><th style="padding:10px;text-align:right;">Total</th>';
+    html += '<th style="padding:10px;">#</th><th style="padding:10px;">Quotation No</th><th style="padding:10px;">Date</th><th style="padding:10px;">Customer</th><th style="padding:10px;">Type</th><th style="padding:10px;text-align:right;">Taxable</th><th style="padding:10px;text-align:right;">CGST</th><th style="padding:10px;text-align:right;">SGST</th><th style="padding:10px;text-align:right;">IGST</th><th style="padding:10px;text-align:right;">Total</th>';
     html += '</tr></thead><tbody>';
-    
+
     filtered.forEach((row, i) => {
+      const taxable = +(row.SubTotal || row.Taxable || 0);
+      const cgst    = +(row.CGST || 0);
+      const sgst    = +(row.SGST || 0);
+      const igst    = +(row.IGST || 0);
+      const total   = +(row.TotalAmount || 0);
+      totalTaxable += taxable; totalCGST += cgst; totalSGST += sgst; totalIGST += igst; grandTotal += total;
+      const quotNo  = row.QuotationNo || row.quotationno || ('Q' + (row.Id || row.id || i+1));
+      const quotDate = row.QuotationDate || row.InvoiceDate || '';
       html += `<tr style="background:${i%2?'#f8f9fa':'white'};border-bottom:1px solid #e0e0e0;">`;
-      html += `<td style="padding:8px;">Q${row.SNo || ''}</td>`;
-      html += `<td style="padding:8px;">${fd(row.OrderDate)}</td>`;
-      html += `<td style="padding:8px;">${row.Customer || ''}</td>`;
-      html += `<td style="padding:8px;">${row.BillingType || ''}</td>`;
-      html += `<td style="padding:8px;text-align:right;">₹${fn(row.TotalAmount || 0)}</td>`;
-      html += `<td style="padding:8px;text-align:right;">₹0.00</td>`;
-      html += `<td style="padding:8px;text-align:right;">₹0.00</td>`;
-      html += `<td style="padding:8px;text-align:right;">₹0.00</td>`;
-      html += `<td style="padding:8px;text-align:right;font-weight:700;">₹${fn(row.TotalAmount || 0)}</td>`;
+      html += `<td style="padding:8px;color:#aaa;font-size:0.75rem;">${i+1}</td>`;
+      html += `<td style="padding:8px;"><strong style="color:#e64a19;">${quotNo}</strong></td>`;
+      html += `<td style="padding:8px;white-space:nowrap;">${fd(quotDate) || '—'}</td>`;
+      html += `<td style="padding:8px;">${row.CustomerName || '—'}</td>`;
+      html += `<td style="padding:8px;"><span style="font-size:0.7rem;padding:2px 7px;border-radius:8px;background:#fff3e0;color:#e64a19;font-weight:700;">${row.BillingType || '—'}</span></td>`;
+      html += `<td style="padding:8px;text-align:right;">₹${fn(taxable)}</td>`;
+      html += `<td style="padding:8px;text-align:right;">₹${fn(cgst)}</td>`;
+      html += `<td style="padding:8px;text-align:right;">₹${fn(sgst)}</td>`;
+      html += `<td style="padding:8px;text-align:right;">₹${fn(igst)}</td>`;
+      html += `<td style="padding:8px;text-align:right;font-weight:700;color:#e64a19;">₹${fn(total)}</td>`;
       html += `</tr>`;
     });
-    
+
+    html += `<tr style="background:#fb6340;color:white;font-weight:800;">`;
+    html += `<td colspan="5" style="padding:10px;text-align:right;">Grand Total (${filtered.length} quotations)</td>`;
+    html += `<td style="padding:10px;text-align:right;">₹${fn(totalTaxable)}</td>`;
+    html += `<td style="padding:10px;text-align:right;">₹${fn(totalCGST)}</td>`;
+    html += `<td style="padding:10px;text-align:right;">₹${fn(totalSGST)}</td>`;
+    html += `<td style="padding:10px;text-align:right;">₹${fn(totalIGST)}</td>`;
+    html += `<td style="padding:10px;text-align:right;">₹${fn(grandTotal)}</td>`;
+    html += `</tr>`;
     html += '</tbody></table>';
     tableDiv.innerHTML = html;
-    toast('Quotation report loaded: ' + filtered.length + ' records', 'success');
+    toast('Quotation report: ' + filtered.length + ' records loaded', 'success');
   } catch (e) {
     console.error('Load quotation report error:', e);
-    tableDiv.innerHTML = '<p style="text-align:center;color:#f5365c;padding:40px;">Error loading report</p>';
+    tableDiv.innerHTML = '<p style="text-align:center;color:#f5365c;padding:40px;">Error: ' + e.message + '</p>';
   }
 }
 
 // Load Customer-wise Sales Report
 async function loadCustomerReport() {
-  const from = document.getElementById('customer-from')?.value || '';
-  const to = document.getElementById('customer-to')?.value || '';
-  const customer = document.getElementById('customer-customer')?.value || '';
-  const type = document.getElementById('customer-type')?.value || '';
-  
+  const from     = document.getElementById('customer-from')?.value || '';
+  const to       = document.getElementById('customer-to')?.value   || '';
+  const custVal  = (document.getElementById('customer-cust-val')?.value || document.getElementById('customer-customer')?.value || '').trim().toLowerCase();
+  const type     = document.getElementById('customer-type')?.value || '';
+
   const tableDiv = document.getElementById('customer-report-table');
   if (!tableDiv) return;
-  
-  tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading...</p>';
-  
+
+  tableDiv.innerHTML = '<p style="text-align:center;color:#aaa;padding:40px;">Loading…</p>';
+
   try {
-    let filtered = salesData.filter(s => {
-      if (from && s.OrderDate < from) return false;
-      if (to && s.OrderDate > to) return false;
-      if (customer && s.Customer !== customer) return false;
-      if (type && s.BillingType !== type) return false;
+    let url = '/sales?limit=2000';
+    const fetched = await api(url);
+    let data = Array.isArray(fetched) ? fetched : (Array.isArray(salesData) ? salesData : []);
+
+    let filtered = data.filter(s => {
+      const d = (s.OrderDate || '').split('T')[0];
+      if (from && d < from) return false;
+      if (to   && d > to)   return false;
+      if (custVal && !(s.Customer || '').toLowerCase().includes(custVal)) return false;
+      if (type) {
+        const bt = (s.BillingType || '').toUpperCase().replace(/[-_ ]/g, '');
+        const tv = type.toUpperCase().replace(/[-_ ]/g, '');
+        if (bt !== tv) return false;
+      }
       return true;
     });
     
@@ -12657,9 +12741,11 @@ function exportLedgerCSV() {
   function hideLoginOverlay() {
     var ov = document.getElementById('rio-login-overlay');
     if (ov) ov.style.display = 'none';
-    // Show logout wrap with user info
+    // Show logout button and user badge
     var wrap = document.getElementById('rio-logout-wrap');
     if (wrap) wrap.style.display = 'flex';
+    var badge = document.getElementById('rio-user-badge');
+    if (badge) badge.style.display = 'block';
     var u = window._rioUser;
     var userbox = document.getElementById('rio-logged-userbox');
     if (userbox && u) userbox.textContent = '👤 ' + u.name + ' (' + u.role + ')';
@@ -12672,6 +12758,8 @@ function exportLedgerCSV() {
     if (ov) ov.style.display = 'flex';
     var wrap = document.getElementById('rio-logout-wrap');
     if (wrap) wrap.style.display = 'none';
+    var badge = document.getElementById('rio-user-badge');
+    if (badge) badge.style.display = 'none';
     // rio-logged-userbox cleared in showLoginOverlay via wrap.style.display=none
     setTimeout(function() {
       var uf = document.getElementById('rio-login-user');
@@ -12833,6 +12921,8 @@ window.rioDoLogin = async function() {
     try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
     var wrap = document.getElementById('rio-logout-wrap');
     if (wrap) wrap.style.display = 'none';
+    var badge = document.getElementById('rio-user-badge');
+    if (badge) badge.style.display = 'none';
     showLoginOverlay();
     var uEl = document.getElementById('rio-login-user');
     var pEl = document.getElementById('rio-login-pass');
