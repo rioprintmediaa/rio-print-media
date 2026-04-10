@@ -381,7 +381,14 @@ def _connect_mongo():
 async def lifespan(app: FastAPI):
     # DO NOT raise — keep server alive even if DB is temporarily down.
     # Render cold starts can be slow; server retries on first real request.
-    connected = _connect_mongo()
+    connected = False
+    import time as _time
+    for _attempt in range(3):
+        connected = _connect_mongo()
+        if connected:
+            break
+        logger.warning(f"DB connect attempt {_attempt+1}/3 failed — retrying in 4s...")
+        _time.sleep(4)
     if connected:
         try:
             init_indexes()
@@ -428,27 +435,59 @@ def err(msg, status=400):
 # ─────────────────────────────────────────────
 #  SERVE HTML DASHBOARD
 # ─────────────────────────────────────────────
+_DASHBOARD_PATCH = """<style>
+#panel-dashboard.active{display:block !important;}
+#content:not(:has(.panel.active)) #panel-dashboard{display:block !important;}
+</style>
+<script>
+(function(){
+  var _orig=null;
+  function _patchStart(){
+    if(window._rioAppStarted) return;
+    window._rioAppStarted=true;
+    var dash=document.getElementById('panel-dashboard');
+    var any=document.querySelector('.panel.active');
+    if(dash&&!any){
+      document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');p.style.display='';});
+      dash.classList.add('active');
+    }
+    if(typeof _orig==='function') _orig();
+  }
+  var _defined=false;
+  Object.defineProperty(window,'rioStartApp',{
+    set:function(fn){_orig=fn;_defined=true;},
+    get:function(){return _patchStart;},
+    configurable:true
+  });
+})();
+</script>"""
+
+def _read_dashboard_html():
+    if not os.path.exists(HTML_FILE):
+        logger.error(f"HTML file not found: {HTML_FILE} — cwd={os.getcwd()}")
+        return None
+    with open(HTML_FILE, "r", encoding="utf-8") as f:
+        html = f.read()
+    if "</head>" in html:
+        html = html.replace("</head>", _DASHBOARD_PATCH + "\n</head>", 1)
+    logger.info(f"Serving {len(html)} bytes")
+    return html
+
 @app.get("/", response_class=HTMLResponse)
 async def serve_dashboard(request: Request):
     logger.info(f"GET / — serving {HTML_FILE}")
-    if not os.path.exists(HTML_FILE):
-        logger.error(f"HTML file not found: {HTML_FILE} — cwd={os.getcwd()}")
+    html = _read_dashboard_html()
+    if html is None:
         return HTMLResponse(f"<h2>File not found: {HTML_FILE}</h2><p>CWD: {os.getcwd()}</p><p>Files: {os.listdir('.')[:20]}</p>", 404)
-    with open(HTML_FILE, "r", encoding="utf-8") as f:
-        html = f.read()
-    logger.info(f"Serving {len(html)} bytes")
     return HTMLResponse(html)
 
 # Also serve at /api/rio for frontend redirect
 @app.get("/api/rio", response_class=HTMLResponse)
 async def serve_rio_dashboard(request: Request):
     logger.info(f"GET /api/rio — serving {HTML_FILE}")
-    if not os.path.exists(HTML_FILE):
-        logger.error(f"HTML file not found: {HTML_FILE} — cwd={os.getcwd()}")
+    html = _read_dashboard_html()
+    if html is None:
         return HTMLResponse(f"<h2>File not found: {HTML_FILE}</h2><p>CWD: {os.getcwd()}</p><p>Files: {os.listdir('.')[:20]}</p>", 404)
-    with open(HTML_FILE, "r", encoding="utf-8") as f:
-        html = f.read()
-    logger.info(f"Serving {len(html)} bytes from /api/rio")
     return HTMLResponse(html)
 
 
@@ -628,145 +667,6 @@ input,select,textarea,button{{font-family:'Exo 2',sans-serif;}}
   <div class="panel" id="panel-expenses">
     <div class="sec-header">Expenses <span id="m-exp-badge" class="badge badge-orange"></span></div>
     <div id="m-exp-list"><div class="loading">Loading...</div></div>
-
-
-# ═══════════════════════════════════════════════════════════════
-#  AUTH ENDPOINTS
-# ═══════════════════════════════════════════════════════════════
-
-@app.post("/api/auth/register_jwt")
-async def auth_register(request: Request, response: Response):
-    """Register a new user with role assignment."""
-    body = await request.json()
-    email = (body.get("email") or "").strip().lower()
-    password = (body.get("password") or "").strip()
-    name = (body.get("name") or "").strip()
-    role = (body.get("role") or "Billing").strip()  # Default to Billing role
-    
-    if not email or not password:
-        return JSONResponse({"detail": "Email and password required"}, status_code=400)
-    
-    # Check if email already exists
-    if col("users").find_one({"email": email}):
-        return JSONResponse({"detail": "Email already registered"}, status_code=400)
-    
-    # Validate role
-    valid_roles = ["Admin", "Auditing", "Expense", "Billing", "Guest"]
-    if role not in valid_roles:
-        return JSONResponse({"detail": f"Invalid role. Must be one of: {', '.join(valid_roles)}"}, status_code=400)
-    
-    # Hash password and create user
-    hashed = hash_password(password)
-    user_doc = {
-        "email": email,
-        "password_hash": hashed,
-        "name": name or email.split("@")[0],
-        "role": role,
-        "created_at": datetime.now(timezone.utc)
-    }
-    result = col("users").insert_one(user_doc)
-    user_id = str(result.inserted_id)
-    
-    # Create tokens
-    access_token = create_access_token(user_id, email, role)
-    refresh_token = create_refresh_token(user_id)
-    
-    # Set cookies
-    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
-    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
-    
-    return JSONResponse({"id": user_id, "email": email, "name": user_doc["name"], "role": role})
-
-@app.post("/api/auth/login_jwt")
-async def auth_login(request: Request, response: Response):
-    """Login with email and password (JWT cookie-based)."""
-    body = await request.json()
-    email = (body.get("email") or "").strip().lower()
-    password = (body.get("password") or "").strip()
-    
-    if not email or not password:
-        return JSONResponse({"detail": "Email and password required"}, status_code=400)
-    
-    # Brute force check
-    ip = request.client.host
-    identifier = f"{ip}:{email}"
-    attempts_doc = col("login_attempts").find_one({"identifier": identifier})
-    if attempts_doc and attempts_doc.get("count", 0) >= 5:
-        lockout_until = attempts_doc.get("lockout_until")
-        if lockout_until and datetime.now(timezone.utc) < lockout_until:
-            return JSONResponse({"detail": "Too many failed attempts. Try again in 15 minutes."}, status_code=429)
-    
-    # Find user
-    user = col("users").find_one({"email": email})
-    if not user or not verify_password(password, user["password_hash"]):
-        # Increment failed attempts
-        col("login_attempts").update_one(
-            {"identifier": identifier},
-            {
-                "$inc": {"count": 1},
-                "$set": {"lockout_until": datetime.now(timezone.utc) + timedelta(minutes=15)}
-            },
-            upsert=True
-        )
-        return JSONResponse({"detail": "Invalid email or password"}, status_code=401)
-    
-    # Success - clear attempts
-    col("login_attempts").delete_one({"identifier": identifier})
-    
-    user_id = str(user["_id"])
-    role = user.get("role", "Billing")
-    
-    # Create tokens
-    access_token = create_access_token(user_id, email, role)
-    refresh_token = create_refresh_token(user_id)
-    
-    # Set cookies
-    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
-    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
-    
-    return JSONResponse({"id": user_id, "email": email, "name": user.get("name", ""), "role": role})
-
-@app.get("/api/auth/me")
-async def auth_me(request: Request):
-    """Get current user info from JWT."""
-    user = await get_current_user(request)
-    return JSONResponse(user)
-
-@app.post("/api/auth/logout")
-async def auth_logout(response: Response):
-    """Clear auth cookies."""
-    response.delete_cookie("access_token", path="/")
-    response.delete_cookie("refresh_token", path="/")
-    return JSONResponse({"ok": True})
-
-@app.post("/api/auth/refresh")
-async def auth_refresh(request: Request, response: Response):
-    """Refresh access token using refresh token."""
-    token = request.cookies.get("refresh_token")
-    if not token:
-        raise HTTPException(status_code=401, detail="No refresh token")
-    
-    try:
-        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
-        if payload.get("type") != "refresh":
-            raise HTTPException(status_code=401, detail="Invalid token type")
-        
-        user = col("users").find_one({"_id": ObjectId(payload["sub"])})
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        
-        user_id = str(user["_id"])
-        email = user["email"]
-        role = user.get("role", "Billing")
-        
-        new_access_token = create_access_token(user_id, email, role)
-        response.set_cookie(key="access_token", value=new_access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
-        
-        return JSONResponse({"ok": True})
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Refresh token expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
 
 
   </div>
@@ -1142,6 +1042,145 @@ function fmtL(v) {{
 </body>
 </html>"""
     return HTMLResponse(html)
+
+# ═══════════════════════════════════════════════════════════════
+#  AUTH ENDPOINTS
+# ═══════════════════════════════════════════════════════════════
+
+@app.post("/api/auth/register_jwt")
+async def auth_register(request: Request, response: Response):
+    """Register a new user with role assignment."""
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    password = (body.get("password") or "").strip()
+    name = (body.get("name") or "").strip()
+    role = (body.get("role") or "Billing").strip()  # Default to Billing role
+    
+    if not email or not password:
+        return JSONResponse({"detail": "Email and password required"}, status_code=400)
+    
+    # Check if email already exists
+    if col("users").find_one({"email": email}):
+        return JSONResponse({"detail": "Email already registered"}, status_code=400)
+    
+    # Validate role
+    valid_roles = ["Admin", "Auditing", "Expense", "Billing", "Guest"]
+    if role not in valid_roles:
+        return JSONResponse({"detail": f"Invalid role. Must be one of: {', '.join(valid_roles)}"}, status_code=400)
+    
+    # Hash password and create user
+    hashed = hash_password(password)
+    user_doc = {
+        "email": email,
+        "password_hash": hashed,
+        "name": name or email.split("@")[0],
+        "role": role,
+        "created_at": datetime.now(timezone.utc)
+    }
+    result = col("users").insert_one(user_doc)
+    user_id = str(result.inserted_id)
+    
+    # Create tokens
+    access_token = create_access_token(user_id, email, role)
+    refresh_token = create_refresh_token(user_id)
+    
+    # Set cookies
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    
+    return JSONResponse({"id": user_id, "email": email, "name": user_doc["name"], "role": role})
+
+@app.post("/api/auth/login_jwt")
+async def auth_login(request: Request, response: Response):
+    """Login with email and password (JWT cookie-based)."""
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    password = (body.get("password") or "").strip()
+    
+    if not email or not password:
+        return JSONResponse({"detail": "Email and password required"}, status_code=400)
+    
+    # Brute force check
+    ip = request.client.host
+    identifier = f"{ip}:{email}"
+    attempts_doc = col("login_attempts").find_one({"identifier": identifier})
+    if attempts_doc and attempts_doc.get("count", 0) >= 5:
+        lockout_until = attempts_doc.get("lockout_until")
+        if lockout_until and datetime.now(timezone.utc) < lockout_until:
+            return JSONResponse({"detail": "Too many failed attempts. Try again in 15 minutes."}, status_code=429)
+    
+    # Find user
+    user = col("users").find_one({"email": email})
+    if not user or not verify_password(password, user["password_hash"]):
+        # Increment failed attempts
+        col("login_attempts").update_one(
+            {"identifier": identifier},
+            {
+                "$inc": {"count": 1},
+                "$set": {"lockout_until": datetime.now(timezone.utc) + timedelta(minutes=15)}
+            },
+            upsert=True
+        )
+        return JSONResponse({"detail": "Invalid email or password"}, status_code=401)
+    
+    # Success - clear attempts
+    col("login_attempts").delete_one({"identifier": identifier})
+    
+    user_id = str(user["_id"])
+    role = user.get("role", "Billing")
+    
+    # Create tokens
+    access_token = create_access_token(user_id, email, role)
+    refresh_token = create_refresh_token(user_id)
+    
+    # Set cookies
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    
+    return JSONResponse({"id": user_id, "email": email, "name": user.get("name", ""), "role": role})
+
+@app.get("/api/auth/me")
+async def auth_me(request: Request):
+    """Get current user info from JWT."""
+    user = await get_current_user(request)
+    return JSONResponse(user)
+
+@app.post("/api/auth/logout")
+async def auth_logout(response: Response):
+    """Clear auth cookies."""
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+    return JSONResponse({"ok": True})
+
+@app.post("/api/auth/refresh")
+async def auth_refresh(request: Request, response: Response):
+    """Refresh access token using refresh token."""
+    token = request.cookies.get("refresh_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="No refresh token")
+    
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        
+        user = col("users").find_one({"_id": ObjectId(payload["sub"])})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        user_id = str(user["_id"])
+        email = user["email"]
+        role = user.get("role", "Billing")
+        
+        new_access_token = create_access_token(user_id, email, role)
+        response.set_cookie(key="access_token", value=new_access_token, httponly=True, secure=False, samesite="lax", max_age=900, path="/")
+        
+        return JSONResponse({"ok": True})
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Refresh token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
 
 # ─────────────────────────────────────────────
 #  DB RECONNECT HELPER

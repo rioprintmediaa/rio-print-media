@@ -2446,88 +2446,87 @@ tbody td:last-child { border-right: none; }
   display:none;align-items:center;justify-content:center;
   z-index:99999;
 }
+#rio-login-overlay {
+  position:fixed;top:0;left:0;width:100vw;height:100vh;
+  background:#0d1117;
+  display:none;align-items:center;justify-content:center;
+  z-index:99999;
+}
 #rio-login-card {
-  display:grid;grid-template-columns:2fr 3fr;
-  width:96%;max-width:820px;min-height:480px;
-  border-radius:8px;overflow:hidden;
-  box-shadow:0 24px 64px rgba(0,0,0,0.6);
-  border:1px solid #1f2937;
+  display:grid;grid-template-columns:240px 1fr;
+  width:94%;max-width:760px;min-height:460px;
+  border-radius:10px;overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,0.7);
+  border:1px solid #1f2d3d;
 }
 #rio-login-brand {
-  background:linear-gradient(160deg,#1e3a5f 0%,#0f2035 100%);
-  padding:44px 36px;display:flex;flex-direction:column;
+  background:linear-gradient(160deg,#0f2039 0%,#0a1628 100%);
+  padding:40px 32px;display:flex;flex-direction:column;
   justify-content:space-between;position:relative;overflow:hidden;
 }
 #rio-login-brand::before {
   content:'';position:absolute;inset:0;
-  background-image:repeating-linear-gradient(0deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0.03) 1px,transparent 1px,transparent 40px),
-    repeating-linear-gradient(90deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0.03) 1px,transparent 1px,transparent 40px);
+  background-image:
+    repeating-linear-gradient(0deg,rgba(255,255,255,0.025) 0px,rgba(255,255,255,0.025) 1px,transparent 1px,transparent 28px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,0.025) 0px,rgba(255,255,255,0.025) 1px,transparent 1px,transparent 28px);
   pointer-events:none;
 }
 #rio-login-box {
-  background:#1f2937;padding:44px 44px 36px;
-  display:flex;flex-direction:column;justify-content:center;gap:20px;
+  background:#161f2e;padding:44px 40px;
+  display:flex;flex-direction:column;justify-content:center;gap:22px;
 }
-#rio-login-box h2 {
-  margin:0 0 4px;font-family:Exo 2,sans-serif;font-size:1.15rem;
-  font-weight:800;letter-spacing:3px;text-transform:uppercase;
-  color:#f9fafb;
-}
-#rio-login-box p { display:none; }
-#rio-login-sub {
-  color:rgba(156,163,175,0.7);font-size:0.7rem;
-  letter-spacing:2px;text-transform:uppercase;
-  font-family:Exo 2,sans-serif;margin:0 0 10px;
-}
-.rio-login-field-group { display:flex;flex-direction:column;gap:4px;margin-bottom:4px; }
+.rio-login-field-group { display:flex;flex-direction:column;gap:6px; }
 .rio-login-field-label {
-  color:rgba(156,163,175,0.8);font-size:0.68rem;
-  letter-spacing:2px;text-transform:uppercase;font-family:Exo 2,sans-serif;
+  font-size:0.66rem;font-weight:700;letter-spacing:1.8px;
+  text-transform:uppercase;color:rgba(255,255,255,0.4);
+  font-family:'Exo 2',sans-serif;
 }
-.rio-login-field {
-  width:100%;box-sizing:border-box;
-  border:1px solid rgba(255,255,255,0.1);border-radius:5px;
-  padding:12px 42px 12px 14px;font-size:0.9rem;font-family:Nunito,sans-serif;
-  outline:none;background:rgba(255,255,255,0.05);color:#f9fafb;
-  transition:border-color 0.2s,background 0.2s;
-}
-.rio-login-field::placeholder { color:rgba(156,163,175,0.45);font-size:0.82rem; }
-.rio-login-field:focus { border-color:rgba(56,189,248,0.5);background:rgba(255,255,255,0.07); }
 .rio-login-field-wrap { position:relative; }
-.rio-login-field-wrap .field-icon {
-  position:absolute;right:13px;top:50%;transform:translateY(-50%);
-  font-size:0.85rem;color:rgba(156,163,175,0.5);pointer-events:none;line-height:1;
+.rio-login-field {
+  width:100%;background:#1f2d3d;
+  border:1.5px solid #263548;border-radius:6px;
+  padding:11px 38px 11px 13px;
+  color:#e2e8f0;font-size:0.87rem;outline:none;
+  font-family:'Nunito',sans-serif;box-sizing:border-box;
+  transition:border-color 0.2s;
 }
-#rio-login-btn {
-  padding:12px 24px;
-  background:linear-gradient(90deg,#1e3a5f,#2563eb);
-  color:white;border:none;border-radius:5px;font-size:0.72rem;
-  font-family:Exo 2,sans-serif;font-weight:800;cursor:pointer;
-  letter-spacing:2.5px;text-transform:uppercase;
-  transition:opacity 0.2s;
+.rio-login-field:focus { border-color:#3b82f6; }
+.rio-login-field::placeholder { color:rgba(255,255,255,0.18); }
+.field-icon {
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  font-size:13px;opacity:0.3;pointer-events:none;
 }
-#rio-login-btn:hover { opacity:0.88; }
-#rio-login-btn:active { opacity:0.75; }
-#rio-login-err {
-  color:#f87171;font-size:0.75rem;
-  margin-top:2px;font-family:Nunito,sans-serif;min-height:16px;
-}
-#rio-login-logo { display:none; }
 #rio-login-remember-row {
-  display:flex;align-items:center;justify-content:space-between;margin-top:2px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
 }
 #rio-login-remember-row label {
   display:flex;align-items:center;gap:7px;
-  font-family:Nunito,sans-serif;font-size:0.8rem;color:rgba(156,163,175,0.6);cursor:pointer;
+  font-size:0.78rem;color:rgba(255,255,255,0.35);
+  font-family:'Nunito',sans-serif;cursor:pointer;
 }
-#rio-login-remember-row input[type=checkbox] {
-  width:14px;height:14px;accent-color:#2563eb;cursor:pointer;
+#rio-login-remember-row label input[type=checkbox] {
+  accent-color:#3b82f6;width:14px;height:14px;cursor:pointer;
+}
+#rio-login-btn {
+  background:linear-gradient(90deg,#1d4ed8,#2563eb);
+  color:white;border:none;border-radius:6px;
+  padding:11px 28px;
+  font-size:0.75rem;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;cursor:pointer;
+  font-family:'Exo 2',sans-serif;white-space:nowrap;
+}
+#rio-login-btn:hover { background:linear-gradient(90deg,#1e40af,#1d4ed8); }
+#rio-login-btn:disabled { opacity:0.6;cursor:not-allowed; }
+#rio-login-err {
+  min-height:18px;font-size:0.78rem;color:#f87171;
+  text-align:center;font-family:'Nunito',sans-serif;
 }
 @media(max-width:600px){
   #rio-login-card{grid-template-columns:1fr;min-height:auto;}
-  #rio-login-brand{padding:28px 24px;min-height:auto;}
+  #rio-login-brand{padding:28px 24px;min-height:160px;}
   #rio-login-box{padding:28px 24px;}
 }
+
 
 /* ── LOGOUT BUTTON ────────────────────────────────────────── */
 /* #rio-logout-btn styling is now inline on the element */
@@ -2660,45 +2659,42 @@ body.role-guest #s-edit-bar { display:none !important; }
 <body>
 
 <!-- ── LOGIN OVERLAY ────────────────────────────────────────── -->
+<!-- ── LOGIN OVERLAY — Option 6: Midnight Split ─────────────── -->
 <div id="rio-login-overlay" style="display:flex;">
-  <div id="rio-login-logo"></div>
   <div id="rio-login-card">
 
     <!-- ── LEFT BRAND PANEL ───────────────────────────────── -->
     <div id="rio-login-brand">
-      <!-- Top: Logo + name (logo centered below name) -->
-      <div style="position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;">
-        <div>
-          <div style="font-family:Exo 2,sans-serif;font-size:1.45rem;font-weight:900;letter-spacing:2px;line-height:1.15;">
-            <span style="color:#22d3ee;">RIO </span><span style="color:#e879f9;">PRINT MEDIA</span>
-          </div>
-          <div style="color:rgba(56,189,248,0.6);font-family:Exo 2,sans-serif;font-size:0.68rem;letter-spacing:3px;text-transform:uppercase;margin-top:5px;">Management Portal</div>
-        </div>
-        <!-- Logo centered below company name, blue background matching page -->
-        <div style="width:72px;height:72px;border-radius:12px;background:linear-gradient(135deg,#1e3a6e,#0f2d5c);display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(56,189,248,0.25);margin-top:6px;">
-          <svg viewBox="0 0 24 24" width="36" height="36" fill="none">
+      <div style="position:relative;z-index:1;">
+        <!-- Logo icon -->
+        <div style="width:62px;height:62px;border-radius:10px;background:linear-gradient(135deg,#1a3a6e,#0d2248);display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(56,189,248,0.3);margin-bottom:18px;">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none">
             <rect x="3" y="3" width="7" height="7" rx="1" fill="#22d3ee" opacity="0.9"/>
-            <rect x="14" y="3" width="7" height="7" rx="1" fill="#e879f9" opacity="0.9"/>
-            <rect x="3" y="14" width="7" height="7" rx="1" fill="#e879f9" opacity="0.9"/>
+            <rect x="14" y="3" width="7" height="7" rx="1" fill="#a78bfa" opacity="0.9"/>
+            <rect x="3" y="14" width="7" height="7" rx="1" fill="#a78bfa" opacity="0.9"/>
             <rect x="14" y="14" width="7" height="7" rx="1" fill="#22d3ee" opacity="0.9"/>
           </svg>
         </div>
-        <!-- Decorative divider -->
-        <div style="width:100%;height:1px;background:linear-gradient(90deg,rgba(56,189,248,0.4),rgba(232,121,249,0.2),transparent);margin-top:8px;"></div>
+        <!-- Company name -->
+        <div style="font-family:'Exo 2',sans-serif;font-size:1.35rem;font-weight:900;letter-spacing:2px;line-height:1.2;color:#fff;">
+          <span style="color:#22d3ee;">RIO </span>PRINT<br>MEDIA
+        </div>
+        <div style="color:rgba(56,189,248,0.55);font-family:'Exo 2',sans-serif;font-size:0.62rem;letter-spacing:3px;text-transform:uppercase;margin-top:6px;">Management Portal</div>
+        <!-- Divider -->
+        <div style="width:100%;height:1px;background:linear-gradient(90deg,rgba(56,189,248,0.4),transparent);margin-top:18px;"></div>
       </div>
-      </div>
-      <!-- Bottom: slogan -->
-      <div style="position:relative;">
-        <div style="width:28px;height:2px;background:rgba(56,189,248,0.4);margin-bottom:12px;"></div>
-        <p style="color:rgba(255,255,255,0.45);font-size:0.72rem;font-family:Exo 2,sans-serif;line-height:1.7;margin:0;font-style:italic;letter-spacing:0.3px;">&ldquo;Excellence in every print, precision in every process.&rdquo;</p>
+      <!-- Bottom quote -->
+      <div style="position:relative;z-index:1;">
+        <div style="width:22px;height:2px;background:rgba(56,189,248,0.4);margin-bottom:10px;"></div>
+        <p style="color:rgba(255,255,255,0.42);font-size:0.72rem;font-family:'Nunito',sans-serif;line-height:1.7;margin:0;font-style:italic;">&ldquo;Excellence in every print,<br>precision in every process.&rdquo;</p>
       </div>
     </div>
 
     <!-- ── RIGHT FORM PANEL ───────────────────────────────── -->
     <div id="rio-login-box">
       <div>
-        <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:4px;">Welcome back</h2>
-        <p id="rio-login-sub" style="font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;opacity:0.5;margin-top:0;">Sign in to continue</p>
+        <h2 style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;color:#ffffff;letter-spacing:1px;margin:0 0 4px;">WELCOME BACK</h2>
+        <p style="font-size:0.65rem;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.28);margin:0;font-family:'Exo 2',sans-serif;">Sign in to continue</p>
       </div>
 
       <!-- Username -->
@@ -2720,11 +2716,11 @@ body.role-guest #s-edit-bar { display:none !important; }
                  placeholder="Enter your password" autocomplete="current-password"
                  onkeydown="if(event.key==='Enter') rioDoLogin()">
           <span onclick="toggleLoginPass()" id="login-eye" title="Show/hide"
-            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:0.85rem;color:rgba(156,163,175,0.5);user-select:none;">👁</span>
+            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:0.85rem;color:rgba(255,255,255,0.25);user-select:none;pointer-events:all;">👁</span>
         </div>
       </div>
 
-      <!-- Remember me + Login -->
+      <!-- Remember me + Login button -->
       <div id="rio-login-remember-row">
         <label><input type="checkbox" id="rio-login-remember"> Remember me</label>
         <button id="rio-login-btn" onclick="rioDoLogin()">Sign In</button>
@@ -2733,21 +2729,22 @@ body.role-guest #s-edit-bar { display:none !important; }
       <div id="rio-login-err"></div>
 
       <!-- Change password -->
-      <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);text-align:center;">
-        <span onclick="toggleChangePass()" style="font-size:0.7rem;color:rgba(56,189,248,0.55);cursor:pointer;text-decoration:underline;font-family:Nunito,sans-serif;letter-spacing:0.5px;">🔑 Forgot / Change Password</span>
+      <div style="padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);text-align:center;">
+        <span onclick="toggleChangePass()" style="font-size:0.7rem;color:rgba(56,189,248,0.5);cursor:pointer;text-decoration:underline;font-family:'Nunito',sans-serif;letter-spacing:0.5px;">🔑 Forgot / Change Password</span>
       </div>
-      <div id="rio-change-pass-box" style="display:none;margin-top:12px;">
-        <p style="font-size:0.73rem;color:rgba(156,163,175,0.7);margin-bottom:10px;font-family:Nunito,sans-serif;">Enter your username and new password:</p>
+      <div id="rio-change-pass-box" style="display:none;">
+        <p style="font-size:0.73rem;color:rgba(156,163,175,0.65);margin-bottom:10px;font-family:'Nunito',sans-serif;">Enter your username and new password:</p>
         <div class="rio-login-field-wrap" style="margin-bottom:8px;"><input id="cp-user" class="rio-login-field" type="text" placeholder="Username"><span class="field-icon">👤</span></div>
         <div class="rio-login-field-wrap" style="margin-bottom:8px;"><input id="cp-old" class="rio-login-field" type="password" placeholder="Current Password"><span class="field-icon">🔒</span></div>
         <div class="rio-login-field-wrap" style="margin-bottom:8px;"><input id="cp-new" class="rio-login-field" type="password" placeholder="New Password"><span class="field-icon">🔑</span></div>
         <div class="rio-login-field-wrap" style="margin-bottom:10px;"><input id="cp-confirm" class="rio-login-field" type="password" placeholder="Confirm New Password"><span class="field-icon">✅</span></div>
-        <button onclick="rioChangePassword()" style="width:100%;padding:11px;background:linear-gradient(90deg,#065f46,#059669);color:white;border:none;border-radius:5px;font-family:Exo 2,sans-serif;font-weight:800;font-size:0.7rem;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">Change Password</button>
+        <button onclick="rioChangePassword()" style="width:100%;padding:11px;background:linear-gradient(90deg,#065f46,#059669);color:white;border:none;border-radius:5px;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.7rem;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">Change Password</button>
         <div id="cp-err" style="color:#f87171;font-size:0.75rem;text-align:center;margin-top:6px;min-height:16px;"></div>
       </div>
     </div>
 
   </div>
+</div>
 </div>
 
 <!-- ── USERNAME PILL (top-right inside header) ─────────────── -->
@@ -6133,9 +6130,13 @@ function renderSales(data) {
         <td>${r.Balance3Amt?'₹'+fn(r.Balance3Amt):'–'}</td>
         <td class="${rem>0?'td-pending':'td-green'}">₹${fn(rem)}</td>
         <td style="white-space:nowrap;">
-          <button onclick="generateInvoiceFromSales(${r.SNo})" title="Open in Invoice page"
-            style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border:1.5px solid #005073;border-radius:6px;background:#e0f4ff;color:#005073;font-family:Exo 2,sans-serif;font-size:0.65rem;font-weight:700;cursor:pointer;">
-            <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>→ Invoice
+          <button onclick="openSalesInvoicePrint(${r.SNo})" title="View/Print Invoice"
+            style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border:1.5px solid #005073;border-radius:6px;background:#e0f4ff;color:#005073;font-family:Exo 2,sans-serif;font-size:0.65rem;font-weight:700;cursor:pointer;margin-right:3px;">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>🖨 Invoice
+          </button>
+          <button onclick="navRipple(event,'rio-invmgr')" title="Go to Invoice Manager"
+            style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border:1.5px solid #5c6bc0;border-radius:6px;background:#e8eaf6;color:#3949ab;font-family:Exo 2,sans-serif;font-size:0.65rem;font-weight:700;cursor:pointer;">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>Inv Mgr
           </button>
         </td>
       </tr>`;
@@ -6306,6 +6307,96 @@ async function autoSaveInvoiceFromSales(rec) {
 }
 
 // ── Save invoice directly from sales entry (button click) ─────
+// ── Update existing invoice from edited sales record ──────────
+async function updateInvoiceFromSales(rec, invId) {
+  if (!rec || !invId) return null;
+  const isGST = rec.BillingType === 'With Bill';
+  const items = [];
+  const prodName = rec.ProductSize || rec.Category || '';
+  const q1 = parseFloat(rec.Qty1) || 0;
+  const r1 = parseFloat(rec.Rate1) || 0;
+  if (q1 > 0 && r1 > 0) {
+    const tax1 = +(q1 * r1).toFixed(2);
+    items.push({ SNo:1, ProductName:prodName, Qty:q1, Rate:r1, TaxableValue:tax1, GSTRate:18, Total:tax1, SizeNotes:rec.Size1||'' });
+  }
+  const q2 = parseFloat(rec.Qty2) || 0;
+  const r2 = parseFloat(rec.Rate2) || 0;
+  if (q2 > 0 && r2 > 0) {
+    const tax2 = +(q2 * r2).toFixed(2);
+    items.push({ SNo:items.length+1, ProductName:prodName, Qty:q2, Rate:r2, TaxableValue:tax2, GSTRate:18, Total:tax2, SizeNotes:rec.Size2||'' });
+  }
+  if (!items.length) return null;
+  const subTotal = +items.reduce((s,i)=>s+i.TaxableValue,0).toFixed(2);
+  const cgst = isGST ? +(subTotal*18/200).toFixed(2) : 0;
+  const sgst = isGST ? +(subTotal*18/200).toFixed(2) : 0;
+  const total = +(subTotal+cgst+sgst).toFixed(2);
+  const body = {
+    InvoiceDate: rec.OrderDate, CustomerName: rec.Customer,
+    BillingType: isGST ? 'GST' : 'NON-GST',
+    SubTotal: subTotal, CGST: cgst, SGST: sgst, IGST: 0,
+    TotalAmount: total,
+    PaymentTerms: (rec.BillingType === 'With Bill') ? 'NEFT' : 'Cash',
+    Items: items
+  };
+  try {
+    const r = await rioApi('/api/invoices/' + invId, 'PUT', body);
+    return (r && r.success) ? rec.InvoiceNo : null;
+  } catch(e) { return null; }
+}
+
+// ── Open invoice print for a sales record ─────────────────────
+async function openSalesInvoicePrint(sno) {
+  const rec = salesData.find(r => +r.SNo === +sno);
+  if (!rec) { toast('Sales record not found', 'error'); return; }
+  // If invoice already linked, print it directly
+  if (rec.InvoiceNo) {
+    try {
+      const invData = await rioApi('/api/invoices/byno?no=' + encodeURIComponent(rec.InvoiceNo));
+      if (invData && invData.Id) {
+        if (typeof openPrintWin === 'function') openPrintWin('inv', invData.Id);
+        return;
+      }
+    } catch(e) {}
+  }
+  // No invoice yet — auto-create then print
+  if (!rec.ProductId || +rec.ProductId === 0) {
+    toast('Select a Product first to generate an invoice', 'error'); return;
+  }
+  toast('Generating invoice…', 'info');
+  try {
+    const invNo = await autoSaveInvoiceFromSales(rec);
+    if (invNo) {
+      // Reload sales data to get the new InvoiceNo
+      const fresh = await api('/sales'); if (Array.isArray(fresh)) { salesData = fresh; renderSales(); }
+      try { if (typeof loadInvRegister === 'function') loadInvRegister(); } catch(e) {}
+      // Find new invoice and print
+      const invData = await rioApi('/api/invoices/byno?no=' + encodeURIComponent(invNo));
+      if (invData && invData.Id && typeof openPrintWin === 'function') {
+        openPrintWin('inv', invData.Id);
+      }
+      showInvoiceConfirmPopup(invNo, false);
+    } else {
+      toast('Could not generate invoice. Check product/amounts.', 'error');
+    }
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ── Show invoice confirmation popup ───────────────────────────
+function showInvoiceConfirmPopup(invNo, isEdit) {
+  const msg = isEdit
+    ? '✅ Invoice <strong>' + invNo + '</strong> has been updated.'
+    : '✅ Invoice <strong>' + invNo + '</strong> has been generated.';
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:99998;display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML = '<div style="background:white;border-radius:12px;padding:32px 40px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.25);min-width:300px;max-width:400px;">'
+    + '<div style="font-size:2rem;margin-bottom:12px;">🧾</div>'
+    + '<div style="font-family:Exo 2,sans-serif;font-size:1rem;font-weight:700;color:#1a237e;margin-bottom:8px;">' + (isEdit ? 'Invoice Updated' : 'Invoice Generated') + '</div>'
+    + '<div style="font-family:Nunito,sans-serif;font-size:0.9rem;color:#444;margin-bottom:20px;">' + msg + '</div>'
+    + '<button onclick="this.closest('div[style*=fixed]').remove()" style="background:linear-gradient(90deg,#1a237e,#283593);color:white;border:none;border-radius:20px;padding:10px 32px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;letter-spacing:1px;">OK</button>'
+    + '</div>';
+  document.body.appendChild(overlay);
+}
+
 async function saveInvoiceFromSales(sno) {
   const rec = salesData.find(r => +r.SNo === +sno);
   if (!rec) { toast('Sales record not found', 'error'); return; }
@@ -7000,13 +7091,34 @@ async function _saveSalesEntryInner() {
   if (editingSNo) {
     res = await api('/sales/'+editingSNo, { method:'PUT', body: JSON.stringify(d) });
     if (res?.ok) {
-      toast('Sales record updated ✓','success');
+      // ── UPDATE linked invoice if it exists ────────────────────
+      const snoForEdit = editingSNo;
       editingSNo=null;
       document.getElementById('s-edit-bar').style.display='none';
       const btn = document.getElementById('s-submit-btn');
       const btnTxt = document.getElementById('s-submit-btn-text');
       if (btn) btn.className = 'btn-action primary';
       if (btnTxt) btnTxt.textContent = 'Add Entry';
+      // Refresh sales data first
+      try { const fresh = await api('/sales'); if (Array.isArray(fresh)) { salesData = fresh; renderSales(); } } catch(e) {}
+      // Check if this record has a linked invoice and update it
+      const updatedRec = salesData.find(r => +r.SNo === +snoForEdit);
+      if (updatedRec && updatedRec.InvoiceNo) {
+        try {
+          const existingInv = await rioApi('/api/invoices/byno?no=' + encodeURIComponent(updatedRec.InvoiceNo));
+          if (existingInv && existingInv.Id) {
+            // Rebuild invoice body from updated sales record
+            updatedRec.SNo = snoForEdit;
+            const newInvNo = await updateInvoiceFromSales(updatedRec, existingInv.Id);
+            try { if (typeof loadInvRegister === 'function') loadInvRegister(); } catch(e) {}
+            showInvoiceConfirmPopup(updatedRec.InvoiceNo, true);
+          } else {
+            toast('Sales record updated ✓', 'success');
+          }
+        } catch(e) { toast('Sales record updated ✓ (invoice update failed)', 'success'); }
+      } else {
+        toast('Sales record updated ✓', 'success');
+      }
     }
     else if (res?.error) return toast('Error: '+res.error,'error');
   } else {
@@ -7043,11 +7155,11 @@ async function _saveSalesEntryInner() {
         try {
           const invNo = await autoSaveInvoiceFromSales(d);
           if (invNo) {
-            toast('✓ Saved (SNo ' + savedSNo + ') — Invoice ' + invNo + ' auto-generated ✓', 'success');
-            // Refresh sales data so report shows the new invoice number
+            // Refresh sales data and invoice register
             try { const fresh = await api('/sales'); if (Array.isArray(fresh)) { salesData = fresh; renderSales(); } } catch(e) {}
-            // Refresh invoice register so new invoice appears immediately
             try { if (typeof loadInvRegister === 'function') loadInvRegister(); } catch(e) {}
+            // Show invoice confirmation popup
+            showInvoiceConfirmPopup(invNo, false);
           } else {
             toast('Sales entry saved ✓ (SNo ' + savedSNo + ')', 'success');
           }
@@ -9010,23 +9122,24 @@ function syncCustSearch() {
 function renderInvCustDrop(q) {
   const drop = document.getElementById('inv-cust-drop'); if (!drop) return;
   const query = (q || '').trim().toLowerCase();
-  const all = Array.isArray(clientsList) && clientsList.length ? clientsList : (_customers||[]).map(c=>c.Name||c.name||'');
-  const matches = query ? all.filter(n => n.toLowerCase().includes(query)) : all;
+  // Prefer _customers (billing objects) so names match hidden select options exactly
+  const custObjs = Array.isArray(_customers) && _customers.length ? _customers : [];
+  const allNames = custObjs.length ? custObjs.map(c=>c.Name||c.name||'') : (Array.isArray(clientsList) ? clientsList : []);
+  const matches = query ? allNames.filter(n => n.toLowerCase().includes(query)) : allNames;
   if (!matches.length) { drop.innerHTML = '<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;">No customers found</div>'; return; }
   drop.innerHTML = matches.map(function(name) {
     const hi = query ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })() : name;
     return '<div onmousedown="selectInvCustFromDrop(null,' + JSON.stringify(name) + ')"'
       + ' style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;"'
-      + ' onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'\'">'+hi+'</div>';
+      + ' onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">'+hi+'</div>';
   }).join('');
 }
-
 function selectInvCustFromDrop(id, name) {
   const srch = document.getElementById('inv-cust-search');
   if (srch) srch.value = name;
   // Sync the hidden select by matching customer name
   const sel = document.getElementById('inv-customer');
-  if (sel) { const opt = [...sel.options].find(o=>o.text===name||o.value===name); if(opt) sel.value=opt.value; }
+  if (sel) { const opt = [...sel.options].find(o=>o.text.trim().toLowerCase()===name.trim().toLowerCase()||o.value===name); if(opt) sel.value=opt.value; }
   const drop = document.getElementById('inv-cust-drop');
   if (drop) drop.style.display='none';
   if (typeof onInvCustomerChange==='function') onInvCustomerChange();
@@ -9038,22 +9151,22 @@ function selectInvCustFromDrop(id, name) {
 function renderQuotCustDrop(q) {
   const drop = document.getElementById('quot-cust-drop'); if (!drop) return;
   const query = (q || '').trim().toLowerCase();
-  const all = Array.isArray(clientsList) && clientsList.length ? clientsList : (_customers||[]).map(c=>c.Name||c.name||'');
-  const matches = query ? all.filter(n => n.toLowerCase().includes(query)) : all;
+  const custObjs = Array.isArray(_customers) && _customers.length ? _customers : [];
+  const allNames = custObjs.length ? custObjs.map(c=>c.Name||c.name||'') : (Array.isArray(clientsList) ? clientsList : []);
+  const matches = query ? allNames.filter(n => n.toLowerCase().includes(query)) : allNames;
   if (!matches.length) { drop.innerHTML = '<div style="padding:10px 14px;color:#aaa;font-size:0.82rem;">No customers found</div>'; return; }
   drop.innerHTML = matches.map(function(name) {
     const hi = query ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })() : name;
     return '<div onmousedown="selectQuotCustFromDrop(null,' + JSON.stringify(name) + ')"'
       + ' style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;"'
-      + ' onmouseover="this.style.background=\'#f3e5f5\'" onmouseout="this.style.background=\'\'">'+hi+'</div>';
+      + ' onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">'+hi+'</div>';
   }).join('');
 }
-
 function selectQuotCustFromDrop(id, name) {
   const srch = document.getElementById('quot-cust-search');
   if (srch) srch.value = name;
   const sel = document.getElementById('quot-customer');
-  if (sel) { const opt=[...sel.options].find(o=>o.text===name||o.value===name); if(opt) sel.value=opt.value; }
+  if (sel) { const opt=[...sel.options].find(o=>o.text.trim().toLowerCase()===name.trim().toLowerCase()||o.value===name); if(opt) sel.value=opt.value; }
   const drop = document.getElementById('quot-cust-drop');
   if (drop) drop.style.display='none';
   if (typeof onQuotCustomerChange==='function') onQuotCustomerChange();
@@ -9229,7 +9342,8 @@ async function onInvTypeChange() {
 
 // ── Invoice New (increments sequence) ─────────────────────────
 async function invNewInvoice() {
-  await rioLoadCustomerDrop('inv-customer');
+  // Always reload customers when opening invoice - ensures fresh data
+  _customers = []; await rioLoadCustomerDrop('inv-customer');
   _products=[]; _productMap={}; await rioLoadProductMap();
   const type = document.getElementById('inv-type').value;
   // Check FY rollover on April 1st
@@ -9275,7 +9389,8 @@ function invCancelEdit(){ invClear(); }
 
 // ── Quotation New (increments sequence) ───────────────────────
 async function quotNew() {
-  await rioLoadCustomerDrop('quot-customer');
+  // Always reload customers when opening quotation
+  _customers = []; await rioLoadCustomerDrop('quot-customer');
   await rioLoadProductMap();
   const type = document.getElementById('quot-type').value;
   try {
@@ -10385,6 +10500,7 @@ async function custLoadRow(id) {
   } catch(e) { toast('Error loading customer','error'); }
 }
 async function custSave() {
+  if (window._custSaving) return; window._custSaving = true;
   const id=document.getElementById('cust-editing-id').value;
   const shipAddr=document.getElementById('cust-ship-addr')?.value.trim()||'';
   const billAddr=document.getElementById('cust-addr')?.value.trim()||'';
@@ -10394,7 +10510,7 @@ async function custSave() {
     const r=id?await rioApi('/api/customers/'+id,'PUT',body):await rioApi('/api/customers','POST',body);
     if(r.success){toast(id?'Customer updated!':'Customer saved!','success');custClear();_customers=[];loadCustomers();}
     else toast('Error: '+(r.error||''),'error');
-  } catch(e){toast('API error','error');}
+  } catch(e){toast('API error','error');} finally { window._custSaving = false; }
 }
 async function custDelete() {
   const id=document.getElementById('cust-editing-id').value;
