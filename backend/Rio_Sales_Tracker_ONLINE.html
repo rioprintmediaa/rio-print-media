@@ -2744,7 +2744,7 @@ body.role-guest #s-edit-bar { display:none !important; }
 </div>
 
 <!-- ── LOGOUT / USER PILL ────────────────────────────────────── -->
-<div id="rio-logout-wrap" style="display:none;position:fixed;top:8px;right:14px;z-index:9200;flex-direction:row;align-items:center;gap:8px;background:white;border:1.5px solid #e0e0e0;border-radius:20px;padding:4px 6px 4px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+<div id="rio-logout-wrap" style="display:none;position:fixed;top:52px;right:14px;z-index:9200;flex-direction:row;align-items:center;gap:8px;background:white;border:1.5px solid #e0e0e0;border-radius:20px;padding:4px 6px 4px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
   <div id="rio-logged-userbox" style="font-size:0.72rem;font-weight:700;color:#1a237e;font-family:Exo 2,sans-serif;white-space:nowrap;"></div>
   <button id="rio-logout-btn" onclick="rioLogout()" title="Logout" style="background:#c62828;color:white;border:none;padding:4px 10px;border-radius:14px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.68rem;cursor:pointer;white-space:nowrap;">⎋ Logout</button>
 </div>
@@ -3050,7 +3050,7 @@ function rioToggleNav() {
       <div class="addr-line"><strong>Ph: 9962011515</strong> &nbsp;|&nbsp; GST: 33BCFPR3860P1Z2</div>
     </div>
     <!-- Daily Proverb & Quote (single line quote + author 2nd line, bottom aligned) -->
-    <div id="daily-wisdom" style="margin:0 auto;max-width:480px;display:flex;gap:14px;align-items:flex-end;align-self:flex-end;padding-bottom:4px;">
+    <div id="daily-wisdom" style="margin-left:auto;margin-right:170px;max-width:420px;display:flex;gap:14px;align-items:flex-end;align-self:flex-end;padding-bottom:4px;">
       <div style="flex:1;text-align:left;border-right:2px solid #d0d0d0;padding-right:16px;">
         <div id="proverb-text" style="font-size:0.78rem;color:#e65100;line-height:1.4;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px;">"A journey of a thousand miles begins with a single step."</div>
         <div id="proverb-author" style="font-size:0.68rem;color:#e65100;font-weight:400;margin-top:2px;">—Medieval Proverb</div>
@@ -7426,6 +7426,8 @@ function showPanel(id) {
   if (panel) {
     panel.classList.add('active');
     if (id==='rio-invoice'||id==='rio-quotation') panel.style.display='flex';
+    // Auto-load ledger data whenever ledger panel is shown
+    if (id==='rio-ledger') { try { loadLedgerPanel(); } catch(e) {} }
   }
   // Highlight dashboard icon when on dashboard, reset otherwise
   const dashIcon = document.getElementById('nav-dash-icon');
@@ -8906,7 +8908,7 @@ async function billingLoadAll() {
 // ══════════════════════════════════════════════════════════════
 // BILLING_API dynamically set from sales tracker port detection
 // Uses window.location.origin so it always matches the port the PS1 actually started on
-BILLING_API = 'https://rio-print-media.onrender.com';
+BILLING_API = window.location.origin;
 
 // ── API helper ────────────────────────────────────────────────
 async function rioApi(path, method='GET', body=null) {
@@ -8917,7 +8919,7 @@ async function rioApi(path, method='GET', body=null) {
   if (bpath.startsWith('/api/') && !bpath.startsWith('/api/billing/')) {
     bpath = '/api/billing' + bpath.substring(4);
   }
-  const base = 'https://rio-print-media.onrender.com';
+  const base = window.location.origin;
   console.log('[RIOAPI]', method, base + bpath);
   try {
     const r = await fetch(base + bpath, opts);
@@ -9157,7 +9159,7 @@ function clearInvCustSearch() {
 async function ensureProducts() {
   try {
     // FIX: use window._BILLING_BASE (set after port detection) not BILLING_API
-    const base = 'https://rio-print-media.onrender.com';
+    const base = window.location.origin;
     const resp = await fetch(base + '/api/billing/products');
     const text = await resp.text();
     let arr = [];
@@ -12244,6 +12246,7 @@ async function loadLedgerPanel() {
 
   // Load entries
   _ledgerData = []; // Reset before loading
+  let _ledgerApiOk = false;
   
   try {
     const data = await api('/ledger?fy=' + encodeURIComponent(fy));
@@ -12251,22 +12254,35 @@ async function loadLedgerPanel() {
     
     if (Array.isArray(data)) {
       _ledgerData = data;
+      _ledgerApiOk = true;
     } else if (data && typeof data === 'object' && !Array.isArray(data)) {
-      // Single object returned, wrap in array
       _ledgerData = [data];
+      _ledgerApiOk = true;
+    } else if (data === null) {
+      // API returned null — server unreachable or error
+      _ledgerData = [];
+      _ledgerApiOk = false;
     } else {
       _ledgerData = [];
+      _ledgerApiOk = true;
     }
-    
     console.log('[LEDGER] Loaded', _ledgerData.length, 'entries');
-    
-    if (_ledgerData.length === 0) {
-      console.warn('[LEDGER] No entries found for FY', fy);
-    }
   } catch(e) {
     console.error('[LEDGER] API error:', e);
     _ledgerData = [];
+    _ledgerApiOk = false;
     toast('Error loading ledger: ' + e.message, 'error');
+  }
+  
+  // Show connection error in table if API failed
+  if (!_ledgerApiOk) {
+    const tbErr = document.getElementById('ledger-tbody');
+    if (tbErr) tbErr.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;">' +
+      '<div style="font-family:Exo 2,sans-serif;color:#c62828;font-size:0.9rem;font-weight:700;margin-bottom:12px;">⚠ Could not load ledger data</div>' +
+      '<div style="color:#888;font-size:0.8rem;margin-bottom:16px;">Server may be starting up (Render cold start). Please wait a moment and try again.</div>' +
+      '<button onclick="loadLedgerPanel()" style="padding:8px 22px;background:linear-gradient(90deg,#283593,#3949ab);color:white;border:none;border-radius:20px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;">⟳ Retry</button>' +
+      '</td></tr>';
+    return;
   }
 
   renderLedgerTable();
@@ -12296,9 +12312,13 @@ function renderLedgerTable() {
   if (!rows.length) {
     const fy = ledgerCurrentFY();
     const msg = (filterAcct || filterType || filterMonth)
-      ? 'No entries match the filter.'
-      : `No entries for FY ${fy}. Add opening balances and transactions above.`;
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#aaa;padding:30px;font-family:Exo 2,sans-serif;">${msg}</td></tr>`;
+      ? 'No entries match the current filter.'
+      : `No ledger entries for FY ${fy} yet. Use the form above to add opening balances and transactions.`;
+    const msgColor = (filterAcct || filterType || filterMonth) ? '#888' : '#5c6bc0';
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;">
+      <div style="font-size:1.4rem;margin-bottom:8px;">📒</div>
+      <div style="font-family:Exo 2,sans-serif;font-size:0.85rem;font-weight:600;color:${msgColor};">${msg}</div>
+    </td></tr>`;
     return;
   }
 
