@@ -205,8 +205,8 @@ html, body {
   position: relative;
   text-decoration: none;
   border-radius: 30px;
-  opacity: 0;
-  transform: translateX(-30px);
+  opacity: 1;
+  transform: translateX(0);
   animation: navSlideIn 0.45s ease forwards;
   transition: transform 0.15s ease;
 }
@@ -719,7 +719,6 @@ html, body {
 .panel {
   display: none;
   padding: 16px 20px 24px 20px;
-  animation: panelIn 0.3s ease;
   min-height: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
@@ -727,6 +726,7 @@ html, body {
 
 .panel.active {
   display: block;
+  animation: panelIn 0.25s ease;
 }
 
 @keyframes panelIn {
@@ -2660,7 +2660,7 @@ body.role-guest #s-edit-bar { display:none !important; }
 
 <!-- ── LOGIN OVERLAY ────────────────────────────────────────── -->
 <!-- ── LOGIN OVERLAY — Option 6: Midnight Split ─────────────── -->
-<div id="rio-login-overlay" style="display:flex;">
+<div id="rio-login-overlay" style="display:none;">
   <div id="rio-login-card">
 
     <!-- ── LEFT BRAND PANEL ───────────────────────────────── -->
@@ -13100,15 +13100,15 @@ function exportLedgerCSV() {
   if (saved && saved.token && saved.username) {
     window._rioUser = saved;
     hideLoginOverlay();
-    // DOM is already loaded by the time this script runs — call directly
-    if (typeof window.rioStartApp === 'function') {
-      window.rioStartApp();
-    } else {
-      // Fallback: rioStartApp not yet defined, wait a tick
-      setTimeout(function() {
-        if (typeof window.rioStartApp === 'function') window.rioStartApp();
-      }, 100);
+    // Use requestAnimationFrame to ensure DOM is painted before activating panel
+    function _startApp() {
+      if (typeof window.rioStartApp === 'function') {
+        window.rioStartApp();
+      } else {
+        setTimeout(_startApp, 50);
+      }
     }
+    requestAnimationFrame(function(){ requestAnimationFrame(_startApp); });
   } else {
     showLoginOverlay();
   }
@@ -13214,7 +13214,9 @@ window.rioDoLogin = async function() {
         try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(user)); } catch(e) {}
         hideLoginOverlay();
         if (typeof applyRoleRestrictions === 'function') applyRoleRestrictions(user.role);
-        if (typeof window.rioStartApp === 'function') window.rioStartApp();
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){
+          if (typeof window.rioStartApp === 'function') window.rioStartApp();
+        }); });
         // Refresh ledger balances after a delay
         setTimeout(function() {
           if (typeof loadDashboardLedgerBalances === 'function') loadDashboardLedgerBalances();
