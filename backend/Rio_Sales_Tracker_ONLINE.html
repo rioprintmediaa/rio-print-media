@@ -5863,7 +5863,7 @@ function renderClientDropdown(list, typed) {
         style="padding:8px 12px;cursor:pointer;font-family:Nunito,sans-serif;font-size:0.84rem;
         background:${isSel?'#e8edf8':'white'};font-weight:${isSel?'700':'400'};
         border-bottom:1px solid #f0f0f0;transition:background 0.1s;"
-        onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='${isSel?'#e8edf8':'white'}'">
+        onmouseover="this.style.outline='2px solid #90caf9'" onmouseout="this.style.outline=''">
         ${hi}
       </div>`;
     }).join('');
@@ -5877,7 +5877,7 @@ function renderClientDropdown(list, typed) {
       style="padding:9px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;
       background:#f0faf4;border-top:1.5px solid #a5d6a7;border-radius:0 0 8px 8px;
       font-family:Exo 2,sans-serif;font-size:0.8rem;font-weight:800;color:#2e7d32;"
-      onmouseover="this.style.background='#e0f5e9'" onmouseout="this.style.background='#f0faf4'">
+      onmouseover="this.style.outline='2px solid #a5d6a7'" onmouseout="this.style.outline=''">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="#2e7d32"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
       Add "<strong>${cur}</strong>" as new client
     </div>`;
@@ -8207,7 +8207,7 @@ function jRenderClientDD(list,typed) {
   if(list.length){
     html+=list.map(c=>{
       const hi=cur.length>0?c.replace(new RegExp('('+cur.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<strong>$1</strong>'):c;
-      return `<div onmousedown="jClientSelect('${c.replace(/'/g,"\\'")}') " style="padding:8px 12px;cursor:pointer;font-size:0.85rem;font-family:Nunito,sans-serif;border-bottom:1px solid #f0f0f0;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">${hi}</div>`;
+      return `<div onmousedown="jClientSelect('${c.replace(/'/g,"\\'")}') " style="padding:8px 12px;cursor:pointer;font-size:0.85rem;font-family:Nunito,sans-serif;border-bottom:1px solid #f0f0f0;" onmouseover="this.style.backgroundColor='#e3f2fd'" onmouseout="this.style.backgroundColor=''">${hi}</div>`;
     }).join('');
   } else {
     html+=`<div style="padding:8px 12px;color:#aaa;font-size:0.8rem;">No customers found</div>`;
@@ -9169,7 +9169,7 @@ function renderInvCustDrop(q) {
     const hi = query ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })() : name;
     return '<div onmousedown="selectInvCustFromDrop(null,' + JSON.stringify(name) + ')"'
       + ' style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;"'
-      + ' onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">'+hi+'</div>';
+      + ' onmouseover="this.style.backgroundColor=\'#e8f4ff\'" onmouseout="this.style.backgroundColor=\'\'">'+hi+'</div>';
   }).join('');
 }
 function selectInvCustFromDrop(id, name) {
@@ -9197,7 +9197,7 @@ function renderQuotCustDrop(q) {
     const hi = query ? (function(){ var i=name.toLowerCase().indexOf(query); return i>=0 ? name.slice(0,i)+'<mark style="background:#fff176;">'+name.slice(i,i+query.length)+'</mark>'+name.slice(i+query.length) : name; })() : name;
     return '<div onmousedown="selectQuotCustFromDrop(null,' + JSON.stringify(name) + ')"'
       + ' style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;"'
-      + ' onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">'+hi+'</div>';
+      + '>'+hi+'</div>';
   }).join('');
 }
 function selectQuotCustFromDrop(id, name) {
@@ -9249,7 +9249,7 @@ function renderReportCustDrop(type, q) {
     const hi = query ? (function(){ var i = name.toLowerCase().indexOf(query); return i >= 0 ? name.slice(0,i) + '<mark style="background:#fff176;">' + name.slice(i, i+query.length) + '</mark>' + name.slice(i+query.length) : name; })() : name;
     return '<div onmousedown="selectReportCustFromDrop(' + JSON.stringify(type) + ',' + JSON.stringify(name) + ')"'
       + ' style="padding:8px 12px;cursor:pointer;font-size:0.84rem;border-bottom:1px solid #f0f0f0;font-family:Nunito,sans-serif;"'
-      + ' onmouseover="this.style.background=\'#f0f4ff\'" onmouseout="this.style.background=\'\'">'+hi+'</div>';
+      + ' onmouseover="this.style.backgroundColor=\'#f0f4ff\'" onmouseout="this.style.backgroundColor=\'\'">'+hi+'</div>';
   }).join('');
 }
 
@@ -10719,7 +10719,7 @@ function buildReportCustDrop(type) {
       style="padding:8px 12px;cursor:pointer;font-family:Nunito,sans-serif;font-size:0.84rem;
       background:${isSel?'#e8edf8':'white'};font-weight:${isSel?'700':'400'};
       border-bottom:1px solid #f0f0f0;"
-      onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='${isSel?'#e8edf8':'white'}'">
+      onmouseover="this.style.outline='2px solid #90caf9'" onmouseout="this.style.outline=''">
       ${c}
     </div>`;
   }).join('');
