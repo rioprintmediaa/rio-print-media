@@ -28,7 +28,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("rio_api")
 
-load_dotenv()
+load_dotenv(override=False)  # Never override Render environment variables
 
 # ─────────────────────────────────────────────
 #  CONFIG
@@ -41,7 +41,12 @@ HTML_FILE  = os.environ.get("HTML_FILE", "Rio_Sales_Tracker_ONLINE.html")
 logger.info("=" * 60)
 logger.info("RIO API STARTING UP")
 logger.info(f"MONGO_DB  = {MONGO_DB}")
-logger.info(f"MONGO_URI = {'SET (' + MONGO_URI[:20] + '...)' if MONGO_URI else 'NOT SET — check Render Environment Variables!'}")
+if MONGO_URI:
+    import re as _re2
+    _safe = _re2.sub(r':(.*?)@', ':***@', MONGO_URI)
+    logger.info(f"MONGO_URI = SET → {_safe[:70]}")
+else:
+    logger.error("MONGO_URI = NOT SET — add it in Render Environment Variables!")
 logger.info("=" * 60)
 
 # ─────────────────────────────────────────────
@@ -258,26 +263,53 @@ def _connect_mongo():
     """Attempt MongoDB connection. Returns True on success, False on failure."""
     global _client, _db, _db_connected
     if not MONGO_URI:
-        print("✗ MONGO_URI is empty — set it in Render → Environment Variables", flush=True)
+        logger.error("=" * 60)
+        logger.error("MONGO_URI IS NOT SET!")
+        logger.error("Go to Render → your service → Environment → Add:")
+        logger.error("  MONGO_URI = mongodb+srv://user:pass@cluster...")
+        logger.error("  MONGO_DB  = RioPrintMedia")
+        logger.error("Then click Save and Manual Deploy")
+        logger.error("=" * 60)
         _db_connected = False
         return False
+    # Mask password for safe logging
+    safe_uri = MONGO_URI
     try:
-        logger.info(f"Connecting to MongoDB: {MONGO_DB} ...")
+        import re as _re
+        safe_uri = _re.sub(r':(.*?)@', ':***@', MONGO_URI)
+    except: pass
+    logger.info(f"Connecting to MongoDB Atlas...")
+    logger.info(f"URI: {safe_uri}")
+    logger.info(f"DB:  {MONGO_DB}")
+    try:
         _client = MongoClient(
             MONGO_URI,
-            serverSelectionTimeoutMS=20000,
-            connectTimeoutMS=20000,
-            socketTimeoutMS=30000
+            serverSelectionTimeoutMS=25000,
+            connectTimeoutMS=25000,
+            socketTimeoutMS=30000,
+            tls=True,
+            retryWrites=True,
         )
+        logger.info("MongoClient created, pinging Atlas...")
         _client.admin.command("ping")
         _db = _client[MONGO_DB]
         _db_connected = True
-        logger.info(f"Connected to MongoDB: {MONGO_DB}")
+        logger.info(f"✓ MongoDB Atlas connected: {MONGO_DB}")
         return True
     except Exception as e:
         _db_connected = False
-        logger.error(f"MongoDB connection FAILED: {e}")
-        logger.error(f"URI starts with: {MONGO_URI[:30]}...")
+        err_str = str(e)
+        logger.error(f"✗ MongoDB connection FAILED: {err_str}")
+        if "Authentication failed" in err_str or "auth" in err_str.lower():
+            logger.error("→ CHECK: Username and password in MONGO_URI")
+            logger.error("→ Special chars in password must be URL-encoded (@ = %40)")
+        elif "network" in err_str.lower() or "timeout" in err_str.lower() or "timed out" in err_str.lower():
+            logger.error("→ CHECK: MongoDB Atlas Network Access")
+            logger.error("→ Go to Atlas → Network Access → Add IP: 0.0.0.0/0 (Allow All)")
+            logger.error("→ Render uses dynamic IPs, so 0.0.0.0/0 is required")
+        elif "SSL" in err_str or "TLS" in err_str:
+            logger.error("→ SSL/TLS error — check Atlas cluster TLS settings")
+        logger.error(f"→ URI used (masked): {safe_uri[:60]}...")
         return False
 
 @asynccontextmanager
@@ -929,6 +961,19 @@ async def ping():
             content={"ok": False, "error": str(e), "db": MONGO_DB},
             status_code=503
         )
+
+@app.get("/api/debug")
+async def debug_info():
+    """Public debug endpoint — shows connection state without exposing credentials"""
+    import re as _re
+    safe_uri = _re.sub(r':(.*?)@', ':***@', MONGO_URI) if MONGO_URI else "NOT SET"
+    return JSONResponse(content={
+        "mongo_uri_set": bool(MONGO_URI),
+        "mongo_uri_masked": safe_uri[:80] if MONGO_URI else "NOT SET",
+        "mongo_db": MONGO_DB,
+        "db_connected": _db_connected,
+        "hint": "If db_connected=false, go to MongoDB Atlas → Network Access → Add 0.0.0.0/0"
+    })
 
 # ─────────────────────────────────────────────
 #  SALES RECORDS

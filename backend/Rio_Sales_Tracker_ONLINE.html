@@ -2457,8 +2457,8 @@ tbody td:last-child { border-right: none; }
     repeating-linear-gradient(90deg,rgba(34,211,238,0.035) 0px,rgba(34,211,238,0.035) 1px,transparent 1px,transparent 70px);
 }
 #rio-login-card {
-  display:grid;grid-template-columns:260px 1fr;
-  width:94%;max-width:780px;min-height:480px;
+  display:grid;grid-template-columns:240px 1fr;
+  width:88%;max-width:680px;min-height:460px;
   border-radius:14px;overflow:hidden;
   box-shadow:0 40px 100px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.06);
   position:relative;z-index:2;
@@ -2469,8 +2469,8 @@ tbody td:last-child { border-right: none; }
   position:relative;overflow:hidden;
 }
 #rio-login-box {
-  background:#0d1f35;padding:48px 42px;
-  display:flex;flex-direction:column;justify-content:center;gap:20px;
+  background:#0d1f35;padding:44px 36px;
+  display:flex;flex-direction:column;justify-content:center;gap:18px;
 }
 .rio-login-field-group { display:flex;flex-direction:column;gap:6px; }
 .rio-login-field-label {
@@ -2704,12 +2704,12 @@ body.role-guest #s-edit-bar { display:none !important; }
           <div style="width:62px;height:62px;border-radius:12px;background:#0a1e3a;border:1.5px solid rgba(34,211,238,0.28);display:flex;align-items:center;justify-content:center;">
             <svg viewBox="0 0 24 24" width="30" height="30" fill="none">
               <rect x="3" y="3" width="7" height="7" rx="1" fill="#22d3ee"/>
-              <rect x="14" y="3" width="7" height="7" rx="1" fill="#a78bfa"/>
-              <rect x="3" y="14" width="7" height="7" rx="1" fill="#a78bfa"/>
+              <rect x="14" y="3" width="7" height="7" rx="1" fill="#38bdf8"/>
+              <rect x="3" y="14" width="7" height="7" rx="1" fill="#38bdf8"/>
               <rect x="14" y="14" width="7" height="7" rx="1" fill="#22d3ee"/>
             </svg>
           </div>
-          <div style="font-family:'Exo 2',sans-serif;font-size:1.35rem;font-weight:900;letter-spacing:2.5px;color:#fff;margin-top:18px;line-height:1.2;"><span style="color:#22d3ee;">RIO </span>PRINT MEDIA</div>
+          <div style="font-family:'Exo 2',sans-serif;font-size:1.35rem;font-weight:900;letter-spacing:2.5px;color:#fff;margin-top:18px;line-height:1.2;"><span style="color:#22d3ee;">RIO&nbsp;</span><span style="color:#ffffff;">PRINT MEDIA</span></div>
           <div style="color:rgba(34,211,238,0.5);font-family:'Exo 2',sans-serif;font-size:0.6rem;letter-spacing:3px;text-transform:uppercase;margin-top:6px;">Management Portal</div>
           <div style="height:1px;background:linear-gradient(90deg,rgba(34,211,238,0.35),transparent);margin-top:18px;"></div>
         </div>
@@ -3083,7 +3083,7 @@ function rioToggleNav() {
       </div>
     </div>
     
-    <div class="sql-status" id="sql-status" style="margin-left:12px;display:none;">Connecting...</div>
+    <div class="sql-status" id="sql-status" style="margin-left:12px;display:flex;align-items:center;">Connecting...</div>
   </header>
 
   <!-- ── CONTENT ─────────────────────────────────────────────── -->
@@ -5410,6 +5410,14 @@ async function detectPort() {
       const r = await fetch(CLOUD_API + '/ping', { cache:'no-store', signal:ctrl.signal });
       clearTimeout(timer);
       if (r.ok) { dbg('API connected OK (attempt ' + attempt + ')', '#4caf50'); return true; }
+      // Server alive but DB may be reconnecting (503) — treat server as reachable
+      if (r.status === 503) {
+        try {
+          const body = await r.json();
+          dbg('Server alive — DB reconnecting: ' + (body.error||''), '#ff9800');
+        } catch(e) {}
+        return true; // Server IS there, DB will retry on each request
+      }
       dbg('Ping returned HTTP ' + r.status, '#ff9800');
     } catch(e) {
       dbg('Ping attempt ' + attempt + ' failed: ' + e.message, '#ff9800');
@@ -5458,6 +5466,8 @@ async function api(path, opts = {}) {
 function setStatus(s) {
   const el = document.getElementById('sql-status');
   if (!el) return;
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
   if (s === 'offline') {
     el.style.background  = '#ffebee';
     el.style.color       = '#c62828';
@@ -5470,7 +5480,7 @@ function setStatus(s) {
   }
   const states = {
     connecting: ['#fff8e1','#f57f17','#ffe082','⟳ Connecting...'],
-    connected:  ['#e8f5e9','#1b5e20','#a5d6a7','● SQL Connected']
+    connected:  ['#e8f5e9','#1b5e20','#a5d6a7','● MongoDB Connected']
   };
   const [bg, color, border, text] = states[s] || states.connecting;
   el.style.background   = bg;
@@ -5713,12 +5723,23 @@ async function loadAll() {
   setStatus('connected');
   hideBanner();
 
-  // Read real DB name from ping
+  // Read real DB name from ping - check if DB is actually connected
   try {
     const ping = await api('/ping');
     if (ping && ping.db) {
       const el = document.getElementById('sql-status');
       if (el) el.dataset.dbname = ping.db;
+    }
+    if (ping && ping.ok === false) {
+      // Server alive but DB not connected - show specific error
+      const sqlEl = document.getElementById('sql-status');
+      if (sqlEl) {
+        sqlEl.style.background = '#fff3e0';
+        sqlEl.style.color = '#e65100';
+        sqlEl.style.borderColor = '#ffcc80';
+        sqlEl.innerHTML = '<span>⚠ DB not connected — Set MONGO_URI in Render Environment</span>';
+        sqlEl.style.display = 'flex';
+      }
     }
   } catch(e) {}
 
@@ -5759,7 +5780,7 @@ async function loadAll() {
 
   // Show small data-count badge in status bar
   const el = document.getElementById('sql-status');
-  if (el) el.textContent = `● SQL Connected  |  DB: ${el.dataset.dbname||'RioBillingTest'}  |  ${salesData.length} sales · ${expenseData.length} expenses`;
+  if (el) el.style.display='flex'; el.textContent = `● Connected  |  ${salesData.length} sales · ${expenseData.length} expenses`;
 
   // Auto-push any sales clients not yet in Clients table
   autoSyncClientsFromSales();
@@ -5786,11 +5807,8 @@ function showBanner() {
     b.id = 'offline-banner';
     b.style.cssText = 'position:fixed;top:0;left:260px;right:0;z-index:15;background:#c62828;color:white;padding:8px 20px;font-family:Exo 2,sans-serif;font-size:0.82rem;font-weight:700;display:flex;align-items:center;gap:16px;';
     b.innerHTML = `
-      <span>⚠ SQL Server not reachable. Run the PS1 first:</span>
-      <code style="background:rgba(0,0,0,0.3);padding:3px 10px;border-radius:5px;font-size:0.8rem;">
-        powershell -ExecutionPolicy Bypass -File Rio_Sales_Tracker_v2.0.ps1
-      </code>
-      <button onclick="loadAll()" style="margin-left:auto;background:white;color:#c62828;border:none;padding:5px 14px;border-radius:6px;font-weight:700;cursor:pointer;font-family:Exo 2,sans-serif;">Retry</button>`;
+      <span>⚠ Database not connected — Check <b>MONGO_URI</b> in Render → Environment Variables, then redeploy.</span>
+      <button onclick="loadAll()" style="margin-left:auto;background:white;color:#c62828;border:none;padding:5px 14px;border-radius:6px;font-weight:700;cursor:pointer;font-family:Exo 2,sans-serif;">⟳ Retry</button>`;
     document.body.prepend(b);
   }
   b.style.display = 'flex';
