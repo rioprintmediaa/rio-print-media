@@ -205,10 +205,21 @@ html, body {
   position: relative;
   text-decoration: none;
   border-radius: 30px;
-  opacity: 1;
-  transform: translateX(0);
+  opacity: 0;
+  transform: translateX(-30px);
   animation: navSlideIn 0.45s ease forwards;
   transition: transform 0.15s ease;
+}
+.nav-btn:nth-child(1) { animation-delay: 0.08s; }
+.nav-btn:nth-child(2) { animation-delay: 0.16s; }
+.nav-btn:nth-child(3) { animation-delay: 0.24s; }
+.nav-btn:nth-child(4) { animation-delay: 0.32s; }
+.nav-btn:nth-child(5) { animation-delay: 0.40s; }
+.nav-btn:nth-child(6) { animation-delay: 0.48s; }
+.nav-btn:nth-child(7) { animation-delay: 0.56s; }
+.nav-btn:nth-child(8) { animation-delay: 0.64s; }
+@keyframes navSlideIn {
+  to { opacity: 1; transform: translateX(0); }
 }
 .nav-btn:active { transform: scale(0.96); }
 
@@ -708,6 +719,7 @@ html, body {
 .panel {
   display: none;
   padding: 16px 20px 24px 20px;
+  animation: panelIn 0.3s ease;
   min-height: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
@@ -715,7 +727,6 @@ html, body {
 
 .panel.active {
   display: block;
-  animation: panelIn 0.25s ease;
 }
 
 @keyframes panelIn {
@@ -2431,88 +2442,85 @@ tbody td:last-child { border-right: none; }
 /* ── LOGIN OVERLAY ────────────────────────────────────────── */
 #rio-login-overlay {
   position:fixed;top:0;left:0;width:100vw;height:100vh;
-  background:#111827;
+  background:#050f1e;
+  background-image:
+    radial-gradient(ellipse at 15% 50%, rgba(13,58,122,0.85) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 20%, rgba(12,45,107,0.65) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 90%, rgba(10,30,80,0.5) 0%, transparent 45%);
   display:none;align-items:center;justify-content:center;
   z-index:99999;
 }
-#rio-login-overlay {
-  position:fixed;top:0;left:0;width:100vw;height:100vh;
-  background:#0d1117;
-  display:none;align-items:center;justify-content:center;
-  z-index:99999;
+#rio-login-overlay::before {
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:
+    repeating-linear-gradient(0deg,rgba(34,211,238,0.035) 0px,rgba(34,211,238,0.035) 1px,transparent 1px,transparent 70px),
+    repeating-linear-gradient(90deg,rgba(34,211,238,0.035) 0px,rgba(34,211,238,0.035) 1px,transparent 1px,transparent 70px);
 }
 #rio-login-card {
-  display:grid;grid-template-columns:240px 1fr;
-  width:94%;max-width:760px;min-height:460px;
-  border-radius:10px;overflow:hidden;
-  box-shadow:0 24px 64px rgba(0,0,0,0.7);
-  border:1px solid #1f2d3d;
+  display:grid;grid-template-columns:260px 1fr;
+  width:94%;max-width:780px;min-height:480px;
+  border-radius:14px;overflow:hidden;
+  box-shadow:0 40px 100px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.06);
+  position:relative;z-index:2;
 }
 #rio-login-brand {
-  background:linear-gradient(160deg,#0f2039 0%,#0a1628 100%);
-  padding:40px 32px;display:flex;flex-direction:column;
-  justify-content:space-between;position:relative;overflow:hidden;
-}
-#rio-login-brand::before {
-  content:'';position:absolute;inset:0;
-  background-image:
-    repeating-linear-gradient(0deg,rgba(255,255,255,0.025) 0px,rgba(255,255,255,0.025) 1px,transparent 1px,transparent 28px),
-    repeating-linear-gradient(90deg,rgba(255,255,255,0.025) 0px,rgba(255,255,255,0.025) 1px,transparent 1px,transparent 28px);
-  pointer-events:none;
+  background:#091628;
+  padding:42px 34px;display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
 }
 #rio-login-box {
-  background:#161f2e;padding:44px 40px;
-  display:flex;flex-direction:column;justify-content:center;gap:22px;
+  background:#0d1f35;padding:48px 42px;
+  display:flex;flex-direction:column;justify-content:center;gap:20px;
 }
 .rio-login-field-group { display:flex;flex-direction:column;gap:6px; }
 .rio-login-field-label {
-  font-size:0.66rem;font-weight:700;letter-spacing:1.8px;
-  text-transform:uppercase;color:rgba(255,255,255,0.4);
+  font-size:0.63rem;font-weight:700;letter-spacing:1.8px;
+  text-transform:uppercase;color:rgba(255,255,255,0.35);
   font-family:'Exo 2',sans-serif;
 }
 .rio-login-field-wrap { position:relative; }
 .rio-login-field {
-  width:100%;background:#1f2d3d;
-  border:1.5px solid #263548;border-radius:6px;
-  padding:11px 38px 11px 13px;
+  width:100%;background:#0a1a2e;
+  border:1.5px solid #152840;border-radius:7px;
+  padding:12px 38px 12px 14px;
   color:#e2e8f0;font-size:0.87rem;outline:none;
   font-family:'Nunito',sans-serif;box-sizing:border-box;
   transition:border-color 0.2s;
 }
-.rio-login-field:focus { border-color:#3b82f6; }
-.rio-login-field::placeholder { color:rgba(255,255,255,0.18); }
+.rio-login-field:focus { border-color:#3b82f6;background:#0c1e33; }
+.rio-login-field::placeholder { color:rgba(255,255,255,0.15); }
 .field-icon {
   position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  font-size:13px;opacity:0.3;pointer-events:none;
+  font-size:13px;opacity:0.22;pointer-events:none;
 }
 #rio-login-remember-row {
   display:flex;align-items:center;justify-content:space-between;gap:12px;
 }
 #rio-login-remember-row label {
-  display:flex;align-items:center;gap:7px;
-  font-size:0.78rem;color:rgba(255,255,255,0.35);
+  display:flex;align-items:center;gap:8px;
+  font-size:0.78rem;color:rgba(255,255,255,0.28);
   font-family:'Nunito',sans-serif;cursor:pointer;
 }
 #rio-login-remember-row label input[type=checkbox] {
   accent-color:#3b82f6;width:14px;height:14px;cursor:pointer;
 }
 #rio-login-btn {
-  background:linear-gradient(90deg,#1d4ed8,#2563eb);
-  color:white;border:none;border-radius:6px;
-  padding:11px 28px;
-  font-size:0.75rem;font-weight:800;letter-spacing:2px;
+  background:#2563eb;color:white;border:none;border-radius:7px;
+  padding:12px 30px;
+  font-size:0.73rem;font-weight:800;letter-spacing:2px;
   text-transform:uppercase;cursor:pointer;
   font-family:'Exo 2',sans-serif;white-space:nowrap;
+  transition:background 0.2s;
 }
-#rio-login-btn:hover { background:linear-gradient(90deg,#1e40af,#1d4ed8); }
+#rio-login-btn:hover { background:#1d4ed8; }
 #rio-login-btn:disabled { opacity:0.6;cursor:not-allowed; }
 #rio-login-err {
   min-height:18px;font-size:0.78rem;color:#f87171;
   text-align:center;font-family:'Nunito',sans-serif;
 }
-@media(max-width:600px){
+@media(max-width:640px){
   #rio-login-card{grid-template-columns:1fr;min-height:auto;}
-  #rio-login-brand{padding:28px 24px;min-height:160px;}
+  #rio-login-brand{padding:28px 24px;min-height:180px;}
   #rio-login-box{padding:28px 24px;}
 }
 
@@ -2649,80 +2657,99 @@ body.role-guest #s-edit-bar { display:none !important; }
 
 <!-- ── LOGIN OVERLAY ────────────────────────────────────────── -->
 <!-- ── LOGIN OVERLAY — Option 6: Midnight Split ─────────────── -->
-<div id="rio-login-overlay" style="display:none;">
+<div id="rio-login-overlay" style="display:flex;">
   <div id="rio-login-card">
 
-    <!-- ── LEFT BRAND PANEL ───────────────────────────────── -->
+    <!-- LEFT BRAND PANEL -->
     <div id="rio-login-brand">
-      <div style="position:relative;z-index:1;">
-        <!-- Logo icon -->
-        <div style="width:62px;height:62px;border-radius:10px;background:linear-gradient(135deg,#1a3a6e,#0d2248);display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(56,189,248,0.3);margin-bottom:18px;">
-          <svg viewBox="0 0 24 24" width="30" height="30" fill="none">
-            <rect x="3" y="3" width="7" height="7" rx="1" fill="#22d3ee" opacity="0.9"/>
-            <rect x="14" y="3" width="7" height="7" rx="1" fill="#a78bfa" opacity="0.9"/>
-            <rect x="3" y="14" width="7" height="7" rx="1" fill="#a78bfa" opacity="0.9"/>
-            <rect x="14" y="14" width="7" height="7" rx="1" fill="#22d3ee" opacity="0.9"/>
-          </svg>
+      <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" viewBox="0 0 280 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <rect width="280" height="500" fill="#091628"/>
+        <line x1="0" y1="40" x2="280" y2="40" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="80" x2="280" y2="80" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="120" x2="280" y2="120" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="160" x2="280" y2="160" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="200" x2="280" y2="200" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="240" x2="280" y2="240" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="280" x2="280" y2="280" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="320" x2="280" y2="320" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="360" x2="280" y2="360" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="400" x2="280" y2="400" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="440" x2="280" y2="440" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="0" y1="480" x2="280" y2="480" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="40" y1="0" x2="40" y2="500" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="80" y1="0" x2="80" y2="500" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="120" y1="0" x2="120" y2="500" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="160" y1="0" x2="160" y2="500" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="200" y1="0" x2="200" y2="500" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <line x1="240" y1="0" x2="240" y2="500" stroke="rgba(34,211,238,0.07)" stroke-width="0.7"/>
+        <circle cx="220" cy="370" r="65" fill="none" stroke="rgba(34,211,238,0.08)" stroke-width="1"/>
+        <circle cx="220" cy="370" r="100" fill="none" stroke="rgba(34,211,238,0.05)" stroke-width="1"/>
+        <circle cx="220" cy="370" r="140" fill="none" stroke="rgba(34,211,238,0.03)" stroke-width="1"/>
+        <circle cx="220" cy="370" r="3.5" fill="rgba(34,211,238,0.6)"/>
+        <circle cx="50" cy="130" r="35" fill="none" stroke="rgba(167,139,250,0.06)" stroke-width="1"/>
+        <circle cx="50" cy="130" r="60" fill="none" stroke="rgba(167,139,250,0.03)" stroke-width="1"/>
+        <circle cx="50" cy="130" r="2.5" fill="rgba(167,139,250,0.5)"/>
+        <circle cx="185" cy="75" r="2" fill="rgba(34,211,238,0.5)"/>
+        <circle cx="245" cy="95" r="1.5" fill="rgba(167,139,250,0.4)"/>
+        <circle cx="28" cy="310" r="2" fill="rgba(34,211,238,0.35)"/>
+        <line x1="185" y1="75" x2="245" y2="95" stroke="rgba(34,211,238,0.18)" stroke-width="0.6"/>
+        <line x1="50" y1="130" x2="185" y2="75" stroke="rgba(167,139,250,0.12)" stroke-width="0.6"/>
+        <path d="M0 0 L40 0 L0 40 Z" fill="rgba(34,211,238,0.06)"/>
+        <path d="M280 500 L240 500 L280 460 Z" fill="rgba(34,211,238,0.05)"/>
+        <path d="M230 455 L255 490 L205 490 Z" fill="none" stroke="rgba(34,211,238,0.1)" stroke-width="0.8"/>
+        <path d="M235 145 L260 180 L210 180 Z" fill="none" stroke="rgba(167,139,250,0.08)" stroke-width="0.8"/>
+      </svg>
+      <div style="position:relative;z-index:1;display:flex;flex-direction:column;justify-content:space-between;height:100%;">
+        <div>
+          <div style="width:62px;height:62px;border-radius:12px;background:#0a1e3a;border:1.5px solid rgba(34,211,238,0.28);display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none">
+              <rect x="3" y="3" width="7" height="7" rx="1" fill="#22d3ee"/>
+              <rect x="14" y="3" width="7" height="7" rx="1" fill="#a78bfa"/>
+              <rect x="3" y="14" width="7" height="7" rx="1" fill="#a78bfa"/>
+              <rect x="14" y="14" width="7" height="7" rx="1" fill="#22d3ee"/>
+            </svg>
+          </div>
+          <div style="font-family:'Exo 2',sans-serif;font-size:1.35rem;font-weight:900;letter-spacing:2.5px;color:#fff;margin-top:18px;line-height:1.2;"><span style="color:#22d3ee;">RIO </span>PRINT MEDIA</div>
+          <div style="color:rgba(34,211,238,0.5);font-family:'Exo 2',sans-serif;font-size:0.6rem;letter-spacing:3px;text-transform:uppercase;margin-top:6px;">Management Portal</div>
+          <div style="height:1px;background:linear-gradient(90deg,rgba(34,211,238,0.35),transparent);margin-top:18px;"></div>
         </div>
-        <!-- Company name -->
-        <div style="font-family:'Exo 2',sans-serif;font-size:1.35rem;font-weight:900;letter-spacing:2px;line-height:1.2;color:#fff;">
-          <span style="color:#22d3ee;">RIO </span>PRINT<br>MEDIA
+        <div>
+          <div style="width:20px;height:2px;background:rgba(34,211,238,0.4);margin-bottom:10px;"></div>
+          <p style="color:rgba(255,255,255,0.4);font-size:0.71rem;font-style:italic;line-height:1.75;margin:0;">&ldquo;Excellence in every print,<br>precision in every process.&rdquo;</p>
         </div>
-        <div style="color:rgba(56,189,248,0.55);font-family:'Exo 2',sans-serif;font-size:0.62rem;letter-spacing:3px;text-transform:uppercase;margin-top:6px;">Management Portal</div>
-        <!-- Divider -->
-        <div style="width:100%;height:1px;background:linear-gradient(90deg,rgba(56,189,248,0.4),transparent);margin-top:18px;"></div>
-      </div>
-      <!-- Bottom quote -->
-      <div style="position:relative;z-index:1;">
-        <div style="width:22px;height:2px;background:rgba(56,189,248,0.4);margin-bottom:10px;"></div>
-        <p style="color:rgba(255,255,255,0.42);font-size:0.72rem;font-family:'Nunito',sans-serif;line-height:1.7;margin:0;font-style:italic;">&ldquo;Excellence in every print,<br>precision in every process.&rdquo;</p>
       </div>
     </div>
 
-    <!-- ── RIGHT FORM PANEL ───────────────────────────────── -->
+    <!-- RIGHT FORM PANEL -->
     <div id="rio-login-box">
       <div>
         <h2 style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;color:#ffffff;letter-spacing:1px;margin:0 0 4px;">WELCOME BACK</h2>
-        <p style="font-size:0.65rem;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.28);margin:0;font-family:'Exo 2',sans-serif;">Sign in to continue</p>
+        <p style="font-size:0.62rem;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:0;font-family:'Exo 2',sans-serif;">Sign in to continue</p>
       </div>
-
-      <!-- Username -->
       <div class="rio-login-field-group">
         <span class="rio-login-field-label">Username</span>
         <div class="rio-login-field-wrap">
-          <input id="rio-login-user" class="rio-login-field" type="text"
-                 placeholder="Enter your username" autocomplete="username"
-                 onkeydown="if(event.key==='Enter') document.getElementById('rio-login-pass').focus()">
+          <input id="rio-login-user" class="rio-login-field" type="text" placeholder="Enter your username" autocomplete="username" onkeydown="if(event.key==='Enter') document.getElementById('rio-login-pass').focus()">
           <span class="field-icon">👤</span>
         </div>
       </div>
-
-      <!-- Password -->
       <div class="rio-login-field-group">
         <span class="rio-login-field-label">Password</span>
         <div class="rio-login-field-wrap">
-          <input id="rio-login-pass" class="rio-login-field" type="password"
-                 placeholder="Enter your password" autocomplete="current-password"
-                 onkeydown="if(event.key==='Enter') rioDoLogin()">
-          <span onclick="toggleLoginPass()" id="login-eye" title="Show/hide"
-            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:0.85rem;color:rgba(255,255,255,0.25);user-select:none;pointer-events:all;">👁</span>
+          <input id="rio-login-pass" class="rio-login-field" type="password" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter') rioDoLogin()">
+          <span onclick="toggleLoginPass()" id="login-eye" title="Show/hide" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:0.85rem;color:rgba(255,255,255,0.25);user-select:none;pointer-events:all;">👁</span>
         </div>
       </div>
-
-      <!-- Remember me + Login button -->
       <div id="rio-login-remember-row">
         <label><input type="checkbox" id="rio-login-remember"> Remember me</label>
         <button id="rio-login-btn" onclick="rioDoLogin()">Sign In</button>
       </div>
-
       <div id="rio-login-err"></div>
-
-      <!-- Change password -->
-      <div style="padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);text-align:center;">
-        <span onclick="toggleChangePass()" style="font-size:0.7rem;color:rgba(56,189,248,0.5);cursor:pointer;text-decoration:underline;font-family:'Nunito',sans-serif;letter-spacing:0.5px;">🔑 Forgot / Change Password</span>
+      <div style="padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+        <span onclick="toggleChangePass()" style="font-size:0.7rem;color:rgba(34,211,238,0.45);cursor:pointer;text-decoration:underline;font-family:'Nunito',sans-serif;">🔑 Forgot / Change Password</span>
       </div>
       <div id="rio-change-pass-box" style="display:none;">
-        <p style="font-size:0.73rem;color:rgba(156,163,175,0.65);margin-bottom:10px;font-family:'Nunito',sans-serif;">Enter your username and new password:</p>
+        <p style="font-size:0.73rem;color:rgba(156,163,175,0.6);margin-bottom:10px;font-family:'Nunito',sans-serif;">Enter your username and new password:</p>
         <div class="rio-login-field-wrap" style="margin-bottom:8px;"><input id="cp-user" class="rio-login-field" type="text" placeholder="Username"><span class="field-icon">👤</span></div>
         <div class="rio-login-field-wrap" style="margin-bottom:8px;"><input id="cp-old" class="rio-login-field" type="password" placeholder="Current Password"><span class="field-icon">🔒</span></div>
         <div class="rio-login-field-wrap" style="margin-bottom:8px;"><input id="cp-new" class="rio-login-field" type="password" placeholder="New Password"><span class="field-icon">🔑</span></div>
@@ -6372,17 +6399,21 @@ async function openSalesInvoicePrint(sno) {
 
 // ── Show invoice confirmation popup ───────────────────────────
 function showInvoiceConfirmPopup(invNo, isEdit) {
-  const msg = isEdit
-    ? '✅ Invoice <strong>' + invNo + '</strong> has been updated.'
-    : '✅ Invoice <strong>' + invNo + '</strong> has been generated.';
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:99998;display:flex;align-items:center;justify-content:center;';
-  overlay.innerHTML = '<div style="background:white;border-radius:12px;padding:32px 40px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.25);min-width:300px;max-width:400px;">'
-    + '<div style="font-size:2rem;margin-bottom:12px;">🧾</div>'
-    + '<div style="font-family:Exo 2,sans-serif;font-size:1rem;font-weight:700;color:#1a237e;margin-bottom:8px;">' + (isEdit ? 'Invoice Updated' : 'Invoice Generated') + '</div>'
-    + '<div style="font-family:Nunito,sans-serif;font-size:0.9rem;color:#444;margin-bottom:20px;">' + msg + '</div>'
-    + '<button onclick="this.closest('div[style*=fixed]').remove()" style="background:linear-gradient(90deg,#1a237e,#283593);color:white;border:none;border-radius:20px;padding:10px 32px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;letter-spacing:1px;">OK</button>'
-    + '</div>';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:12px;padding:32px 40px;text-align:center;min-width:300px;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.25);';
+  const title = isEdit ? 'Invoice Updated' : 'Invoice Generated';
+  const msg = isEdit ? 'Invoice <b>' + invNo + '</b> has been updated.' : 'Invoice <b>' + invNo + '</b> has been generated.';
+  box.innerHTML = '<div style="font-size:2rem;margin-bottom:12px;">🧾</div>'
+    + '<div style="font-family:Exo 2,sans-serif;font-size:1rem;font-weight:700;color:#1a237e;margin-bottom:8px;">' + title + '</div>'
+    + '<div style="font-family:Nunito,sans-serif;font-size:0.9rem;color:#555;margin-bottom:20px;">' + msg + '</div>';
+  const okBtn = document.createElement('button');
+  okBtn.textContent = 'OK';
+  okBtn.style.cssText = 'background:#1a237e;color:white;border:none;border-radius:20px;padding:10px 32px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;letter-spacing:1px;';
+  okBtn.onclick = function() { overlay.remove(); };
+  box.appendChild(okBtn);
+  overlay.appendChild(box);
   document.body.appendChild(overlay);
 }
 
@@ -7534,21 +7565,15 @@ function clearExpenseForm() {
 
 // ─── Panel switching ──────────────────────────────────────────
 function showPanel(id) {
-  document.querySelectorAll('.panel').forEach(p=>{p.classList.remove('active');p.style.display='none';});
+  document.querySelectorAll('.panel').forEach(p=>{p.classList.remove('active');p.style.display='';});
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   const panel = document.getElementById('panel-'+id);
   if (panel) {
     panel.classList.add('active');
-    panel.style.display = (id==='rio-invoice'||id==='rio-quotation') ? 'flex' : 'block';
+    if (id==='rio-invoice'||id==='rio-quotation') panel.style.display='flex';
     // Auto-load ledger data whenever ledger panel is shown
     if (id==='rio-ledger') { try { loadLedgerPanel(); } catch(e) {} }
   }
-  // Always ensure nav buttons are clickable
-  document.querySelectorAll('.nav-btn').forEach(function(b){
-    b.style.opacity = '1';
-    b.style.transform = 'none';
-    b.style.pointerEvents = 'auto';
-  });
   // Highlight dashboard icon when on dashboard, reset otherwise
   const dashIcon = document.getElementById('nav-dash-icon');
   if (dashIcon) {
@@ -7661,23 +7686,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.rioStartApp = function() {
   if (window._rioAppStarted) return; // prevent double-start
   window._rioAppStarted = true;
-  // Force show dashboard panel — directly manipulate DOM, no animation dependency
-  document.querySelectorAll('.panel').forEach(function(p){
-    p.classList.remove('active');
-    p.style.display = 'none';
-  });
-  var dash = document.getElementById('panel-dashboard');
-  if (dash) {
-    dash.classList.add('active');
-    dash.style.display = 'block';
-  }
-  // Make nav buttons always clickable
-  document.querySelectorAll('.nav-btn').forEach(function(b){
-    b.style.opacity = '1';
-    b.style.transform = 'none';
-    b.style.animation = 'none';
-    b.style.pointerEvents = 'auto';
-  });
+  // Show dashboard panel first
+  if (typeof showPanel === 'function') showPanel('dashboard');
   // Small delay to let browser paint the page first
   setTimeout(function(){
     try { loadAll(); } catch(e) { console.error('[RIO] loadAll error:', e); }
@@ -13110,15 +13120,15 @@ function exportLedgerCSV() {
   if (saved && saved.token && saved.username) {
     window._rioUser = saved;
     hideLoginOverlay();
-    // Use requestAnimationFrame to ensure DOM is painted before activating panel
-    function _startApp() {
-      if (typeof window.rioStartApp === 'function') {
-        window.rioStartApp();
-      } else {
-        setTimeout(_startApp, 50);
-      }
+    // DOM is already loaded by the time this script runs — call directly
+    if (typeof window.rioStartApp === 'function') {
+      window.rioStartApp();
+    } else {
+      // Fallback: rioStartApp not yet defined, wait a tick
+      setTimeout(function() {
+        if (typeof window.rioStartApp === 'function') window.rioStartApp();
+      }, 100);
     }
-    requestAnimationFrame(function(){ requestAnimationFrame(_startApp); });
   } else {
     showLoginOverlay();
   }
@@ -13224,9 +13234,7 @@ window.rioDoLogin = async function() {
         try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(user)); } catch(e) {}
         hideLoginOverlay();
         if (typeof applyRoleRestrictions === 'function') applyRoleRestrictions(user.role);
-        requestAnimationFrame(function(){ requestAnimationFrame(function(){
-          if (typeof window.rioStartApp === 'function') window.rioStartApp();
-        }); });
+        if (typeof window.rioStartApp === 'function') window.rioStartApp();
         // Refresh ledger balances after a delay
         setTimeout(function() {
           if (typeof loadDashboardLedgerBalances === 'function') loadDashboardLedgerBalances();
