@@ -2047,6 +2047,67 @@ async def reports_sales(
     return await billing_reports_sales(fr=fr, to=to, type=type)
 
 # ─────────────────────────────────────────────
+#  ATTENDANCE
+# ─────────────────────────────────────────────
+@app.get("/api/attendance/staff")
+async def get_att_staff():
+    if not ensure_db(): return JSONResponse(content=[], status_code=503)
+    try:
+        rows = list(col("att_staff").find({}, {"_id": 0}).sort("name", ASCENDING))
+        return JSONResponse(content=rows)
+    except Exception as e:
+        return JSONResponse(content=[], status_code=500)
+
+@app.post("/api/attendance/staff")
+async def post_att_staff(request: Request):
+    staff = await request.json()
+    if not isinstance(staff, list): return err("Expected array")
+    if not ensure_db(): return err("DB offline")
+    try:
+        col("att_staff").delete_many({})
+        if staff: col("att_staff").insert_many([{**s, "_id_removed": None} for s in staff], ordered=False)
+    except: pass
+    try:
+        col("att_staff").delete_many({})
+        for s in staff:
+            d = {k:v for k,v in s.items()}
+            col("att_staff").replace_one({"id": s.get("id")}, d, upsert=True)
+    except Exception as e:
+        return err(str(e))
+    return ok({"success": True})
+
+@app.get("/api/attendance")
+async def get_attendance(date: Optional[str] = Query(None), month: Optional[str] = Query(None)):
+    if not ensure_db(): return JSONResponse(content=[], status_code=503)
+    try:
+        query = {}
+        if date:  query["date"] = date
+        elif month: query["date"] = {"$regex": f"^{month}"}
+        rows = list(col("att_records").find(query, {"_id": 0}))
+        return JSONResponse(content=rows)
+    except Exception as e:
+        return JSONResponse(content=[], status_code=500)
+
+@app.post("/api/attendance")
+async def post_attendance(request: Request):
+    b = await request.json()
+    date    = b.get("date", "")
+    records = b.get("records", [])
+    if not date or not records: return err("date and records required")
+    if not ensure_db(): return err("DB offline")
+    try:
+        for rec in records:
+            rec["date"] = date
+            col("att_records").replace_one(
+                {"staffId": rec.get("staffId"), "date": date},
+                rec, upsert=True
+            )
+        return ok({"success": True, "saved": len(records)})
+    except Exception as e:
+        return err(str(e))
+
+
+# ─────────────────────────────────────────────
 #  AUTH — Login / Users
 # ─────────────────────────────────────────────
 import secrets
