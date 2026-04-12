@@ -2047,8 +2047,14 @@ async def reports_sales(
     return await billing_reports_sales(fr=fr, to=to, type=type)
 
 # ─────────────────────────────────────────────
-#  ATTENDANCE
+#  ATTENDANCE — matches PS1 v2.1 structure
+#  Collection: att_records, att_staff
 # ─────────────────────────────────────────────
+@app.get("/api/attendance/ping")
+async def att_ping():
+    if not ensure_db(): return JSONResponse(content={"ok": False}, status_code=503)
+    return {"ok": True}
+
 @app.get("/api/attendance/staff")
 async def get_att_staff():
     if not ensure_db(): return JSONResponse(content=[], status_code=503)
@@ -2087,6 +2093,71 @@ async def get_attendance(date: Optional[str] = Query(None), month: Optional[str]
         return JSONResponse(content=rows)
     except Exception as e:
         return JSONResponse(content=[], status_code=500)
+
+@app.post("/api/attendance/upsert")
+async def att_upsert(request: Request):
+    rec = await request.json()
+    if not ensure_db(): return err("DB offline")
+    try:
+        rec_id = rec.get("id")
+        name   = rec.get("name","").strip()
+        date   = rec.get("date","").strip()
+        if not name or not date: return err("name and date required")
+        # Remove MongoDB _id if present
+        rec.pop("_id", None)
+        col("att_records").replace_one({"name": name, "date": date}, rec, upsert=True)
+        return ok({"success": True})
+    except Exception as e:
+        return err(str(e))
+
+@app.get("/api/attendance/all")
+async def att_get_all():
+    if not ensure_db(): return JSONResponse(content=[], status_code=503)
+    try:
+        rows = list(col("att_records").find({}, {"_id": 0}).sort([("date", ASCENDING), ("name", ASCENDING)]))
+        return JSONResponse(content=rows)
+    except Exception as e:
+        return JSONResponse(content=[], status_code=500)
+
+@app.get("/api/attendance/search")
+async def att_search(
+    fr:   Optional[str] = Query(None, alias="from"),
+    to:   Optional[str] = Query(None),
+    name: Optional[str] = Query(None),
+    jobType: Optional[str] = Query(None)
+):
+    if not ensure_db(): return JSONResponse(content=[], status_code=503)
+    try:
+        query = {}
+        if fr or to:
+            query["date"] = {}
+            if fr: query["date"]["$gte"] = fr
+            if to: query["date"]["$lte"] = to
+        if name:    query["name"]    = name
+        if jobType: query["jobType"] = jobType
+        rows = list(col("att_records").find(query, {"_id": 0}).sort([("date", ASCENDING), ("name", ASCENDING)]))
+        return JSONResponse(content=rows)
+    except Exception as e:
+        return JSONResponse(content=[], status_code=500)
+
+@app.delete("/api/attendance/delete")
+async def att_delete(
+    fr:   Optional[str] = Query(None, alias="from"),
+    to:   Optional[str] = Query(None),
+    name: Optional[str] = Query(None)
+):
+    if not ensure_db(): return err("DB offline")
+    try:
+        query = {}
+        if fr or to:
+            query["date"] = {}
+            if fr: query["date"]["$gte"] = fr
+            if to: query["date"]["$lte"] = to
+        if name: query["name"] = name
+        result = col("att_records").delete_many(query)
+        return ok({"deleted": result.deleted_count})
+    except Exception as e:
+        return err(str(e))
 
 @app.post("/api/attendance")
 async def post_attendance(request: Request):
