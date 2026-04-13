@@ -110,7 +110,7 @@ html, body {
   font-size: 0.82rem;
   font-weight: 700;
   color: #1b5e20;
-  display: flex;
+  display: none !important;
   align-items: center;
   gap: 6px;
   padding: 5px 14px;
@@ -2469,8 +2469,8 @@ tbody td:last-child { border-right: none; }
   position:relative;overflow:hidden;
 }
 #rio-login-box {
-  background:#0d1f35;padding:44px 36px;
-  display:flex;flex-direction:column;justify-content:center;gap:18px;
+  background:#0d1f35;padding:30px 26px;
+  display:flex;flex-direction:column;justify-content:center;gap:12px;
 }
 .rio-login-field-group { display:flex;flex-direction:column;gap:6px; }
 .rio-login-field-label {
@@ -2481,9 +2481,9 @@ tbody td:last-child { border-right: none; }
 .rio-login-field-wrap { position:relative; }
 .rio-login-field {
   width:100%;background:#0a1a2e;
-  border:1.5px solid #152840;border-radius:7px;
-  padding:12px 38px 12px 14px;
-  color:#e2e8f0;font-size:0.87rem;outline:none;
+  border:1.5px solid #152840;border-radius:6px;
+  padding:8px 32px 8px 11px;
+  color:#e2e8f0;font-size:0.78rem;outline:none;
   font-family:'Nunito',sans-serif;box-sizing:border-box;
   transition:border-color 0.2s;
 }
@@ -2505,9 +2505,9 @@ tbody td:last-child { border-right: none; }
   accent-color:#3b82f6;width:14px;height:14px;cursor:pointer;
 }
 #rio-login-btn {
-  background:#2563eb;color:white;border:none;border-radius:7px;
-  padding:12px 30px;
-  font-size:0.73rem;font-weight:800;letter-spacing:2px;
+  background:#2563eb;color:white;border:none;border-radius:6px;
+  padding:8px 22px;
+  font-size:0.68rem;font-weight:800;letter-spacing:2px;
   text-transform:uppercase;cursor:pointer;
   font-family:'Exo 2',sans-serif;white-space:nowrap;
   transition:background 0.2s;
@@ -2721,7 +2721,7 @@ body.role-guest #s-edit-bar { display:none !important; }
     <!-- RIGHT FORM PANEL -->
     <div id="rio-login-box">
       <div>
-        <h2 style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;color:#ffffff;letter-spacing:1px;margin:0 0 4px;">WELCOME BACK</h2>
+        <h2 style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;letter-spacing:1px;margin:0 0 4px;"><span style="color:#22d3ee;">WELCOME</span> <span style="color:#d63d8f;">BACK</span></h2>
         <p style="font-size:0.62rem;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:0;font-family:'Exo 2',sans-serif;">Sign in to continue</p>
       </div>
       <div class="rio-login-field-group">
@@ -2762,7 +2762,7 @@ body.role-guest #s-edit-bar { display:none !important; }
 </div>
 
 <!-- ── USERNAME PILL (top-right inside header) ─────────────── -->
-<div id="rio-logout-wrap" style="display:none;position:fixed;top:14px;right:14px;z-index:9200;flex-direction:column;align-items:flex-end;gap:6px;">
+<div id="rio-logout-wrap" style="display:none;position:fixed;top:14px;right:14px;z-index:9200;flex-direction:column;align-items:flex-end;gap:6px;visibility:hidden;pointer-events:none;">
   <!-- Username badge — top right corner -->
   <div id="rio-logged-userbox" style="font-size:0.72rem;font-weight:700;color:#1a237e;font-family:Exo 2,sans-serif;white-space:nowrap;background:white;border:1.5px solid #c5cae9;border-radius:16px;padding:4px 12px;box-shadow:0 1px 4px rgba(0,0,0,0.10);">👤</div>
   <!-- Logout button — below username, near the header line -->
@@ -3039,16 +3039,18 @@ function rioToggleNav() {
       </button>
     </div><!-- /nav-content-billing -->
 
-  <div id="followup-ticker-wrap" style="width:100%;height:180px;overflow:hidden;padding:10px 8px 8px;box-sizing:border-box;display:flex;flex-direction:column;margin-top:auto;">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:0 4px;">
-      <span style="width:8px;height:8px;border-radius:50%;background:#ff5252;display:inline-block;flex-shrink:0;"></span>
-      <span style="font-family:Exo 2,sans-serif;font-size:0.6rem;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,0.55);text-transform:uppercase;">Pending Followups</span>
+  <!-- Pending followups kept hidden for JS compatibility -->
+  <div id="followup-ticker-wrap" style="display:none;">
+    <div id="followup-ticker-inner"><div id="followup-ticker-list"></div></div>
+  </div>
+
+  <!-- ── NAV BOTTOM: Username + Logout ─────────────────────── -->
+  <div id="nav-user-box" style="display:none;width:100%;margin-top:auto;padding:10px 8px 12px;box-sizing:border-box;border-top:1px solid rgba(255,255,255,0.08);">
+    <div style="display:flex;align-items:center;gap:7px;padding:8px 10px 6px;background:rgba(255,255,255,0.06);border-radius:10px 10px 0 0;border:1px solid rgba(255,255,255,0.1);border-bottom:none;">
+      <span style="font-size:1rem;">👤</span>
+      <div id="nav-logged-username" style="font-family:Exo 2,sans-serif;font-size:0.68rem;font-weight:800;color:#e2e8f0;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">User</div>
     </div>
-    <div style="flex:1;min-height:0;overflow:hidden;border:1px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.04);position:relative;">
-      <div id="followup-ticker-inner" style="position:absolute;top:0;left:0;right:0;will-change:transform;">
-        <div id="followup-ticker-list" style="padding:8px 6px;"></div>
-      </div>
-    </div>
+    <button onclick="rioLogout()" style="width:100%;padding:7px 0;background:linear-gradient(90deg,#7f1d1d,#c62828);color:white;border:none;border-radius:0 0 10px 10px;font-family:Exo 2,sans-serif;font-weight:800;font-size:0.65rem;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;">⎋ LOGOUT</button>
   </div>
   </nav>
 
@@ -5497,7 +5499,9 @@ function setStatus(s) {
 // Indian FY: April 1 of year Y  →  March 31 of year Y+1
 // e.g. "2025-26" covers 2025-04-01 to 2026-03-31
 
-let selectedFY = localStorage.getItem('selectedFY') || '';   // e.g. "2025-26" or '' = All Years (load from localStorage)
+let selectedFY = localStorage.getItem('selectedFY') || '';   // e.g. "2025-26" or '' = All Years
+// Always initialise to currentFY if nothing stored yet, so new deployments show current data
+if (!selectedFY) { selectedFY = (function(){ const d=new Date(); const y=d.getFullYear(); const m=d.getMonth()+1; const sy=m>=4?y:y-1; return sy+'-'+String(sy+1).slice(-2); })(); }
 
 /** Return the FY string for a given JS Date, e.g. "2025-26" */
 function dateToFY(d) {
@@ -13129,19 +13133,17 @@ function exportLedgerCSV() {
   function hideLoginOverlay() {
     var ov = document.getElementById('rio-login-overlay');
     if (ov) ov.style.display = 'none';
-    // Show logout button and user badge
-    var wrap = document.getElementById('rio-logout-wrap');
-    if (wrap) wrap.style.display = 'flex';
     var badge = document.getElementById('rio-user-badge');
     if (badge) badge.style.display = 'block';
     var u = window._rioUser;
+    // Update old userbox for JS compat
     var userbox = document.getElementById('rio-logged-userbox');
     if (userbox && u) userbox.textContent = '👤 ' + u.name + ' (' + u.role + ')';
-    // Show as column flex (stacked)
-    var wrap = document.getElementById('rio-logout-wrap');
-    if (wrap) wrap.style.display = 'flex';
-    // Header badge
-    // rio-logged-userbox is used instead of rio-logged-user
+    // Show new nav bottom user box
+    var navUserBox = document.getElementById('nav-user-box');
+    if (navUserBox) navUserBox.style.display = 'block';
+    var navUsername = document.getElementById('nav-logged-username');
+    if (navUsername && u) navUsername.textContent = u.name + ' (' + u.role + ')';
   }
 
   function showLoginOverlay() {
@@ -13151,7 +13153,9 @@ function exportLedgerCSV() {
     if (wrap) wrap.style.display = 'none';
     var badge = document.getElementById('rio-user-badge');
     if (badge) badge.style.display = 'none';
-    // rio-logged-userbox cleared in showLoginOverlay via wrap.style.display=none
+    // Hide nav bottom user box
+    var navUserBox = document.getElementById('nav-user-box');
+    if (navUserBox) navUserBox.style.display = 'none';
     setTimeout(function() {
       var uf = document.getElementById('rio-login-user');
       if (uf) uf.focus();
@@ -13312,6 +13316,8 @@ window.rioDoLogin = async function() {
     try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
     var wrap = document.getElementById('rio-logout-wrap');
     if (wrap) wrap.style.display = 'none';
+    var navUserBox = document.getElementById('nav-user-box');
+    if (navUserBox) navUserBox.style.display = 'none';
     var badge = document.getElementById('rio-user-badge');
     if (badge) badge.style.display = 'none';
     showLoginOverlay();
