@@ -1876,6 +1876,131 @@ async def ledger_migrate(request: Request):
     return ok({"ok": True, "expenseEntries": exp_count, "salesEntries": sales_count, "skipped": skip_count})
 
 # ─────────────────────────────────────────────
+#  ATTENDANCE
+# ─────────────────────────────────────────────
+
+@app.get("/api/attendance/ping")
+async def att_ping():
+    if not ensure_db(): return JSONResponse(content={"ok": False}, status_code=503)
+    return {"ok": True}
+
+@app.get("/api/attendance/staff")
+async def get_att_staff():
+    if not ensure_db(): return JSONResponse(content=[], status_code=503)
+    try:
+        rows = list(col("att_staff").find({}, {"_id": 0}).sort("name", ASCENDING))
+        return JSONResponse(content=rows)
+    except Exception as e:
+        return JSONResponse(content=[], status_code=500)
+
+@app.post("/api/attendance/staff")
+async def post_att_staff(request: Request):
+    staff = await request.json()
+    if not isinstance(staff, list): return err("Expected array")
+    if not ensure_db(): return err("DB offline")
+    try:
+        col("att_staff").delete_many({})
+        for s in staff:
+            d = {k: v for k, v in s.items()}
+            col("att_staff").replace_one({"id": s.get("id")}, d, upsert=True)
+    except Exception as e:
+        return err(str(e))
+    return ok({"success": True})
+
+@app.get("/api/attendance")
+async def get_attendance(date: Optional[str] = Query(None), month: Optional[str] = Query(None)):
+    if not ensure_db(): return JSONResponse(content=[], status_code=503)
+    try:
+        query = {}
+        if date:   query["date"] = date
+        elif month: query["date"] = {"$regex": f"^{month}"}
+        rows = list(col("att_records").find(query, {"_id": 0}))
+        return JSONResponse(content=rows)
+    except Exception as e:
+        return JSONResponse(content=[], status_code=500)
+
+@app.post("/api/attendance/upsert")
+async def att_upsert(request: Request):
+    rec = await request.json()
+    if not ensure_db(): return err("DB offline")
+    try:
+        name = rec.get("name", "").strip()
+        date = rec.get("date", "").strip()
+        if not name or not date: return err("name and date required")
+        rec.pop("_id", None)
+        col("att_records").replace_one({"name": name, "date": date}, rec, upsert=True)
+        return ok({"success": True})
+    except Exception as e:
+        return err(str(e))
+
+@app.get("/api/attendance/all")
+async def att_get_all():
+    if not ensure_db(): return JSONResponse(content=[], status_code=503)
+    try:
+        rows = list(col("att_records").find({}, {"_id": 0}).sort([("date", ASCENDING), ("name", ASCENDING)]))
+        return JSONResponse(content=rows)
+    except Exception as e:
+        return JSONResponse(content=[], status_code=500)
+
+@app.get("/api/attendance/search")
+async def att_search(
+    fr:      Optional[str] = Query(None, alias="from"),
+    to:      Optional[str] = Query(None),
+    name:    Optional[str] = Query(None),
+    jobType: Optional[str] = Query(None)
+):
+    if not ensure_db(): return JSONResponse(content=[], status_code=503)
+    try:
+        query = {}
+        if fr or to:
+            query["date"] = {}
+            if fr: query["date"]["$gte"] = fr
+            if to: query["date"]["$lte"] = to
+        if name:    query["name"]    = name
+        if jobType: query["jobType"] = jobType
+        rows = list(col("att_records").find(query, {"_id": 0}).sort([("date", ASCENDING), ("name", ASCENDING)]))
+        return JSONResponse(content=rows)
+    except Exception as e:
+        return JSONResponse(content=[], status_code=500)
+
+@app.delete("/api/attendance/delete")
+async def att_delete(
+    fr:   Optional[str] = Query(None, alias="from"),
+    to:   Optional[str] = Query(None),
+    name: Optional[str] = Query(None)
+):
+    if not ensure_db(): return err("DB offline")
+    try:
+        query = {}
+        if fr or to:
+            query["date"] = {}
+            if fr: query["date"]["$gte"] = fr
+            if to: query["date"]["$lte"] = to
+        if name: query["name"] = name
+        result = col("att_records").delete_many(query)
+        return ok({"deleted": result.deleted_count})
+    except Exception as e:
+        return err(str(e))
+
+@app.post("/api/attendance")
+async def post_attendance(request: Request):
+    b = await request.json()
+    date    = b.get("date", "")
+    records = b.get("records", [])
+    if not date or not records: return err("date and records required")
+    if not ensure_db(): return err("DB offline")
+    try:
+        for rec in records:
+            rec["date"] = date
+            col("att_records").replace_one(
+                {"staffId": rec.get("staffId"), "date": date},
+                rec, upsert=True
+            )
+        return ok({"success": True, "saved": len(records)})
+    except Exception as e:
+        return err(str(e))
+
+# ─────────────────────────────────────────────
 #  BILLING — CUSTOMERS
 # ─────────────────────────────────────────────
 @app.get("/api/billing/status")
