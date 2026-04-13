@@ -1389,23 +1389,22 @@ async def post_expenses(request: Request):
     b = await request.json()
     new_id = next_id("daily_expenses")
     amt = to_float(b.get("Amount"), 0.0)
-    exp_date_val = (b.get("ExpDate") or b.get("Date") or "").strip()
     doc = {
         "Id":          new_id,
-        "ExpDate":     exp_date_val,
+        "ExpDate":     b.get("ExpDate"),
         "Category":    b.get("Category", ""),
         "SubCategory": b.get("SubCategory", ""),
-        "PaymentMode": (b.get("PaymentMode") or b.get("PaidBy") or "").strip(),
+        "PaymentMode": b.get("PaymentMode", ""),
         "Description": b.get("Description", ""),
         "Amount":      amt,
     }
     col("daily_expenses").insert_one(doc)
     # Auto-create ledger debit
-    pm = (b.get("PaymentMode") or b.get("PaidBy") or "").strip()
+    pm = (b.get("PaymentMode") or "").strip()
     acct_map = {"KVB MOM":"KVB MOM","KVB Mani":"KVB Mani","Indian Bank":"Indian Bank","Cash":"Cash Balance"}
     acct = acct_map.get(pm)
     if acct and new_id:
-        exp_date = exp_date_val
+        exp_date = (b.get("ExpDate") or "").strip()
         fy = fy_from_date(exp_date)
         if fy:
             sub_cat = (b.get("SubCategory") or "").strip()
