@@ -2442,8 +2442,8 @@ tbody td:last-child { border-right: none; }
     repeating-linear-gradient(90deg,rgba(34,211,238,0.035) 0px,rgba(34,211,238,0.035) 1px,transparent 1px,transparent 70px);
 }
 #rio-login-card {
-  display:grid;grid-template-columns:1fr;
-  width:90%;max-width:380px;min-height:auto;
+  display:grid;grid-template-columns:300px 1fr;
+  width:90%;max-width:780px;min-height:460px;
   border-radius:14px;overflow:hidden;
   box-shadow:0 40px 100px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.06);
   position:relative;z-index:2;
@@ -2452,12 +2452,10 @@ tbody td:last-child { border-right: none; }
   background:#091628;
   padding:42px 34px;display:flex;flex-direction:column;
   position:relative;overflow:hidden;
-  display:none;
 }
 #rio-login-box {
-  background:#0d1f35;padding:28px 24px;
-  display:flex;flex-direction:column;justify-content:center;gap:12px;
-  border-radius:14px;
+  background:#0d1f35;padding:44px 36px;
+  display:flex;flex-direction:column;justify-content:center;gap:18px;
 }
 .rio-login-field-group { display:flex;flex-direction:column;gap:6px; }
 .rio-login-field-label {
@@ -2469,8 +2467,8 @@ tbody td:last-child { border-right: none; }
 .rio-login-field {
   width:100%;background:#0a1a2e;
   border:1.5px solid #152840;border-radius:7px;
-  padding:8px 34px 8px 11px;
-  color:#e2e8f0;font-size:0.8rem;outline:none;
+  padding:12px 38px 12px 14px;
+  color:#e2e8f0;font-size:0.87rem;outline:none;
   font-family:'Nunito',sans-serif;box-sizing:border-box;
   transition:border-color 0.2s;
 }
@@ -2493,8 +2491,8 @@ tbody td:last-child { border-right: none; }
 }
 #rio-login-btn {
   background:#2563eb;color:white;border:none;border-radius:7px;
-  padding:8px 20px;
-  font-size:0.7rem;font-weight:800;letter-spacing:2px;
+  padding:12px 30px;
+  font-size:0.73rem;font-weight:800;letter-spacing:2px;
   text-transform:uppercase;cursor:pointer;
   font-family:'Exo 2',sans-serif;white-space:nowrap;
   transition:background 0.2s;
@@ -2506,8 +2504,9 @@ tbody td:last-child { border-right: none; }
   text-align:center;font-family:'Nunito',sans-serif;
 }
 @media(max-width:640px){
-  #rio-login-card{max-width:96vw;}
-  #rio-login-box{padding:22px 16px;}
+  #rio-login-card{grid-template-columns:1fr;min-height:auto;}
+  #rio-login-brand{padding:28px 24px;min-height:180px;}
+  #rio-login-box{padding:28px 24px;}
 }
 
 
@@ -2718,7 +2717,7 @@ body.role-guest #s-edit-bar { display:none !important; }
     <!-- RIGHT FORM PANEL -->
     <div id="rio-login-box">
       <div>
-        <h2 style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;letter-spacing:1px;margin:0 0 4px;"><span style="color:#22d3ee;">WELCOME</span> <span style="color:#f0abfc;">BACK</span></h2>
+        <h2 style="font-family:'Exo 2',sans-serif;font-size:1.55rem;font-weight:900;color:#ffffff;letter-spacing:1px;margin:0 0 4px;">WELCOME BACK</h2>
         <p style="font-size:0.62rem;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:0;font-family:'Exo 2',sans-serif;">Sign in to continue</p>
       </div>
       <div class="rio-login-field-group">
@@ -3051,7 +3050,7 @@ function rioToggleNav() {
       </button>
     </div><!-- /nav-content-billing -->
 
-  <!-- hidden ticker elements kept for JS compatibility, but invisible -->
+  <!-- hidden ticker elements kept for JS compatibility -->
   <div id="followup-ticker-wrap" style="display:none;">
     <div id="followup-ticker-inner">
       <div id="followup-ticker-list"></div>
@@ -3061,14 +3060,11 @@ function rioToggleNav() {
   <!-- ── USER / LOGOUT BOX — bottom-left of sidebar ── -->
   <div id="sidebar-user-box" style="width:100%;margin-top:auto;padding:10px 8px 12px;box-sizing:border-box;">
     <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;">
-      <!-- Online dot + username -->
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="width:8px;height:8px;border-radius:50%;background:#43a047;flex-shrink:0;display:inline-block;box-shadow:0 0 6px #43a047;"></span>
         <span id="sidebar-username-label" style="font-family:Exo 2,sans-serif;font-size:0.68rem;font-weight:800;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">👤 User</span>
       </div>
-      <!-- Role badge -->
       <div id="sidebar-role-label" style="font-family:Exo 2,sans-serif;font-size:0.58rem;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:1.2px;text-transform:uppercase;padding-left:16px;"></div>
-      <!-- Logout button -->
       <button onclick="rioLogout()" style="width:100%;background:linear-gradient(90deg,#c62828,#b71c1c);color:white;border:none;padding:6px 0;border-radius:8px;font-family:Exo 2,sans-serif;font-weight:700;font-size:0.65rem;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;">⎋ LOGOUT</button>
     </div>
   </div>
@@ -13160,7 +13156,7 @@ function exportLedgerCSV() {
     var sRole  = document.getElementById('sidebar-role-label');
     if (sLabel && u) sLabel.textContent = '👤 ' + (u.name || u.username || 'User');
     if (sRole  && u) sRole.textContent  = (u.role || '').toUpperCase();
-    // Also keep old userbox in sync for any other JS that reads it
+    // Keep old userbox in sync
     var userbox = document.getElementById('rio-logged-userbox');
     if (userbox && u) userbox.textContent = '👤 ' + u.name + ' (' + u.role + ')';
   }
@@ -14221,7 +14217,7 @@ function attExportReportCSV() {
     var sRole  = document.getElementById('sidebar-role-label');
     if (sLabel && u) sLabel.textContent = '👤 ' + (u.name || u.username || 'User');
     if (sRole  && u) sRole.textContent  = (u.role || '').toUpperCase();
-    // Also keep old userbox in sync for any other JS that reads it
+    // Keep old userbox in sync
     var userbox = document.getElementById('rio-logged-userbox');
     if (userbox && u) userbox.textContent = '👤 ' + u.name + ' (' + u.role + ')';
   }
