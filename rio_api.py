@@ -15,6 +15,8 @@ from contextlib import asynccontextmanager
 from datetime import datetime, date
 from typing import Optional, Any
 
+from pydantic import BaseModel
+
 from fastapi import FastAPI, Request, Query
 from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
