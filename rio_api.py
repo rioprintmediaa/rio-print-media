@@ -25,8 +25,33 @@ from dotenv import load_dotenv
 
 # Use logging so uvicorn captures and displays output properly
 import logging
+import logging.handlers
+import pathlib
+
+# ── File logger → C:\Rio\Logs\rio_app.log ────────────────────────
+_LOG_DIR  = pathlib.Path(r"C:\Rio\Logs")
+try:
+    _LOG_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    _LOG_DIR = pathlib.Path(".")          # fallback: current dir if path unavailable
+
+_LOG_FILE = _LOG_DIR / "rio_app.log"
+
+_file_handler = logging.handlers.RotatingFileHandler(
+    _LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=2,
+    encoding="utf-8"
+)
+_file_handler.setLevel(logging.DEBUG)
+_file_handler.setFormatter(logging.Formatter(
+    "%(asctime)s | %(levelname)-5s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+))
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("rio_api")
+logger.setLevel(logging.DEBUG)
+logger.addHandler(_file_handler)
+logger.info("=== RIO PRINT MEDIA — App started. Log → %s ===", _LOG_FILE)
 
 load_dotenv(override=False)  # Never override Render environment variables
 
@@ -944,6 +969,30 @@ def ensure_db():
 # ─────────────────────────────────────────────
 #  PING — reports real DB status
 # ─────────────────────────────────────────────
+# ─────────────────────────────────────────────
+#  CLIENT-SIDE LOG ENDPOINT
+#  HTML sends log entries here; we write to C:\Rio\Logs\rio_app.log
+# ─────────────────────────────────────────────
+@app.post("/api/log")
+async def client_log(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse(content={"ok": False}, status_code=400)
+    level   = str(body.get("level",  "INFO")).upper()
+    user    = str(body.get("user",   "unknown"))
+    action  = str(body.get("action", ""))
+    detail  = str(body.get("detail", ""))
+    msg = f"[CLIENT] user={user} | {action} | {detail}"
+    if level == "ERROR":
+        logger.error(msg)
+    elif level == "WARN":
+        logger.warning(msg)
+    else:
+        logger.info(msg)
+    return {"ok": True}
+
+
 @app.get("/api/ping")
 async def ping():
     connected = ensure_db()
@@ -2045,6 +2094,73 @@ async def reports_sales(
     type: Optional[str] = Query(None)
 ):
     return await billing_reports_sales(fr=fr, to=to, type=type)
+
+# ─────────────────────────────────────────────
+#  CLIENT-SIDE LOGGING  →  C:\Rio\Logs\rio_app.log
+# ─────────────────────────────────────────────
+import logging
+from logging.handlers import RotatingFileHandler
+import pathlib
+
+LOG_DIR  = pathlib.Path(r"C:\Rio\Logs")
+LOG_FILE = LOG_DIR / "rio_app.log"
+
+def _setup_logger():
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    logger = logging.getLogger("rio_app")
+    if logger.handlers:          # already configured
+        return logger
+    logger.setLevel(logging.DEBUG)
+    handler = RotatingFileHandler(
+        LOG_FILE, maxBytes=5*1024*1024, backupCount=2,
+        encoding="utf-8"
+    )
+    handler.setFormatter(logging.Formatter(
+        "%(asctime)s | %(levelname)-5s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    ))
+    logger.addHandler(handler)
+    # Also echo to stdout so Render logs capture it
+    stdout_h = logging.StreamHandler()
+    stdout_h.setFormatter(logging.Formatter("%(asctime)s | %(levelname)-5s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
+    logger.addHandler(stdout_h)
+    return logger
+
+_log = _setup_logger()
+
+class LogEntry(BaseModel):
+    level:   str = "INFO"
+    user:    str = "unknown"
+    action:  str = ""
+    detail:  str = ""
+    page:    str = ""
+    ts:      str = ""
+
+@app.post("/api/log")
+async def client_log(entry: LogEntry):
+    lvl   = entry.level.upper()
+    msg   = f"{entry.user:15s} | {entry.action:30s} | {entry.detail}"
+    if entry.page:
+        msg += f" | page={entry.page}"
+    if lvl == "ERROR":
+        _log.error(msg)
+    elif lvl == "WARN":
+        _log.warning(msg)
+    elif lvl == "DEBUG":
+        _log.debug(msg)
+    else:
+        _log.info(msg)
+    return {"ok": True}
+
+@app.get("/api/log/tail")
+async def log_tail(n: int = 100):
+    """Return last n lines of the log file (admin debug use)."""
+    try:
+        lines = LOG_FILE.read_text(encoding="utf-8").splitlines()
+        return {"lines": lines[-n:], "total": len(lines)}
+    except Exception as e:
+        return {"lines": [], "error": str(e)}
+
 
 # ─────────────────────────────────────────────
 #  ATTENDANCE — matches PS1 v2.1 structure
