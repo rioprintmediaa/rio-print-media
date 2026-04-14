@@ -15,8 +15,6 @@ from contextlib import asynccontextmanager
 from datetime import datetime, date
 from typing import Optional, Any
 
-from pydantic import BaseModel
-
 from fastapi import FastAPI, Request, Query
 from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,6 +22,7 @@ from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.collection import Collection
 from bson import ObjectId
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 # Use logging so uvicorn captures and displays output properly
 import logging
