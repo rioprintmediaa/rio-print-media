@@ -22,7 +22,6 @@ from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.collection import Collection
 from bson import ObjectId
 from dotenv import load_dotenv
-from pydantic import BaseModel
 
 # Use logging so uvicorn captures and displays output properly
 import logging
