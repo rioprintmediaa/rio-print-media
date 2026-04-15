@@ -30,18 +30,25 @@ import logging.handlers
 import pathlib
 
 # ── File logger → C:\Rio\Logs\rio_app.log ────────────────────────
-_LOG_DIR  = pathlib.Path(r"C:\Rio\Logs")
+# Try Windows path first, fall back to current dir on Linux/Render
+_LOG_DIR = pathlib.Path(r"C:\Rio\Logs")
 try:
     _LOG_DIR.mkdir(parents=True, exist_ok=True)
+    # Verify we can actually write here
+    test_f = _LOG_DIR / ".write_test"
+    test_f.touch(); test_f.unlink()
 except Exception:
-    _LOG_DIR = pathlib.Path(".")          # fallback: current dir if path unavailable
+    _LOG_DIR = pathlib.Path(".")   # fallback on Render/Linux
 
 _LOG_FILE = _LOG_DIR / "rio_app.log"
 
-_file_handler = logging.handlers.RotatingFileHandler(
-    _LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=2,
-    encoding="utf-8"
-)
+try:
+    _file_handler = logging.handlers.RotatingFileHandler(
+        _LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=2,
+        encoding="utf-8"
+    )
+except Exception:
+    _file_handler = logging.StreamHandler()  # stdout-only fallback
 _file_handler.setLevel(logging.DEBUG)
 _file_handler.setFormatter(logging.Formatter(
     "%(asctime)s | %(levelname)-5s | %(message)s",
