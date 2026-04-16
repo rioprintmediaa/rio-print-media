@@ -1,3 +1,4 @@
+import re
 """
 rio_api.py — RIO PRINT MEDIA Sales Tracker v3.0
 FastAPI backend replacing the PowerShell script.
@@ -1321,6 +1322,15 @@ async def post_clients(request: Request):
 # ─────────────────────────────────────────────
 #  CATEGORIES
 # ─────────────────────────────────────────────
+@app.delete("/api/clients/{client_name:path}")
+async def delete_client(client_name: str):
+    """Delete a client from the sales tracker clientsList."""
+    if not ensure_db(): return JSONResponse(content={"error":"DB offline"}, status_code=503)
+    name = client_name.strip()
+    col("rio_clients").delete_one({"ClientName": {"$regex": f"^{re.escape(name)}$", "$options": "i"}})
+    return ok({"success": True, "deleted": name})
+
+
 @app.get("/api/categories")
 async def get_categories():
     rows = list(col("expense_categories").distinct("CategoryName"))
@@ -2124,6 +2134,20 @@ class LogEntry(BaseModel):
     detail:  str = ""
     page:    str = ""
     ts:      str = ""
+
+@app.get("/api/log/where")
+async def log_where():
+    """Shows where the log file is (or tells you it's on Render stdout)."""
+    import platform as _p
+    return {
+        "platform": _p.system(),
+        "log_file": str(LOG_FILE) if LOG_FILE else None,
+        "log_exists": LOG_FILE.exists() if LOG_FILE else False,
+        "note": (
+            f"Log file at: {LOG_FILE}" if LOG_FILE and LOG_FILE.exists()
+            else "Running on Render/Linux — logs go to Render dashboard Logs tab, not a file."
+        )
+    }
 
 @app.get("/api/log/tail")
 async def log_tail(n: int = 100):
