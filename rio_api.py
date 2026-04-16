@@ -29,37 +29,39 @@ import logging
 import logging.handlers
 import pathlib
 
-# ── File logger → C:\Rio\Logs\rio_app.log ────────────────────────
-# Try Windows path first, fall back to current dir on Linux/Render
-_LOG_DIR = pathlib.Path(r"C:\Rio\Logs")
-try:
-    _LOG_DIR.mkdir(parents=True, exist_ok=True)
-    # Verify we can actually write here
-    test_f = _LOG_DIR / ".write_test"
-    test_f.touch(); test_f.unlink()
-except Exception:
-    _LOG_DIR = pathlib.Path(".")   # fallback on Render/Linux
+# ── Logging setup ────────────────────────────────────────────────
+# Windows (local run): writes to C:\Rio\Logs\rio_app.log
+# Render / Linux:      stdout only (visible in Render → Logs tab)
+import platform as _platform
 
-_LOG_FILE = _LOG_DIR / "rio_app.log"
-
-try:
-    _file_handler = logging.handlers.RotatingFileHandler(
-        _LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=2,
-        encoding="utf-8"
-    )
-except Exception:
-    _file_handler = logging.StreamHandler()  # stdout-only fallback
-_file_handler.setLevel(logging.DEBUG)
-_file_handler.setFormatter(logging.Formatter(
-    "%(asctime)s | %(levelname)-5s | %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-))
-
+_fmt = logging.Formatter("%(asctime)s | %(levelname)-5s | %(message)s",
+                          datefmt="%Y-%m-%d %H:%M:%S")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("rio_api")
 logger.setLevel(logging.DEBUG)
-logger.addHandler(_file_handler)
-logger.info("=== RIO PRINT MEDIA — App started. Log → %s ===", _LOG_FILE)
+
+# Always add stdout handler (works everywhere)
+_sh = logging.StreamHandler()
+_sh.setFormatter(_fmt)
+logger.addHandler(_sh)
+
+# On Windows: also write to C:\Rio\Logs\rio_app.log
+_LOG_FILE = None
+if _platform.system() == "Windows":
+    _LOG_DIR = pathlib.Path(r"C:\Rio\Logs")
+    try:
+        _LOG_DIR.mkdir(parents=True, exist_ok=True)
+        _LOG_FILE = _LOG_DIR / "rio_app.log"
+        _fh = logging.handlers.RotatingFileHandler(
+            _LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=2, encoding="utf-8"
+        )
+        _fh.setFormatter(_fmt)
+        logger.addHandler(_fh)
+        logger.info("=== RIO — Log file: %s ===", _LOG_FILE)
+    except Exception as e:
+        logger.warning("Could not create log file at C:\\Rio\\Logs: %s", e)
+else:
+    logger.info("=== RIO — Running on Linux/Render — logs go to stdout only ===")
 
 load_dotenv(override=False)  # Never override Render environment variables
 
@@ -223,7 +225,7 @@ def init_indexes():
     """Create indexes for fast queries."""
     try:
         _db["sales_records"].create_index([("SNo", DESCENDING)])
-        _db["daily_expenses"].create_index([("Date", DESCENDING)])
+        _db["daily_expenses"].create_index([("ExpDate", DESCENDING)])
         _db["sales_invoices"].create_index([("InvoiceDate", DESCENDING)])
         _db["quotations"].create_index([("QuotationDate", DESCENDING)])
         logger.info("Indexes created")
@@ -897,7 +899,7 @@ async function saveSale() {{
       Payment1Amt: advance,
       Payment1Mode: 'Cash',
       Payment1Date: document.getElementById('s-date').value,
-      FY: '2025-26'
+      FY: (function(d){var m=new Date(d||Date.now()).getMonth()+1,y=new Date(d||Date.now()).getFullYear();return m>=4?(y+'-'+(y+1).toString().slice(-2)):((y-1)+'-'+y.toString().slice(-2));})(document.getElementById('s-date').value)
     }};
     var r = await fetch(API+'/sales', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(body)}});
     var d = await r.json();
@@ -2104,37 +2106,12 @@ async def reports_sales(
     return await billing_reports_sales(fr=fr, to=to, type=type)
 
 # ─────────────────────────────────────────────
-#  CLIENT-SIDE LOGGING  →  C:\Rio\Logs\rio_app.log
+#  CLIENT-SIDE LOGGING  →  uses main logger
 # ─────────────────────────────────────────────
-import logging
-from logging.handlers import RotatingFileHandler
-import pathlib
-
-LOG_DIR  = pathlib.Path(r"C:\Rio\Logs")
-LOG_FILE = LOG_DIR / "rio_app.log"
-
-def _setup_logger():
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-    logger = logging.getLogger("rio_app")
-    if logger.handlers:          # already configured
-        return logger
-    logger.setLevel(logging.DEBUG)
-    handler = RotatingFileHandler(
-        LOG_FILE, maxBytes=5*1024*1024, backupCount=2,
-        encoding="utf-8"
-    )
-    handler.setFormatter(logging.Formatter(
-        "%(asctime)s | %(levelname)-5s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
-    ))
-    logger.addHandler(handler)
-    # Also echo to stdout so Render logs capture it
-    stdout_h = logging.StreamHandler()
-    stdout_h.setFormatter(logging.Formatter("%(asctime)s | %(levelname)-5s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
-    logger.addHandler(stdout_h)
-    return logger
-
-_log = _setup_logger()
+# Reuse the top-level logger (already configured above with file + stdout)
+_log = logging.getLogger("rio_api")
+# LOG_FILE exposed for /api/log/tail endpoint
+LOG_FILE = _LOG_FILE  # None on Render, Path on Windows
 
 class LogEntry(BaseModel):
     level:   str = "INFO"
@@ -2144,28 +2121,14 @@ class LogEntry(BaseModel):
     page:    str = ""
     ts:      str = ""
 
-@app.post("/api/log")
-async def client_log(entry: LogEntry):
-    lvl   = entry.level.upper()
-    msg   = f"{entry.user:15s} | {entry.action:30s} | {entry.detail}"
-    if entry.page:
-        msg += f" | page={entry.page}"
-    if lvl == "ERROR":
-        _log.error(msg)
-    elif lvl == "WARN":
-        _log.warning(msg)
-    elif lvl == "DEBUG":
-        _log.debug(msg)
-    else:
-        _log.info(msg)
-    return {"ok": True}
-
 @app.get("/api/log/tail")
 async def log_tail(n: int = 100):
-    """Return last n lines of the log file (admin debug use)."""
+    """Return last n lines of the log file (Windows only; Render uses stdout)."""
+    if not LOG_FILE or not LOG_FILE.exists():
+        return {"lines": [], "note": "Log file not available on this platform. On Render, check the Logs tab in the dashboard."}
     try:
         lines = LOG_FILE.read_text(encoding="utf-8").splitlines()
-        return {"lines": lines[-n:], "total": len(lines)}
+        return {"lines": lines[-n:], "total": len(lines), "file": str(LOG_FILE)}
     except Exception as e:
         return {"lines": [], "error": str(e)}
 
@@ -2195,13 +2158,10 @@ async def post_att_staff(request: Request):
     if not ensure_db(): return err("DB offline")
     try:
         col("att_staff").delete_many({})
-        if staff: col("att_staff").insert_many([{**s, "_id_removed": None} for s in staff], ordered=False)
-    except: pass
-    try:
-        col("att_staff").delete_many({})
-        for s in staff:
-            d = {k:v for k,v in s.items()}
-            col("att_staff").replace_one({"id": s.get("id")}, d, upsert=True)
+        if staff:
+            col("att_staff").insert_many(
+                [{k:v for k,v in s.items()} for s in staff], ordered=False
+            )
     except Exception as e:
         return err(str(e))
     return ok({"success": True})
@@ -2331,50 +2291,6 @@ def ensure_default_users():
 # ─────────────────────────────────────────────
 #  AUTH — Emergency admin reset (upsert admin user)
 # ─────────────────────────────────────────────
-
-@app.get("/api/auth/debug-users")
-async def debug_users():
-    """Debug: show users in rio_users collection (no passwords)."""
-    if not ensure_db():
-        return JSONResponse(content={"error": "DB not connected"}, status_code=503)
-    users = list(col("rio_users").find({}, {"_id": 0, "password": 0, "session_token": 0}))
-    total = col("rio_users").count_documents({})
-    return JSONResponse(content={"total": total, "users": users})
-
-@app.get("/api/auth/test-login")
-async def test_login(username: str = "admin", password: str = "rio@admin"):
-    """Debug: test login and show exactly what happens."""
-    if not ensure_db():
-        return JSONResponse(content={"step": "FAILED", "reason": "DB not connected"})
-    user = col("rio_users").find_one({"username": username.lower()}, {"_id": 0})
-    if not user:
-        all_users = [u.get("username") for u in col("rio_users").find({}, {"username": 1})]
-        return JSONResponse(content={"step": "USER_NOT_FOUND", "searched_for": username.lower(), "all_usernames_in_db": all_users})
-    has_password_field = "password" in user
-    password_value_preview = str(user.get("password", ""))[:20] if user.get("password") else "EMPTY"
-    try:
-        pw_match = verify_password(password, user["password"])
-    except Exception as e:
-        pw_match = f"ERROR: {str(e)}"
-    return JSONResponse(content={
-        "step": "FOUND_USER",
-        "username_in_db": user.get("username"),
-        "role": user.get("role"),
-        "has_password_field": has_password_field,
-        "password_preview": password_value_preview,
-        "password_match": pw_match
-    })
-
-@app.get("/api/auth/reset-admin")
-async def reset_admin():
-    """Force-upsert admin user with default password. Use if locked out."""
-    hashed = hash_password("rio@admin")
-    col("rio_users").update_one(
-        {"username": "admin"},
-        {"$set": {"username": "admin", "password": hashed, "role": "admin", "name": "Administrator"}},
-        upsert=True
-    )
-    return JSONResponse(content={"ok": True, "message": "Admin user reset. Login: admin / rio@admin"})
 
 @app.post("/api/auth/login")
 async def login(request: Request):
