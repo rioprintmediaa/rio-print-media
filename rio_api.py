@@ -419,6 +419,10 @@ RENDER_URL = os.environ.get("RENDER_URL", "https://rio-print-media.onrender.com"
 async def serve_mobile(request: Request):
     api_url = RENDER_URL
     pin = MOBILE_PIN
+    # Compute current FY server-side to avoid f-string colon issues
+    _now = datetime.now()
+    _m, _y = _now.month, _now.year
+    current_fy = f"{_y}-{str(_y+1)[2:]}" if _m >= 4 else f"{_y-1}-{str(_y)[2:]}"
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -899,7 +903,7 @@ async function saveSale() {{
       Payment1Amt: advance,
       Payment1Mode: 'Cash',
       Payment1Date: document.getElementById('s-date').value,
-      FY: (function(d){var m=new Date(d||Date.now()).getMonth()+1,y=new Date(d||Date.now()).getFullYear();return m>=4?(y+'-'+(y+1).toString().slice(-2)):((y-1)+'-'+y.toString().slice(-2));})(document.getElementById('s-date').value)
+      FY: '{current_fy}'
     }};
     var r = await fetch(API+'/sales', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(body)}});
     var d = await r.json();
