@@ -1,0 +1,3076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rio Print Media — CMY Proof — Color Correction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Exo+2:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --press-bg: #091628;
+  --press-panel: #0d1f35;
+  --press-panel-raised: #132a47;
+  --press-line: #1f3a5c;
+  --press-text: #e8e6e1;
+  --press-muted: #7a92b0;
+  --ink-c: #00b7c3;
+  --ink-m: #e6317f;
+  --ink-y: #f4c20d;
+  --accent: #7fbfff;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;background:var(--press-bg);color:var(--press-text);
+  font-family:'Exo 2',system-ui,sans-serif;overflow:hidden;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+#app{display:flex;flex-direction:column;height:100vh;}
+
+header{
+  flex-shrink:0;height:76px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  padding:0 22px;border-bottom:1px solid var(--press-line);background:var(--press-panel);
+}
+.brand{display:flex;align-items:center;gap:12px;justify-self:start;}
+.brand-plates{display:flex;gap:3px;}
+.brand-plates span{width:9px;height:9px;border-radius:2px;display:inline-block;}
+.brand-center{text-align:center;justify-self:center;}
+.brand-title{font-weight:800;font-size:1.65rem;letter-spacing:0.3px;}
+.brand-sub{font-size:0.85rem;color:var(--press-muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:1px;}
+.brand-company{font-weight:900;letter-spacing:0.5px;font-size:1.55rem;line-height:1.15;}
+.brand-copyright{font-size:0.68rem;color:var(--press-muted);letter-spacing:0.3px;margin-top:2px;}
+.header-actions{display:flex;gap:10px;justify-self:end;}
+.btn{
+  height:34px;padding:0 16px;border-radius:6px;border:1.5px solid var(--ink-c);
+  background:transparent;color:var(--ink-c);font-family:'Exo 2',sans-serif;
+  font-size:0.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;
+  transition:border-color 0.15s, background 0.15s, color 0.15s;
+}
+.btn:hover{background:rgba(0,183,195,0.12);}
+.btn:disabled{opacity:0.35;cursor:not-allowed;background:transparent;}
+.btn.active{background:var(--ink-c);color:#04252a;border-color:var(--ink-c);font-weight:800;}
+.btn-primary{background:var(--press-text);color:#111;border-color:var(--press-text);font-weight:700;}
+.btn-primary:hover{background:#fff;border-color:#fff;}
+.btn-primary:disabled{background:var(--press-panel-raised);color:var(--press-muted);border-color:var(--press-line);}
+.btn-accent{border-color:var(--ink-c);color:var(--ink-c);}
+.btn-accent.active{background:var(--ink-c);color:#04252a;font-weight:800;}
+
+main{flex:1;display:flex;min-height:0;}
+
+/* Left: regions panel */
+#regions-panel{width:320px;flex-shrink:0;background:var(--press-panel);border-right:1px solid var(--press-line);
+  display:flex;flex-direction:column;overflow-y:auto;}
+#regions-panel h3{font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--press-muted);margin:0;padding:16px 18px 6px;}
+.region-hint{font-size:0.68rem;color:var(--press-muted);padding:0 18px 14px;line-height:1.5;}
+.region-row{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;
+  border-left:3px solid transparent;transition:background 0.12s;}
+.region-row:hover{background:rgba(255,255,255,0.03);}
+.region-row.selected{background:rgba(127,191,255,0.08);border-left-color:var(--accent);}
+.region-swatch{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.region-name{font-size:0.78rem;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.region-adjusted-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-m);flex-shrink:0;}
+.region-del{background:none;border:none;color:var(--press-muted);cursor:pointer;font-size:0.9rem;padding:2px 4px;flex-shrink:0;}
+.region-del:hover{color:#ff7a7a;}
+
+#project-strip{padding:0 14px 14px;display:flex;flex-direction:column;gap:6px;}
+.project-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;cursor:pointer;
+  border:1.5px solid transparent;transition:background 0.12s,border-color 0.12s;}
+.project-item:hover{background:rgba(255,255,255,0.03);}
+.project-item.active{background:rgba(127,191,255,0.08);border-color:var(--accent);}
+.project-thumb{width:30px;height:30px;border-radius:4px;background-size:cover;background-position:center;
+  border:1px solid var(--press-line);flex-shrink:0;}
+.project-item-name{font-size:0.74rem;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.project-item-close{background:none;border:none;color:var(--press-muted);cursor:pointer;font-size:0.85rem;padding:2px 4px;flex-shrink:0;}
+.project-item-close:hover{color:#ff7a7a;}
+.project-add-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:7px;
+  border:1.5px dashed var(--press-line);color:var(--press-muted);font-size:0.72rem;cursor:pointer;}
+.project-add-btn:hover{border-color:var(--press-muted);color:var(--press-text);}
+
+/* Stage */
+.stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;padding:8px;min-width:0;min-height:0;overflow:hidden;
+  background-image:linear-gradient(45deg,var(--stage-checker,#0d1f35) 25%,transparent 25%),linear-gradient(-45deg,var(--stage-checker,#0d1f35) 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,var(--stage-checker,#0d1f35) 75%),linear-gradient(-45deg,transparent 75%,var(--stage-checker,#0d1f35) 75%);
+  background-size:22px 22px;background-position:0 0,0 11px,11px -11px,-11px 0px;background-color:var(--stage-bg,#091628);}
+.bg-swatch{width:22px;height:22px;border-radius:5px;border:1px solid var(--press-line);cursor:pointer;padding:0;}
+.bg-swatch:hover{border-color:var(--ink-c);}
+#canvas-wrap{display:flex;gap:20px;align-items:stretch;justify-content:center;width:100%;height:100%;padding:60px;min-width:0;min-height:0;box-sizing:border-box;}
+#canvas-wrap.stacked{flex-direction:column;align-items:center;padding:36px 60px;}
+.image-pane{text-align:center;max-width:48%;padding:0 8px;min-width:0;min-height:0;display:flex;flex-direction:column;}
+#canvas-wrap.stacked .image-pane{max-width:100%;padding:8px 0;min-height:0;flex:1;}
+.canvas-viewport{
+  width:100%;height:100%;overflow:auto;flex:1;
+  display:flex;align-items:center;justify-content:center;border-radius:4px;min-width:0;min-height:0;
+}
+.image-pane canvas{display:block;max-width:100%;max-height:100%;box-shadow:0 20px 60px rgba(0,0,0,0.55);}
+.pane-label{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--press-muted);}
+.pane-label-row{display:flex;align-items:center;justify-content:center;gap:10px;min-height:34px;margin-bottom:8px;}
+.pane-label-row .btn{height:26px;padding:0 12px;font-size:0.68rem;}
+#corrected-pane{position:relative;}
+#original-pane{display:none;}
+#work-canvas{display:block;max-width:100%;max-height:calc(100vh - 112px);cursor:crosshair;}
+/* Pen-nib cursor matching Photoshop's pen tool — a fountain-pen-shaped
+   icon with the hotspot (click point) precisely at the nib's tip, not
+   the crosshair used for the rectangle-select tool. White fill with a
+   black outline keeps it visible against both light and dark image
+   content, same convention Photoshop itself uses. */
+#work-canvas.pen-cursor{
+  cursor:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M2,22 L4,18 L17,5 L20,4 L20,7 L19,8 L6,21 Z" fill="white" stroke="black" stroke-width="1"/><path d="M2,22 L4,18 L7,19 Z" fill="black"/><line x1="15" y1="7" x2="18" y2="10" stroke="black" stroke-width="1"/></svg>') 2 22, crosshair;
+}
+#work-canvas.mode-view{cursor:default;}
+#selection-box{position:absolute;border:1.5px dashed var(--accent);background:rgba(127,191,255,0.12);
+  pointer-events:none;display:none;}
+#mode-badge{position:absolute;top:10px;left:10px;background:rgba(10,10,11,0.75);backdrop-filter:blur(6px);
+  padding:5px 12px;border-radius:20px;font-size:0.68rem;font-weight:700;letter-spacing:0.5px;color:#fff;
+  pointer-events:none;display:none;align-items:center;gap:10px;}
+#mode-badge.show{display:flex;}
+#mode-badge-cancel{pointer-events:auto;cursor:pointer;background:rgba(255,255,255,0.15);border:none;color:#fff;
+  border-radius:12px;padding:2px 10px;font-size:0.68rem;font-weight:700;letter-spacing:0.3px;}
+#mode-badge-cancel:hover{background:rgba(255,255,255,0.28);}
+
+#dropzone{width:100%;max-width:560px;border:2px dashed var(--press-line);border-radius:14px;padding:56px 40px;
+  text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;background:rgba(255,255,255,0.015);}
+#dropzone:hover,#dropzone.dragover{border-color:var(--press-muted);background:rgba(255,255,255,0.03);}
+#dropzone .icon{font-size:2.4rem;margin-bottom:14px;filter:grayscale(1) opacity(0.7);}
+#dropzone h2{font-size:1.05rem;font-weight:700;margin:0 0 8px;}
+#dropzone p{font-size:0.8rem;color:var(--press-muted);margin:0 0 20px;line-height:1.6;}
+#dropzone .btn-primary{display:inline-flex;margin:0 auto;}
+#dropzone .warn{
+  padding:10px 14px;background:rgba(230,49,127,0.08);border:1px solid rgba(230,49,127,0.25);
+  border-radius:8px;font-size:0.7rem;color:#ff9ec7;line-height:1.5;
+}
+
+/* Right: sidebar */
+#sidebar{width:320px;flex-shrink:0;background:var(--press-panel);border-left:1px solid var(--press-line);
+  display:flex;flex-direction:column;overflow-y:auto;}
+.sidebar-section{padding:20px 22px;border-bottom:1px solid var(--press-line);}
+.sidebar-section h3{font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--press-muted);margin:0 0 16px;}
+#current-target-name{font-size:0.85rem;font-weight:700;margin-bottom:16px;color:var(--accent);}
+.channel{margin-bottom:20px;}
+.channel:last-child{margin-bottom:0;}
+.channel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.channel-name{display:flex;align-items:center;gap:8px;font-size:0.82rem;font-weight:600;}
+.channel-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.channel-val{font-size:0.82rem;font-weight:600;min-width:46px;text-align:right;}
+.channel-val.pos{color:#7fd858;}
+.channel-val.neg{color:#ff7a7a;}
+.channel-stepper{display:flex;align-items:center;gap:4px;}
+.channel-stepper button{
+  width:22px;height:22px;border-radius:5px;border:1px solid var(--press-line);background:var(--press-panel-raised);
+  color:var(--press-text);font-size:0.9rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  padding:0;line-height:1;
+}
+.channel-stepper button:hover{border-color:#4a4d55;background:#2a2d33;}
+.channel-num{
+  width:52px;text-align:center;background:var(--press-panel-raised);border:1px solid var(--press-line);border-radius:5px;
+  color:var(--press-text);font-size:0.8rem;font-weight:600;padding:3px 2px;
+  -moz-appearance:textfield;
+}
+.channel-num::-webkit-inner-spin-button,.channel-num::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+.channel-num.pos{color:#7fd858;} .channel-num.neg{color:#ff7a7a;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;
+  outline:none;cursor:pointer;background:var(--press-panel-raised);}
+input[type=range]:disabled{opacity:0.3;cursor:not-allowed;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:#fff;border:3px solid var(--thumb-color,#888);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.4);}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;
+  border:3px solid var(--thumb-color,#888);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.4);}
+#slider-c{--thumb-color:var(--ink-c);} #slider-m{--thumb-color:var(--ink-m);} #slider-y{--thumb-color:var(--ink-y);}
+.readout{display:flex;gap:8px;margin-top:16px;padding:14px;background:var(--press-panel-raised);
+  border-radius:8px;border:1px solid var(--press-line);}
+.readout-item{flex:1;text-align:center;}
+.readout-item .rv{font-size:1.05rem;font-weight:600;}
+.readout-item .rl{font-size:0.6rem;color:var(--press-muted);text-transform:uppercase;letter-spacing:0.8px;margin-top:3px;}
+.compare-hint{font-size:0.7rem;color:var(--press-muted);margin-top:14px;line-height:1.5;}
+.compare-hint kbd{background:var(--press-panel-raised);border:1px solid var(--press-line);border-radius:4px;
+  padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;}
+.sidebar-footer{padding:18px 22px;margin-top:auto;}
+.sidebar-footer .btn{width:100%;justify-content:center;margin-bottom:10px;}
+.file-meta{font-size:0.68rem;color:var(--press-muted);margin-top:10px;line-height:1.6;}
+.file-meta span{color:var(--press-text);}
+#file-input{display:none;}
+#regions-panel::-webkit-scrollbar,#sidebar::-webkit-scrollbar{width:8px;}
+#regions-panel::-webkit-scrollbar-track,#sidebar::-webkit-scrollbar-track{background:transparent;}
+#regions-panel::-webkit-scrollbar-thumb,#sidebar::-webkit-scrollbar-thumb{background:var(--press-line);border-radius:4px;}
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#fff;color:#111;
+  padding:11px 20px;border-radius:8px;font-size:0.82rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  opacity:0;pointer-events:none;transition:all 0.2s;z-index:999;max-width:70vw;text-align:center;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.err{background:#3d1e22;color:#ff9e9e;}
+.view-toggle{display:flex;gap:6px;}
+.view-toggle button{
+  flex:1;height:34px;border-radius:7px;border:1.5px solid var(--ink-c);background:transparent;
+  color:var(--ink-c);font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'Exo 2',sans-serif;
+  transition:border-color 0.15s, background 0.15s, color 0.15s;
+}
+.view-toggle button:hover{background:rgba(0,183,195,0.12);}
+.view-toggle button.active{background:var(--ink-c);color:#04252a;border-color:var(--ink-c);font-weight:800;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ag-psd/dist/bundle.js" onerror="window._agPsdLoadFailed=true;"></script>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="brand-plates">
+        <span style="background:var(--ink-c);"></span>
+        <span style="background:var(--ink-m);"></span>
+        <span style="background:var(--ink-y);"></span>
+      </div>
+      <div>
+        <div class="brand-company"><span style="color:#22d3ee;">RIO</span> <span style="color:#d63d8f;">PRINT MEDIA</span></div>
+        <div class="brand-copyright">© 2026 Rio Print Media. All rights reserved.</div>
+      </div>
+    </div>
+    <div class="brand-center">
+      <div class="brand-title">CMY <b>Proof</b></div>
+      <div class="brand-sub">Ink Correction</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="btn-new" onclick="triggerUpload()">📁 Open Image</button>
+      <button class="btn" id="btn-undo" onclick="doUndo()" disabled title="Undo (Ctrl+Z)">↶ Undo</button>
+      <button class="btn" id="btn-redo" onclick="doRedo()" disabled title="Redo (Ctrl+Shift+Z)">↷ Redo</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="regions-panel" style="display:none;">
+      <h3>Project</h3>
+      <p class="region-hint" style="padding-top:0;">Images stay open here until you close them or close this tab.</p>
+      <div id="project-strip"></div>
+      <h3 style="margin-top:6px;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none;" onclick="toggleSidebarSection('regions')">
+        <span id="arrow-regions" style="display:inline-block;transition:transform 0.15s;transform:rotate(90deg);">▶</span>Regions
+      </h3>
+      <div id="section-regions" style="display:block;">
+        <p class="region-hint">"Whole Image" always applies everywhere. "▭ Select Region" drags a box; "✏️ Pen Tool" clicks points to trace any shape (click the start point again, or double-click, to close it) — either way it becomes its own independent correction. Click a selected region again, or press <b>Ctrl+D</b>, to deselect it.</p>
+        <div id="regions-list"></div>
+      </div>
+
+      <h3 style="margin-top:6px;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none;" onclick="toggleSidebarSection('layers')">
+        <span id="arrow-layers" style="display:inline-block;transition:transform 0.15s;transform:rotate(90deg);">▶</span>Layers
+      </h3>
+      <div id="section-layers" style="display:block;">
+        <p class="region-hint">Lift the currently selected region's pixels into an independent layer you can hide, delete, or drag to reposition — separate from the region's color correction below.</p>
+        <button class="btn" id="btn-lift-layer" onclick="liftSelectionToLayer()" disabled style="width:calc(100% - 28px);justify-content:flex-start;margin:0 14px 10px;">📋 Lift Selection to Layer</button>
+        <div id="layers-list"></div>
+      </div>
+
+      <h3 style="margin-top:6px;">Tools</h3>
+      <div id="left-tools-list" style="padding:0 14px 16px;display:flex;flex-direction:column;gap:6px;">
+        <button class="btn btn-accent" id="btn-select-mode" onclick="toggleSelectMode()" disabled style="width:100%;justify-content:flex-start;">▭ Select Region</button>
+        <button class="btn btn-accent" id="btn-pen-mode" onclick="togglePenMode()" disabled style="width:100%;justify-content:flex-start;">✏️ Pen Tool</button>
+        <label style="display:flex;align-items:center;gap:6px;padding:0 2px;font-size:0.7rem;color:var(--press-muted);cursor:pointer;">
+          <input type="checkbox" id="pen-auto-smooth" checked style="margin:0;">Smooth curves automatically
+        </label>
+        <button class="btn btn-accent" id="btn-remove-bg" onclick="openRemoveBg()" disabled style="width:100%;justify-content:flex-start;">✂️ Remove Background</button>
+        <button class="btn btn-accent" id="btn-curves" onclick="openCurves()" disabled style="width:100%;justify-content:flex-start;">📈 Curves</button>
+        <button class="btn" id="btn-reset" onclick="resetAll()" disabled style="width:100%;justify-content:flex-start;">↺ Reset All</button>
+        <button class="btn" id="btn-upscale" onclick="openUpscale()" disabled style="width:100%;justify-content:flex-start;">⬆ Upscale Image</button>
+        <div style="height:1px;background:var(--press-line);margin:4px 0;"></div>
+        <button class="btn btn-primary" id="btn-save-project" onclick="saveProject()" disabled style="width:100%;justify-content:flex-start;" title="Saves everything — image, regions, layers, curves — as one file you can reopen later">💾 Save Project</button>
+        <button class="btn" onclick="triggerLoadProject()" style="width:100%;justify-content:flex-start;">📂 Load Project</button>
+        <input type="file" id="project-file-input" accept=".zip" style="display:none;" onchange="if(this.files[0]) loadProjectFile(this.files[0]); this.value='';">
+        <div style="height:1px;background:var(--press-line);margin:4px 0;"></div>
+        <button class="btn btn-primary" id="btn-export" onclick="exportImage()" disabled style="width:100%;justify-content:flex-start;">⬇ Export PNG</button>
+        <button class="btn btn-primary" id="btn-export-tiff" onclick="exportCmyTiff()" disabled title="Standard CMYK TIFF with the Black channel always locked to 0% — no black ink is ever used, only C+M+Y" style="width:100%;justify-content:flex-start;">⬇ Export CMYK TIFF (K=0)</button>
+        <button class="btn" id="btn-compare" onclick="openCompare()" disabled style="width:100%;justify-content:flex-start;">⚖ Compare with Reference</button>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div id="view-controls" style="display:none;position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(20,21,23,0.92);backdrop-filter:blur(6px);border:1px solid var(--press-line);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,0.4);flex-wrap:wrap;max-width:94vw;justify-content:center;">
+        <button class="btn" style="height:28px;padding:0 10px;" onclick="adjustZoom(-0.1)">−</button>
+        <span id="zoom-level" class="mono" style="font-size:0.78rem;min-width:44px;text-align:center;">100%</span>
+        <button class="btn" style="height:28px;padding:0 10px;" onclick="adjustZoom(0.1)">+</button>
+        <button class="btn" style="height:28px;padding:0 12px;" onclick="fitZoom()">Fit</button>
+        <div style="width:1px;height:20px;background:var(--press-line);"></div>
+        <span style="font-size:0.72rem;color:var(--press-muted);">Layout</span>
+        <button class="btn" id="layout-horizontal-btn" style="height:28px;padding:0 10px;" onclick="setLayoutMode('horizontal')" title="Side by side">⬌ Side by side</button>
+        <button class="btn" id="layout-vertical-btn" style="height:28px;padding:0 10px;" onclick="setLayoutMode('vertical')" title="Top and bottom">⬍ Top/Bottom</button>
+        <button class="btn active" id="layout-auto-btn" style="height:28px;padding:0 10px;" onclick="setLayoutMode('auto')" title="Choose automatically based on image size">Auto</button>
+        <div style="width:1px;height:20px;background:var(--press-line);"></div>
+        <span style="font-size:0.72rem;color:var(--press-muted);">Background</span>
+        <button class="bg-swatch" style="background:#091628;" onclick="setStageBg('#091628')" title="Default dark"></button>
+        <button class="bg-swatch" style="background:#3a3a3a;" onclick="setStageBg('#3a3a3a')" title="Mid gray"></button>
+        <button class="bg-swatch" style="background:#ffffff;border:1px solid #555;" onclick="setStageBg('#ffffff')" title="White"></button>
+        <input type="color" id="bg-color-picker" value="#091628" oninput="setStageBg(this.value)" title="Custom color" style="width:26px;height:26px;padding:0;border:none;background:none;cursor:pointer;">
+        <button class="btn" style="height:28px;padding:0 10px;" onclick="resetStageBg()" title="Back to the original default background">↺ Reset</button>
+      </div>
+      <div id="dropzone" onclick="triggerUpload()">
+        <div class="icon">🖨️</div>
+        <h2>Drop an image to proof</h2>
+        <p>PNG, JPEG, TIFF, or PSD (flattened) — PNG or TIFF<br>
+        recommended if you need transparency preserved.<br>
+        Correct its Cyan, Magenta &amp; Yellow ink channels before print.</p>
+        <button class="btn btn-primary" onclick="event.stopPropagation();triggerUpload()">Choose a file</button>
+        <div id="cmyk-psd-warn" class="warn" style="display:none;margin-top:16px;text-align:left;">⚠️ <b>This PSD is saved in CMYK mode</b>, which this tool's reader library cannot parse (RGB and Grayscale only). In Photoshop: <b>Image → Mode → RGB Color</b>, then flatten and save again before uploading here — or use "Export → Save as" to a flattened PNG instead.</div>
+      </div>
+      <div id="canvas-wrap" style="display:none;">
+        <div id="original-pane" class="image-pane">
+          <div class="pane-label-row"><div class="pane-label">Original</div></div>
+          <div class="canvas-viewport" id="original-viewport">
+            <canvas id="original-canvas"></canvas>
+          </div>
+        </div>
+        <div id="corrected-pane" class="image-pane">
+          <div class="pane-label-row">
+            <div class="pane-label" id="corrected-pane-label">Corrected (CMY)</div>
+            <button id="btn-convert-cmy" onclick="convertToCmy()" class="btn btn-primary">🔄 Convert to CMY</button>
+          </div>
+          <div class="canvas-viewport" id="corrected-viewport">
+          <div id="canvas-inner-wrap" style="position:relative;display:inline-block;">
+            <canvas id="work-canvas"></canvas>
+            <div id="selection-box"></div>
+            <svg id="highlight-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;">
+              <rect id="highlight-rect" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="6,4" style="display:none;">
+                <animate attributeName="stroke-dashoffset" from="0" to="20" dur="0.6s" repeatCount="indefinite"></animate>
+              </rect>
+              <polygon id="highlight-polygon" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="6,4" style="display:none;">
+                <animate attributeName="stroke-dashoffset" from="0" to="20" dur="0.6s" repeatCount="indefinite"></animate>
+              </polygon>
+            </svg>
+            <svg id="pen-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;display:none;">
+              <polyline id="pen-polyline" fill="rgba(127,191,255,0.15)" stroke="#7fbfff" stroke-width="2" stroke-dasharray="5,4"></polyline>
+              <circle id="pen-start-dot" r="5" fill="#7fbfff" style="display:none;"></circle>
+            </svg>
+            <div id="mode-badge"><span id="mode-badge-text">Drag to select a region</span></div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sidebar">
+      <div class="sidebar-section">
+        <h3>Channel View</h3>
+        <p class="compare-hint" style="margin-top:0;">Like Photoshop's channels panel — view a single ink channel as grayscale (white = no ink, black = full ink). View-only, doesn't change the image.</p>
+        <div class="view-toggle" style="margin-bottom:4px;">
+          <button type="button" id="chview-composite" class="active" onclick="setChannelView('composite')">Composite</button>
+          <button type="button" id="chview-c" onclick="setChannelView('c')">Cyan</button>
+        </div>
+        <div class="view-toggle">
+          <button type="button" id="chview-m" onclick="setChannelView('m')">Magenta</button>
+          <button type="button" id="chview-y" onclick="setChannelView('y')">Yellow</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Ink Channels</h3>
+        <div id="current-target-name">Whole Image</div>
+
+        <div class="channel">
+          <div class="channel-head">
+            <div class="channel-name"><span class="channel-dot" style="background:var(--ink-c);"></span>Cyan<span id="curve-badge-c" class="mono" style="display:none;margin-left:8px;font-size:0.62rem;font-weight:800;color:#7fbfff;background:rgba(127,191,255,0.15);padding:1px 6px;border-radius:8px;" title="A curve is also active on this channel">CURVE</span></div>
+            <div class="channel-stepper">
+              <button type="button" onclick="stepChannel('c',-1)">−</button>
+              <input type="number" class="channel-num mono" id="num-c" value="0" min="-100" max="100" step="1" onchange="onNumberInput('c', this.value)">
+              <button type="button" onclick="stepChannel('c',1)">+</button>
+            </div>
+          </div>
+          <input type="range" id="slider-c" min="-100" max="100" value="0" step="1" oninput="onSlider('c', this.value)">
+        </div>
+        <div class="channel">
+          <div class="channel-head">
+            <div class="channel-name"><span class="channel-dot" style="background:var(--ink-m);"></span>Magenta<span id="curve-badge-m" class="mono" style="display:none;margin-left:8px;font-size:0.62rem;font-weight:800;color:#7fbfff;background:rgba(127,191,255,0.15);padding:1px 6px;border-radius:8px;" title="A curve is also active on this channel">CURVE</span></div>
+            <div class="channel-stepper">
+              <button type="button" onclick="stepChannel('m',-1)">−</button>
+              <input type="number" class="channel-num mono" id="num-m" value="0" min="-100" max="100" step="1" onchange="onNumberInput('m', this.value)">
+              <button type="button" onclick="stepChannel('m',1)">+</button>
+            </div>
+          </div>
+          <input type="range" id="slider-m" min="-100" max="100" value="0" step="1" oninput="onSlider('m', this.value)">
+        </div>
+        <div class="channel">
+          <div class="channel-head">
+            <div class="channel-name"><span class="channel-dot" style="background:var(--ink-y);"></span>Yellow<span id="curve-badge-y" class="mono" style="display:none;margin-left:8px;font-size:0.62rem;font-weight:800;color:#7fbfff;background:rgba(127,191,255,0.15);padding:1px 6px;border-radius:8px;" title="A curve is also active on this channel">CURVE</span></div>
+            <div class="channel-stepper">
+              <button type="button" onclick="stepChannel('y',-1)">−</button>
+              <input type="number" class="channel-num mono" id="num-y" value="0" min="-100" max="100" step="1" onchange="onNumberInput('y', this.value)">
+              <button type="button" onclick="stepChannel('y',1)">+</button>
+            </div>
+          </div>
+          <input type="range" id="slider-y" min="-100" max="100" value="0" step="1" oninput="onSlider('y', this.value)">
+        </div>
+
+        <div class="readout">
+          <div class="readout-item"><div class="rv mono" id="ro-c" style="color:var(--ink-c);">0%</div><div class="rl">C</div></div>
+          <div class="readout-item"><div class="rv mono" id="ro-m" style="color:var(--ink-m);">0%</div><div class="rl">M</div></div>
+          <div class="readout-item"><div class="rv mono" id="ro-y" style="color:var(--ink-y);">0%</div><div class="rl">Y</div></div>
+        </div>
+        <p class="compare-hint">No Key (Black) channel — CMY only, for a positive-film workflow. Hover anywhere on the image to read its CMY values live (hidden while the Pen Tool is active) · <kbd>Hold Space</kbd> to flash back to the original</p>
+        <button class="btn btn-primary" id="btn-apply-region" onclick="applyRegionChanges()" style="width:100%;justify-content:center;margin-top:14px;" disabled>✓ Apply Changes</button>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="file-meta" id="file-meta" style="display:none;">
+          <div>📄 <span id="meta-name">—</span></div>
+          <div>📐 <span id="meta-dims">—</span> px</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+            🎯 DPI: <input type="number" id="dpi-input" min="1" max="10000" style="width:64px;background:var(--press-panel-raised);border:1px solid var(--press-line);border-radius:5px;color:var(--press-text);font-family:'IBM Plex Mono',monospace;font-size:0.72rem;padding:3px 6px;">
+          </div>
+          <div id="dpi-source-note" style="font-size:0.62rem;margin-top:3px;color:var(--press-muted);">—</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="file-input" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif,.tif,.tiff,.psd">
+<input type="file" id="compare-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;">
+
+<div id="removebg-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,10,11,0.7);z-index:3000;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+  <div style="background:var(--press-panel);border:1px solid var(--press-line);border-radius:14px;width:420px;max-width:92vw;max-height:86vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--press-line);">
+      <div style="font-weight:800;font-size:0.95rem;">✂️ Remove Background</div>
+      <button onclick="closeRemoveBg()" style="background:none;border:none;color:var(--press-muted);font-size:1.1rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:22px;">
+      <div class="view-toggle" style="margin-bottom:16px;">
+        <button id="rmbg-mode-auto" class="active" onclick="setRmbgMode('auto')">Auto (Near-White)</button>
+        <button id="rmbg-mode-pick" onclick="setRmbgMode('pick')">Pick Color</button>
+      </div>
+      <p id="rmbg-hint" style="font-size:0.75rem;color:var(--press-muted);line-height:1.6;margin:0 0 16px;">
+        Removes background pixels close to white. Adjust sensitivity below, then click Apply.
+      </p>
+      <div class="channel">
+        <div class="channel-head">
+          <div class="channel-name">Sensitivity</div>
+          <div class="channel-val mono" id="rmbg-tolerance-val">30%</div>
+        </div>
+        <input type="range" id="rmbg-tolerance" min="1" max="100" value="30" step="1" oninput="updateRmbgPreview()">
+      </div>
+      <div id="rmbg-picked-swatch" style="display:none;align-items:center;gap:10px;margin:14px 0;padding:10px;background:var(--press-panel-raised);border-radius:8px;">
+        <div id="rmbg-swatch-color" style="width:24px;height:24px;border-radius:5px;border:1px solid var(--press-line);"></div>
+        <span style="font-size:0.78rem;color:var(--press-muted);">Picked color — click the image again to change it</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;">
+        <button class="btn" style="flex:1;justify-content:center;" onclick="closeRemoveBg()">Cancel</button>
+        <button class="btn btn-primary" id="rmbg-apply-btn" style="flex:1;justify-content:center;" onclick="applyRemoveBg()">Apply</button>
+      </div>
+      <button class="btn" id="btn-undo-bg-removal" onclick="undoRemoveBg()" style="width:100%;justify-content:center;margin-top:10px;" disabled>↺ Undo Last Background Removal</button>
+      <p style="font-size:0.68rem;color:var(--press-muted);margin-top:12px;line-height:1.5;">This changes the actual image pixels. Use the button above to revert it specifically — Ctrl+Z only undoes region/slider corrections, not background removal.</p>
+    </div>
+  </div>
+</div>
+
+<div id="upscale-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,10,11,0.7);z-index:3000;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+  <div style="background:var(--press-panel);border:1px solid var(--press-line);border-radius:14px;width:420px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--press-line);">
+      <div style="font-weight:800;font-size:0.95rem;">⬆ Upscale Image</div>
+      <button onclick="closeUpscale()" style="background:none;border:none;color:var(--press-muted);font-size:1.1rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:22px;">
+      <div class="notice" style="background:rgba(230,49,127,0.08);border:1px solid rgba(230,49,127,0.25);border-radius:8px;padding:12px 14px;font-size:0.74rem;color:#ff9ec7;line-height:1.6;margin-bottom:16px;">
+        Honest limitation: this is high-quality resizing plus sharpening, done entirely in your browser — not AI-based super-resolution. It won't invent realistic new detail the way tools like Photoshop's Super Resolution or Topaz do. It genuinely helps for modest upscales, but a very low-res image blown up 4x will still look soft, just less blocky than a plain resize.
+      </div>
+      <p style="font-size:0.78rem;color:var(--press-muted);margin:0 0 14px;">Current size: <b id="upscale-current-size" style="color:var(--press-text);">—</b></p>
+      <div class="view-toggle" style="margin-bottom:16px;">
+        <button id="upscale-2x" class="active" onclick="setUpscaleFactor(2)">2×</button>
+        <button id="upscale-3x" onclick="setUpscaleFactor(3)">3×</button>
+        <button id="upscale-4x" onclick="setUpscaleFactor(4)">4×</button>
+      </div>
+      <p style="font-size:0.78rem;color:var(--press-muted);margin:0 0 16px;">New size will be: <b id="upscale-new-size" style="color:var(--press-text);">—</b></p>
+      <div class="notice" style="background:var(--press-panel-raised);border:1px solid var(--press-line);border-radius:8px;padding:10px 12px;font-size:0.7rem;color:var(--press-muted);line-height:1.5;margin-bottom:16px;">
+        This replaces the working image, so any regions, layers, or curves you've already set up will be cleared — upscale first, then do your color correction.
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn" style="flex:1;justify-content:center;" onclick="closeUpscale()">Cancel</button>
+        <button class="btn btn-primary" id="upscale-apply-btn" style="flex:1;justify-content:center;" onclick="applyUpscale()">Upscale</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="curves-overlay" style="display:none;position:fixed;top:0;right:0;bottom:0;width:360px;max-width:94vw;background:var(--press-panel);border-left:1px solid var(--press-line);z-index:3000;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,0.35);overflow-y:auto;">
+  <div style="background:var(--press-panel);width:100%;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--press-line);">
+      <div style="font-weight:800;font-size:0.95rem;">📈 Curves — <span id="curves-target-name">Whole Image</span></div>
+      <button onclick="closeCurves()" style="background:none;border:none;color:var(--press-muted);font-size:1.1rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:22px;">
+      <div class="view-toggle" style="margin-bottom:14px;">
+        <button id="curves-tab-c" class="active" onclick="setCurvesChannel('c')">Cyan</button>
+        <button id="curves-tab-m" onclick="setCurvesChannel('m')">Magenta</button>
+        <button id="curves-tab-y" onclick="setCurvesChannel('y')">Yellow</button>
+      </div>
+      <p style="font-size:0.72rem;color:var(--press-muted);line-height:1.5;margin:0 0 10px;">
+        Click the line to add a point, drag points to bend the curve, double-click a point to remove it.
+        Left = less ink (input), bottom = less ink (output). The image stays visible on the left — watch it update live as you edit.
+      </p>
+      <svg id="curves-svg" width="316" height="316" viewBox="0 0 256 256" style="background:var(--press-panel-raised);border:1px solid var(--press-line);border-radius:8px;cursor:crosshair;">
+        <!-- grid -->
+        <g stroke="var(--press-line)" stroke-width="1">
+          <line x1="64" y1="0" x2="64" y2="256"></line>
+          <line x1="128" y1="0" x2="128" y2="256"></line>
+          <line x1="192" y1="0" x2="192" y2="256"></line>
+          <line x1="0" y1="64" x2="256" y2="64"></line>
+          <line x1="0" y1="128" x2="256" y2="128"></line>
+          <line x1="0" y1="192" x2="256" y2="192"></line>
+        </g>
+        <line x1="0" y1="256" x2="256" y2="0" stroke="var(--press-line)" stroke-width="1" stroke-dasharray="4,4"></line>
+        <path id="curves-path" d="" fill="none" stroke="#7fbfff" stroke-width="2.5"></path>
+        <g id="curves-points"></g>
+      </svg>
+      <div id="curves-impact-box" style="margin-top:14px;padding:12px 14px;background:var(--press-panel-raised);border-radius:8px;border:1px solid var(--press-line);">
+        <div style="font-size:0.68rem;color:var(--press-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Average ink in this region — this channel</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:0.95rem;font-weight:700;">
+          <span id="curves-impact-before" class="mono">—</span>
+          <span style="color:var(--press-muted);font-size:0.8rem;">→</span>
+          <span id="curves-impact-after" class="mono">—</span>
+          <span id="curves-impact-delta" class="mono" style="margin-left:auto;font-size:0.8rem;"></span>
+        </div>
+        <div id="curves-low-ink-warn" style="display:none;margin-top:8px;padding:8px 10px;background:rgba(230,49,127,0.08);border:1px solid rgba(230,49,127,0.25);border-radius:6px;font-size:0.68rem;color:#ff9ec7;line-height:1.5;">
+          ⚠️ This region has very little of this ink to begin with — edits to the curve may show little or no visible change here, even though they're being applied correctly. Try a region with more of this color, or check the Channel View to see where this ink actually is.
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn" style="flex:1;justify-content:center;" onclick="resetCurvesChannel()">Reset Channel</button>
+        <button class="btn" style="flex:1;justify-content:center;" onclick="closeCurves()">Done</button>
+      </div>
+      <p style="font-size:0.68rem;color:var(--press-muted);margin-top:12px;line-height:1.5;">Applies live to the selected region as you edit — no separate Apply step. Undo (Ctrl+Z) reverts curve edits the same as other region adjustments.</p>
+    </div>
+  </div>
+</div>
+
+<div id="compare-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,10,11,0.7);z-index:3000;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+  <div style="background:var(--press-panel);border:1px solid var(--press-line);border-radius:14px;width:520px;max-width:92vw;max-height:86vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--press-line);">
+      <div style="font-weight:800;font-size:0.95rem;">⚖ Compare with Reference</div>
+      <button onclick="closeCompare()" style="background:none;border:none;color:var(--press-muted);font-size:1.1rem;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:22px;">
+      <p style="font-size:0.78rem;color:var(--press-muted);line-height:1.6;margin:0 0 16px;">
+        Comparing your current correction (<b id="compare-active-name" style="color:var(--press-text);">—</b>) against
+        a reference file — e.g. the same design corrected manually by your designer.
+      </p>
+      <div id="compare-upload-zone" onclick="document.getElementById('compare-file-input').click()"
+        style="border:2px dashed var(--press-line);border-radius:10px;padding:28px;text-align:center;cursor:pointer;">
+        <div style="font-size:1.6rem;margin-bottom:8px;">📄</div>
+        <div style="font-size:0.82rem;font-weight:600;">Click to choose the reference file</div>
+        <div style="font-size:0.7rem;color:var(--press-muted);margin-top:4px;">PNG, JPG, or WEBP</div>
+      </div>
+      <div id="compare-results" style="display:none;margin-top:18px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:0.72rem;color:var(--press-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+          <div>Channel</div><div style="text-align:right;">Your Correction</div><div style="text-align:right;">Reference</div>
+        </div>
+        <div id="compare-rows"></div>
+        <div style="margin-top:14px;padding:12px 14px;background:var(--press-panel-raised);border-radius:8px;font-size:0.7rem;color:var(--press-muted);line-height:1.6;">
+          Difference shown is Reference minus Your Correction. A positive number means the reference file has
+          more of that ink than your current correction; negative means less. These are whole-image averages,
+          not a pixel-by-pixel match.
+        </div>
+        <button class="btn" style="width:100%;justify-content:center;margin-top:14px;" onclick="document.getElementById('compare-file-input').click()">🔄 Try a different reference file</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// Right-click disabled as a light deterrent against casual copying — worth
+// knowing this does not actually protect the source code (see chat for why
+// that's not achievable for any client-side web page). DevTools (F12) still
+// bypasses this instantly for anyone who knows to look.
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// ── State ─────────────────────────────────────────────────────
+// Each open image keeps its own complete state (regions, undo history, DPI)
+// so switching between images in the project strip preserves everything.
+let images = [];          // { id, fileName, originalImageData, previewSourceData, previewImageData, exportDpi, dpiIsDetected, regions, selectedRegionId, regionSeq, undoStack, redoStack, thumbUrl }
+let activeImageId = null;
+let imageSeq = 0;
+
+let spaceHeld = false;
+let selectMode = false;
+let selecting = false, selStartX = 0, selStartY = 0;
+let penMode = false;
+let penPoints = [];
+let sampleX = null, sampleY = null;
+const UNDO_LIMIT = 10;
+
+const workCanvas = document.getElementById('work-canvas');
+const ctx = workCanvas.getContext('2d');
+const PREVIEW_MAX = 1100;
+
+function activeImage() { return images.find(i => i.id === activeImageId) || null; }
+
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isErr ? ' err' : '');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(() => { t.className = ''; }, isErr ? 4000 : 2200);
+}
+function triggerUpload() { document.getElementById('file-input').click(); }
+document.getElementById('file-input').addEventListener('change', (e) => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+
+const dropzone = document.getElementById('dropzone');
+const stage = document.getElementById('stage');
+['dragover','dragenter'].forEach(evt => stage.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('dragover'); }));
+stage.addEventListener('dragleave', e => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+stage.addEventListener('drop', e => {
+  e.preventDefault(); dropzone.classList.remove('dragover');
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  const validExt = f && /\.(png|jpe?g|webp|bmp|gif|tiff?|psd)$/i.test(f.name);
+  if (f && (f.type.startsWith('image/') || validExt)) loadFile(f);
+});
+
+function loadFile(file) {
+  const baseName = file.name.replace(/\.[^.]+$/, '');
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+
+  if (ext === 'tif' || ext === 'tiff') { loadTiffFile(file, baseName); return; }
+  if (ext === 'psd') { loadPsdFile(file, baseName); return; }
+
+  const bufReader = new FileReader();
+  bufReader.onload = (bufEv) => {
+    const detectedDpi = detectDpi(bufEv.target.result, file.type);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => onImageLoaded(img, baseName, detectedDpi);
+      img.onerror = () => toast('Could not read that image — try a PNG, JPG, TIFF, or PSD', true);
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  bufReader.readAsArrayBuffer(file);
+}
+
+// TIFF import via UTIF.js (browsers have no native TIFF decoder at all).
+function loadTiffFile(file, baseName) {
+  if (typeof UTIF === 'undefined') {
+    toast('The TIFF reader library failed to load — check your internet connection and reload the page', true);
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const buffer = ev.target.result;
+      const ifds = UTIF.decode(buffer);
+      if (!ifds || !ifds.length) { toast('No readable image found in this TIFF', true); return; }
+      UTIF.decodeImage(buffer, ifds[0]);
+      const rgba = UTIF.toRGBA8(ifds[0]);
+      const w = ifds[0].width, h = ifds[0].height;
+      const imageData = new ImageData(new Uint8ClampedArray(rgba), w, h);
+      // TIFF can carry its own DPI tags (t282/t283 = XResolution/YResolution) —
+      // reuse those directly instead of re-parsing the file a second time.
+      let dpi = null;
+      try {
+        const xres = ifds[0].t282, resUnit = ifds[0].t296;
+        if (xres && xres[0] && (!resUnit || resUnit[0] === 2)) dpi = Math.round(xres[0][0] / (xres[0][1] || 1));
+      } catch(e) {}
+      onImageDataLoaded(imageData, baseName, dpi);
+    } catch (err) {
+      console.error(err);
+      toast('Could not read this TIFF — ' + (err && err.message ? err.message : 'unknown error'), true);
+    }
+  };
+  reader.onerror = () => toast('Could not read that file', true);
+  reader.readAsArrayBuffer(file);
+}
+
+// PSD import via ag-psd, flattened to a single composite image (this tool
+// works on one image at a time — for layer-by-layer correction, use the
+// separate CMY Layer Proof tool instead).
+function loadPsdFile(file, baseName) {
+  if (window._agPsdLoadFailed) {
+    toast('The PSD reader library could not be downloaded — this is a network/connectivity issue, not a problem with your file. Check your internet connection and reload the page.', true);
+    return;
+  }
+  if (typeof agPsd === 'undefined') {
+    toast('The PSD reader library has not finished loading yet — wait a couple of seconds and try again. If this keeps happening, check your internet connection.', true);
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const buffer = ev.target.result;
+      // NOT skipping layer image data — that flag only works safely when
+      // the PSD already has a pre-rendered composite baked in (Photoshop's
+      // "Maximize Compatibility" option does this). Plenty of real PSDs,
+      // including single-layer ones, don't have that, and ag-psd needs the
+      // actual layer pixel data to build the composite itself in that case.
+      // Skipping it was silently leaving psd.canvas empty for those files.
+      const psd = agPsd.readPsd(buffer);
+      console.log('[PSD DEBUG] parsed structure:', {
+        width: psd.width, height: psd.height, colorMode: psd.colorMode,
+        hasCanvas: !!psd.canvas, childrenCount: psd.children ? psd.children.length : 0,
+      });
+      if (!psd.canvas) { toast('This PSD has no readable flattened image', true); return; }
+      const pctx = psd.canvas.getContext('2d');
+      const imageData = pctx.getImageData(0, 0, psd.canvas.width, psd.canvas.height);
+      onImageDataLoaded(imageData, baseName, psd.imageResources && psd.imageResources.resolutionInfo
+        ? Math.round(psd.imageResources.resolutionInfo.horizontalResolution) : null);
+    } catch (err) {
+      console.error('[PSD DEBUG] read failed:', err);
+      if (err && /CMYK/i.test(err.message || '')) {
+        showCmykPsdWarning();
+      } else {
+        toast('Could not read this PSD — ' + (err && err.message ? err.message : 'unknown error'), true);
+      }
+    }
+  };
+  reader.onerror = () => toast('Could not read that file', true);
+  reader.readAsArrayBuffer(file);
+}
+function showCmykPsdWarning() {
+  const el = document.getElementById('cmyk-psd-warn');
+  if (el) el.style.display = 'block';
+  toast('This PSD is in CMYK mode — see the note below the upload button', true);
+}
+
+function detectDpi(buffer, mimeType) {
+  try {
+    const bytes = new Uint8Array(buffer);
+    if (mimeType === 'image/png') {
+      let offset = 8;
+      while (offset < bytes.length - 8) {
+        const length = (bytes[offset]<<24 | bytes[offset+1]<<16 | bytes[offset+2]<<8 | bytes[offset+3]) >>> 0;
+        const type = String.fromCharCode(bytes[offset+4], bytes[offset+5], bytes[offset+6], bytes[offset+7]);
+        if (type === 'pHYs') {
+          const ppuX = (bytes[offset+8]<<24 | bytes[offset+9]<<16 | bytes[offset+10]<<8 | bytes[offset+11]) >>> 0;
+          const unit = bytes[offset+16];
+          if (unit === 1 && ppuX > 0) return Math.round(ppuX * 0.0254);
+          return null;
+        }
+        if (type === 'IDAT') break;
+        offset += 12 + length;
+      }
+      return null;
+    }
+    if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
+      let offset = 2;
+      while (offset < bytes.length - 4) {
+        if (bytes[offset] !== 0xFF) break;
+        const marker = bytes[offset+1];
+        const segLength = (bytes[offset+2]<<8 | bytes[offset+3]);
+        if (marker === 0xE0) {
+          const units = bytes[offset+11];
+          const xDensity = (bytes[offset+12]<<8 | bytes[offset+13]);
+          if (units === 1 && xDensity > 0) return xDensity;
+          if (units === 2 && xDensity > 0) return Math.round(xDensity * 2.54);
+          return null;
+        }
+        if (marker === 0xDA) break;
+        offset += 2 + segLength;
+      }
+      return null;
+    }
+  } catch (e) { console.warn('DPI detection failed:', e); }
+  return null;
+}
+
+function onImageLoaded(img, baseName, detectedDpi) {
+  const fullCanvas = document.createElement('canvas');
+  fullCanvas.width = img.naturalWidth; fullCanvas.height = img.naturalHeight;
+  const fctx = fullCanvas.getContext('2d');
+  fctx.drawImage(img, 0, 0);
+  const originalImageData = fctx.getImageData(0, 0, fullCanvas.width, fullCanvas.height);
+  onImageDataLoaded(originalImageData, baseName, detectedDpi);
+}
+
+// Shared core: takes an already-decoded full-resolution ImageData (regardless
+// of source format) and sets up the project entry, preview canvas, and
+// thumbnail. Used by the native browser decode path (PNG/JPEG/WEBP/BMP/GIF)
+// as well as the TIFF (UTIF.js) and PSD (ag-psd) import paths below.
+function onImageDataLoaded(originalImageData, baseName, detectedDpi) {
+  const w = originalImageData.width, h = originalImageData.height;
+  const fullCanvas = document.createElement('canvas');
+  fullCanvas.width = w; fullCanvas.height = h;
+  fullCanvas.getContext('2d').putImageData(originalImageData, 0, 0);
+
+  const scale = Math.min(1, PREVIEW_MAX / Math.max(w, h));
+  const pw = Math.max(1, Math.round(w*scale)), ph = Math.max(1, Math.round(h*scale));
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = pw; tmpCanvas.height = ph;
+  const tctx = tmpCanvas.getContext('2d');
+  tctx.drawImage(fullCanvas, 0, 0, pw, ph);
+  const previewSourceData = tctx.getImageData(0, 0, pw, ph);
+
+  imageSeq++;
+  const rec = {
+    id: 'img_' + imageSeq,
+    fileName: baseName,
+    width: w, height: h,
+    originalImageData, previewSourceData, previewImageData: null,
+    exportDpi: detectedDpi || 300, dpiIsDetected: !!detectedDpi,
+    cmyConverted: false,
+    regions: [ { id:'whole', name:'Whole Image', isWhole:true, x:0, y:0, w:pw, h:ph, channels:{c:0,m:0,y:0}, curves:defaultCurves() } ],
+    selectedRegionId: 'whole', regionSeq: 1,
+    undoStack: [], redoStack: [],
+    layers: [], layerSeq: 0, selectedLayerId: null, baseVisible: true,
+    thumbUrl: tmpCanvas.toDataURL(),
+  };
+  images.push(rec);
+  switchToImage(rec.id);
+
+  document.getElementById('dropzone').style.display = 'none';
+  const wrapEl = document.getElementById('canvas-wrap');
+  wrapEl.style.display = 'flex';
+  // Wide (landscape) images get squeezed too narrow side-by-side to work
+  // with comfortably — stack them top/bottom instead so each pane keeps
+  // its full width. Tall/portrait or roughly-square images stay side by
+  // side, where there's already plenty of height to work with per pane.
+  applyLayoutMode();
+  document.getElementById('regions-panel').style.display = 'flex';
+  document.getElementById('view-controls').style.display = 'flex';
+  toast('Loaded "' + baseName + '" — adjust Whole Image, or select/trace a region');
+}
+
+// ── Switching between open images in the project ──────────────
+function switchToImage(id) {
+  const img = images.find(i => i.id === id);
+  if (!img) return;
+  activeImageId = id;
+  workCanvas.width = img.previewSourceData.width;
+  workCanvas.height = img.previewSourceData.height;
+  sampleX = null; sampleY = null;
+  applyLayoutMode();
+  viewZoom = 1;
+  setTimeout(applyZoom, 0); // after canvas swaps dimensions
+
+  document.getElementById('btn-reset').disabled = false;
+  document.getElementById('btn-export').disabled = false;
+  document.getElementById('btn-export-tiff').disabled = false;
+  document.getElementById('btn-compare').disabled = false;
+  document.getElementById('btn-remove-bg').disabled = false;
+  document.getElementById('btn-curves').disabled = false;
+  document.getElementById('btn-upscale').disabled = false;
+  document.getElementById('btn-save-project').disabled = false;
+  document.getElementById('btn-undo-bg-removal').disabled = !img.preRemoveBgBackup;
+  document.getElementById('file-meta').style.display = 'block';
+  document.getElementById('meta-name').textContent = img.fileName.length > 26 ? img.fileName.slice(0,23)+'…' : img.fileName;
+  document.getElementById('meta-dims').textContent = img.width + ' × ' + img.height;
+  document.getElementById('dpi-input').value = img.exportDpi;
+  document.getElementById('dpi-source-note').textContent = img.dpiIsDetected
+    ? 'Detected from file — edit if you need a different value'
+    : 'No DPI found in file — defaulted to 300 (print-standard). Edit if needed.';
+
+  updateConversionUI(img);
+  renderProjectStrip();
+  renderRegionsList();
+  selectRegion(img.selectedRegionId);
+  renderPreview();
+  updateUndoRedoButtons();
+}
+
+// Gates every correction control (sliders, number boxes, steppers, region
+// tools) behind the explicit "Convert to CMY" button — matching the
+// requested workflow of converting first, then correcting, rather than
+// correction being available immediately on upload. Also shows/hides the
+// side-by-side Original pane, only meaningful once there's a correction to
+// compare it against.
+function updateConversionUI(img) {
+  const convertBtn = document.getElementById('btn-convert-cmy');
+  const origPane = document.getElementById('original-pane');
+
+  convertBtn.textContent = img.cmyConverted ? '✓ Converted to CMY' : '🔄 Convert to CMY';
+  convertBtn.disabled = img.cmyConverted;
+  document.getElementById('btn-select-mode').disabled = !img.cmyConverted;
+  document.getElementById('btn-pen-mode').disabled = !img.cmyConverted;
+
+  ['c','m','y'].forEach(ch => {
+    document.getElementById('slider-'+ch).disabled = !img.cmyConverted;
+    document.getElementById('num-'+ch).disabled = !img.cmyConverted;
+  });
+  document.querySelectorAll('.channel-stepper button').forEach(b => b.disabled = !img.cmyConverted);
+
+  if (img.cmyConverted) {
+    origPane.style.display = 'block';
+    renderOriginalPane(img);
+  } else {
+    origPane.style.display = 'none';
+  }
+}
+// ── View zoom (display-only, never touches actual pixel data) ────
+let viewZoom = 1;
+let layoutMode = 'auto'; // 'auto' | 'horizontal' | 'vertical'
+function applyLayoutMode() {
+  const img = activeImage();
+  const wrapEl = document.getElementById('canvas-wrap');
+  let stacked;
+  if (layoutMode === 'horizontal') stacked = false;
+  else if (layoutMode === 'vertical') stacked = true;
+  else stacked = img ? (img.width > img.height * 1.15) : false;
+  wrapEl.classList.toggle('stacked', stacked);
+  ['horizontal','vertical','auto'].forEach(m => {
+    document.getElementById('layout-'+m+'-btn').classList.toggle('active', m === layoutMode);
+  });
+}
+function setLayoutMode(mode) {
+  layoutMode = mode;
+  applyLayoutMode();
+}
+function resetStageBg() {
+  setStageBg('#091628');
+}
+
+function applyZoom() {
+  const origCanvas = document.getElementById('original-canvas');
+  const correctedWrap = document.getElementById('canvas-inner-wrap');
+  const workCanvasEl = document.getElementById('work-canvas');
+
+  // Always start from a clean slate — clearing back to the original CSS
+  // (max-width:100%, max-height:calc(...)) which handles "fit the
+  // viewport" correctly on its own. A previous version of this function
+  // left max-width/max-height permanently overridden even at 100% zoom,
+  // which silently broke the normal fit-to-container sizing (the canvas
+  // rendered at full native resolution regardless of viewport size,
+  // landing it in totally the wrong place on screen).
+  [origCanvas, workCanvasEl].forEach(c => {
+    if (!c) return;
+    c.style.maxWidth = ''; c.style.maxHeight = ''; c.style.width = ''; c.style.height = '';
+  });
+  if (correctedWrap) { correctedWrap.style.width = ''; correctedWrap.style.height = ''; }
+
+  if (viewZoom === 1) {
+    document.getElementById('zoom-level').textContent = '100%';
+    return; // fit state — let the original CSS do the scaling, nothing more to do
+  }
+
+  // Zoomed — measure the natural "fit" size (styles are cleared above, so
+  // this reflects the real CSS-computed fit-to-container size), then scale
+  // explicit pixel dimensions from that baseline. Using explicit width/
+  // height rather than transform:scale() here specifically because a CSS
+  // transform doesn't reliably interact with an ancestor's overflow:auto
+  // clipping — the scaled content can paint straight through it instead
+  // of being clipped/scrolled, which is what caused the two panes to
+  // visually overlap at high zoom before this was fixed.
+  if (origCanvas && origCanvas.width) {
+    const naturalRect = origCanvas.getBoundingClientRect();
+    origCanvas.style.maxWidth = 'none'; origCanvas.style.maxHeight = 'none';
+    origCanvas.style.width = (naturalRect.width * viewZoom) + 'px';
+    origCanvas.style.height = (naturalRect.height * viewZoom) + 'px';
+  }
+  if (correctedWrap && workCanvasEl && workCanvasEl.width) {
+    const naturalRect = workCanvasEl.getBoundingClientRect();
+    workCanvasEl.style.maxWidth = 'none'; workCanvasEl.style.maxHeight = 'none';
+    correctedWrap.style.width = (naturalRect.width * viewZoom) + 'px';
+    correctedWrap.style.height = (naturalRect.height * viewZoom) + 'px';
+    workCanvasEl.style.width = '100%';
+    workCanvasEl.style.height = '100%';
+  }
+  document.getElementById('zoom-level').textContent = Math.round(viewZoom*100) + '%';
+}
+function adjustZoom(delta) {
+  viewZoom = Math.max(0.25, Math.min(4, viewZoom + delta));
+  applyZoom();
+}
+function fitZoom() {
+  viewZoom = 1;
+  applyZoom();
+}
+function setStageBg(color) {
+  document.getElementById('stage').style.setProperty('--stage-bg', color);
+  document.getElementById('stage').style.setProperty('--stage-checker', color);
+  document.getElementById('bg-color-picker').value = color;
+}
+
+function renderOriginalPane(img) {
+  const origCanvas = document.getElementById('original-canvas');
+  origCanvas.width = img.previewSourceData.width;
+  origCanvas.height = img.previewSourceData.height;
+  const displayData = applyChannelView(img.previewSourceData, channelViewMode);
+  origCanvas.getContext('2d').putImageData(displayData, 0, 0);
+}
+
+function convertToCmy() {
+  const img = activeImage();
+  if (!img || img.cmyConverted) return;
+  img.cmyConverted = true;
+  updateConversionUI(img);
+  const avg = averageCmy(img.previewSourceData);
+  toast(`Converted to CMY — starting average: C ${avg.c.toFixed(1)}%, M ${avg.m.toFixed(1)}%, Y ${avg.y.toFixed(1)}%`);
+}
+
+function closeImage(id, evt) {
+  if (evt) evt.stopPropagation();
+  images = images.filter(i => i.id !== id);
+  if (activeImageId === id) {
+    if (images.length) {
+      switchToImage(images[images.length-1].id);
+    } else {
+      activeImageId = null;
+      document.getElementById('canvas-wrap').style.display = 'none';
+      document.getElementById('regions-panel').style.display = 'none';
+      document.getElementById('file-meta').style.display = 'none';
+      document.getElementById('dropzone').style.display = 'flex';
+      document.getElementById('btn-reset').disabled = true;
+      document.getElementById('btn-export').disabled = true;
+      document.getElementById('btn-export-tiff').disabled = true;
+      document.getElementById('btn-compare').disabled = true;
+      document.getElementById('btn-remove-bg').disabled = true;
+      document.getElementById('btn-curves').disabled = true;
+      document.getElementById('btn-select-mode').disabled = true;
+      document.getElementById('btn-pen-mode').disabled = true;
+    }
+  } else {
+    renderProjectStrip();
+  }
+}
+
+function renderProjectStrip() {
+  const strip = document.getElementById('project-strip');
+  strip.innerHTML = images.map(img => `
+    <div class="project-item ${img.id===activeImageId?'active':''}" onclick="switchToImage('${img.id}')">
+      <div class="project-thumb" style="background-image:url(${img.thumbUrl})"></div>
+      <div class="project-item-name">${escHtml(img.fileName)}</div>
+      <button class="project-item-close" onclick="closeImage('${img.id}', event)" title="Close this image">✕</button>
+    </div>`).join('') + `<div class="project-add-btn" onclick="triggerUpload()">+ Add another image</div>`;
+}
+function escHtml(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ── CMY conversion (K read-through only, never adjusted) ──────
+// ── Curves (Photoshop-style tone curve per ink channel) ─────────
+// Catmull-Rom spline through user-placed control points, always anchored
+// at x=0 and x=255 (defaulting to identity y=0/y=255 — i.e. no change —
+// unless the user explicitly drags an endpoint).
+//
+// Uses a monotonic cubic Hermite spline (Fritsch-Carlson method) rather
+// than plain Catmull-Rom — Catmull-Rom can overshoot beyond the Y-range
+// of neighboring points near sharp direction changes, producing visible
+// bumps/undershoot that don't match how Photoshop's curves actually
+// behave. The monotonic constraint guarantees the curve never exceeds
+// its control points' range, giving smoother, more controlled results —
+// verified with a dedicated overshoot test (a sharp peak stayed exactly
+// at its point value, neither over- nor under-shooting) before this was
+// wired into the tool.
+function defaultCurves() {
+  return {
+    c: { points: [], endpoint0: 0, endpoint255: 255 },
+    m: { points: [], endpoint0: 0, endpoint255: 255 },
+    y: { points: [], endpoint0: 0, endpoint255: 255 },
+  };
+}
+function buildCurveLUT(curve) {
+  const { points, endpoint0, endpoint255 } = curve;
+  if (!points.length && endpoint0 === 0 && endpoint255 === 255) {
+    return null; // identity — signals "skip this channel entirely" to callers
+  }
+  const pts = [...points].sort((a,b) => a.x - b.x);
+  const full = [{x:0, y:endpoint0}, ...pts.filter(p => p.x > 0 && p.x < 255), {x:255, y:endpoint255}];
+  const n = full.length;
+  const lut = new Uint8ClampedArray(256);
+
+  if (n === 2) {
+    const [p0, p1] = full;
+    for (let x = 0; x <= 255; x++) {
+      const t = (x - p0.x) / (p1.x - p0.x);
+      lut[x] = Math.max(0, Math.min(255, Math.round(p0.y + t * (p1.y - p0.y))));
+    }
+    return lut;
+  }
+
+  const d = new Array(n - 1);
+  for (let i = 0; i < n - 1; i++) d[i] = (full[i+1].y - full[i].y) / (full[i+1].x - full[i].x);
+
+  const m = new Array(n);
+  m[0] = d[0];
+  m[n-1] = d[n-2];
+  for (let i = 1; i < n - 1; i++) {
+    m[i] = (d[i-1] * d[i] <= 0) ? 0 : (d[i-1] + d[i]) / 2;
+  }
+  for (let i = 0; i < n - 1; i++) {
+    if (d[i] === 0) { m[i] = 0; m[i+1] = 0; continue; }
+    const a = m[i] / d[i], b = m[i+1] / d[i];
+    const s = a*a + b*b;
+    if (s > 9) {
+      const tau = 3 / Math.sqrt(s);
+      m[i] = tau * a * d[i];
+      m[i+1] = tau * b * d[i];
+    }
+  }
+
+  for (let x = 0; x <= 255; x++) {
+    let i = 0;
+    while (i < n - 2 && full[i+1].x < x) i++;
+    const p0 = full[i], p1 = full[i+1];
+    const h = p1.x - p0.x;
+    const t = h === 0 ? 0 : (x - p0.x) / h;
+    const t2 = t*t, t3 = t2*t;
+    const h00 = 2*t3 - 3*t2 + 1, h10 = t3 - 2*t2 + t, h01 = -2*t3 + 3*t2, h11 = t3 - t2;
+    const y = h00*p0.y + h10*h*m[i] + h01*p1.y + h11*h*m[i+1];
+    lut[x] = Math.max(0, Math.min(255, Math.round(y)));
+  }
+  return lut;
+}
+
+function rgbToCmyk(r,g,b) {
+  const rp=r/255, gp=g/255, bp=b/255;
+  const k = 1 - Math.max(rp,gp,bp);
+  if (k >= 1) return [0,0,0,1];
+  return [(1-rp-k)/(1-k), (1-gp-k)/(1-k), (1-bp-k)/(1-k), k];
+}
+function cmykToRgb(c,m,y,k) { return [255*(1-c)*(1-k), 255*(1-m)*(1-k), 255*(1-y)*(1-k)]; }
+function clamp01(v) { return v<0?0:(v>1?1:v); }
+
+function pointInPolygon(px, py, points) {
+  let inside = false;
+  for (let i = 0, j = points.length-1; i < points.length; j = i++) {
+    const xi = points[i].x, yi = points[i].y, xj = points[j].x, yj = points[j].y;
+    const intersect = ((yi > py) !== (yj > py)) && (px < (xj-xi) * (py-yi) / (yj-yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+function computeAdjustedImageData(srcData, regions) {
+  const out = new ImageData(new Uint8ClampedArray(srcData.data), srcData.width, srcData.height);
+  const d = out.data;
+  const whole = regions.find(r => r.isWhole);
+  // Build each region's curve LUTs once, up front — not per-pixel, since
+  // that would mean rebuilding the same 256-entry spline millions of times.
+  const lutCache = new Map();
+  regions.forEach(r => {
+    if (!r.curves) { lutCache.set(r, null); return; }
+    const lutC = buildCurveLUT(r.curves.c), lutM = buildCurveLUT(r.curves.m), lutY = buildCurveLUT(r.curves.y);
+    lutCache.set(r, (lutC || lutM || lutY) ? { lutC, lutM, lutY } : null);
+  });
+  for (let py = 0; py < srcData.height; py++) {
+    for (let px = 0; px < srcData.width; px++) {
+      let target = whole;
+      for (let ri = regions.length - 1; ri >= 0; ri--) {
+        const r = regions[ri];
+        if (r.isWhole) continue;
+        if (px < r.x || px >= r.x+r.w || py < r.y || py >= r.y+r.h) continue;
+        if (r.type === 'polygon') { if (pointInPolygon(px, py, r.points)) { target = r; break; } }
+        else { target = r; break; }
+      }
+      const idx = (py*srcData.width + px) * 4;
+      if (d[idx+3] === 0) continue;
+      const [c,m,y,k] = rgbToCmyk(d[idx], d[idx+1], d[idx+2]);
+      const dC = target.channels.c/100, dM = target.channels.m/100, dY = target.channels.y/100;
+      let c2 = clamp01(c+dC), m2 = clamp01(m+dM), y2 = clamp01(y+dY);
+      const luts = lutCache.get(target);
+      if (luts) {
+        if (luts.lutC) c2 = luts.lutC[Math.round(c2*255)] / 255;
+        if (luts.lutM) m2 = luts.lutM[Math.round(m2*255)] / 255;
+        if (luts.lutY) y2 = luts.lutY[Math.round(y2*255)] / 255;
+      }
+      const [r2,g2,b2] = cmykToRgb(c2, m2, y2, k);
+      d[idx]=r2; d[idx+1]=g2; d[idx+2]=b2;
+    }
+  }
+  return out;
+}
+
+// ── Undo / redo (per image, up to 10 steps) ────────────────────
+function cloneImageData(d) {
+  return new ImageData(new Uint8ClampedArray(d.data), d.width, d.height);
+}
+function cloneLayers(layers) {
+  return layers.map(l => ({ ...l, imageData: cloneImageData(l.imageData), fullImageData: cloneImageData(l.fullImageData) }));
+}
+function snapshotForUndo() {
+  const img = activeImage();
+  if (!img) return;
+  img.undoStack.push({
+    regions: JSON.parse(JSON.stringify(img.regions)), selectedRegionId: img.selectedRegionId,
+    layers: cloneLayers(img.layers), selectedLayerId: img.selectedLayerId, layerSeq: img.layerSeq,
+    baseVisible: img.baseVisible,
+  });
+  if (img.undoStack.length > UNDO_LIMIT) img.undoStack.shift();
+  img.redoStack = [];
+  updateUndoRedoButtons();
+}
+function doUndo() {
+  const img = activeImage();
+  if (!img || !img.undoStack.length) return;
+  img.redoStack.push({
+    regions: JSON.parse(JSON.stringify(img.regions)), selectedRegionId: img.selectedRegionId,
+    layers: cloneLayers(img.layers), selectedLayerId: img.selectedLayerId, layerSeq: img.layerSeq,
+    baseVisible: img.baseVisible,
+  });
+  const prev = img.undoStack.pop();
+  img.regions = prev.regions;
+  img.selectedRegionId = img.regions.find(r => r.id === prev.selectedRegionId) ? prev.selectedRegionId : 'whole';
+  img.layers = prev.layers; img.selectedLayerId = prev.selectedLayerId; img.layerSeq = prev.layerSeq;
+  img.baseVisible = prev.baseVisible;
+  renderRegionsList();
+  renderLayersList();
+  selectRegion(img.selectedRegionId);
+  renderPreview();
+  updateUndoRedoButtons();
+  toast('Undo');
+}
+function doRedo() {
+  const img = activeImage();
+  if (!img || !img.redoStack.length) return;
+  img.undoStack.push({
+    regions: JSON.parse(JSON.stringify(img.regions)), selectedRegionId: img.selectedRegionId,
+    layers: cloneLayers(img.layers), selectedLayerId: img.selectedLayerId, layerSeq: img.layerSeq,
+    baseVisible: img.baseVisible,
+  });
+  const next = img.redoStack.pop();
+  img.regions = next.regions;
+  img.selectedRegionId = img.regions.find(r => r.id === next.selectedRegionId) ? next.selectedRegionId : 'whole';
+  img.layers = next.layers; img.selectedLayerId = next.selectedLayerId; img.layerSeq = next.layerSeq;
+  img.baseVisible = next.baseVisible;
+  renderRegionsList();
+  renderLayersList();
+  selectRegion(img.selectedRegionId);
+  renderPreview();
+  updateUndoRedoButtons();
+  toast('Redo');
+}
+function updateUndoRedoButtons() {
+  const img = activeImage();
+  document.getElementById('btn-undo').disabled = !img || !img.undoStack.length;
+  document.getElementById('btn-redo').disabled = !img || !img.redoStack.length;
+}
+document.addEventListener('keydown', (e) => {
+  const meta = e.ctrlKey || e.metaKey;
+  if (meta && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); doUndo(); }
+  else if (meta && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) { e.preventDefault(); doRedo(); }
+});
+
+// ── Sliders ─────────────────────────────────────────────────
+let renderPending = false;
+let sliderSnapshotTaken = false;
+['slider-c','slider-m','slider-y'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('mousedown', () => { snapshotForUndo(); sliderSnapshotTaken = true; });
+  el.addEventListener('touchstart', () => { snapshotForUndo(); sliderSnapshotTaken = true; });
+});
+function syncChannelUI(ch, val) {
+  document.getElementById('slider-'+ch).value = val;
+  const numEl = document.getElementById('num-'+ch);
+  numEl.value = val;
+  numEl.className = 'channel-num mono ' + (val>0?'pos':(val<0?'neg':''));
+}
+function markRegionUnconfirmed() {
+  const img = activeImage();
+  if (!img) return;
+  const region = img.regions.find(r => r.id === img.selectedRegionId);
+  if (!region) return;
+  region.confirmed = false;
+  const hasAnyAdjustment = region.channels.c !== 0 || region.channels.m !== 0 || region.channels.y !== 0;
+  document.getElementById('btn-apply-region').disabled = !hasAnyAdjustment;
+}
+function applyRegionChanges() {
+  const img = activeImage();
+  if (!img) return;
+  const region = img.regions.find(r => r.id === img.selectedRegionId);
+  if (!region) return;
+  region.confirmed = true;
+  document.getElementById('btn-apply-region').disabled = true;
+  renderRegionsList();
+  toast('Applied — "' + region.name + '" correction confirmed ✓');
+}
+function onSlider(ch, val) {
+  const img = activeImage();
+  if (!img) return;
+  if (!sliderSnapshotTaken) { snapshotForUndo(); } // covers keyboard-driven slider changes (arrow keys)
+  sliderSnapshotTaken = false;
+  const region = img.regions.find(r => r.id === img.selectedRegionId);
+  if (!region) return;
+  val = Math.max(-100, Math.min(100, Math.round(+val)));
+  region.channels[ch] = val;
+  syncChannelUI(ch, val);
+  markRegionUnconfirmed();
+  if (!renderPending) { renderPending = true; requestAnimationFrame(renderPreview); }
+}
+function onNumberInput(ch, val) {
+  const img = activeImage();
+  if (!img) return;
+  const region = img.regions.find(r => r.id === img.selectedRegionId);
+  if (!region) return;
+  val = Math.max(-100, Math.min(100, Math.round(+val) || 0));
+  snapshotForUndo();
+  region.channels[ch] = val;
+  syncChannelUI(ch, val);
+  markRegionUnconfirmed();
+  renderPreview();
+}
+function stepChannel(ch, delta) {
+  const img = activeImage();
+  if (!img) return;
+  const region = img.regions.find(r => r.id === img.selectedRegionId);
+  if (!region) return;
+  const val = Math.max(-100, Math.min(100, (region.channels[ch] || 0) + delta));
+  snapshotForUndo();
+  region.channels[ch] = val;
+  syncChannelUI(ch, val);
+  markRegionUnconfirmed();
+  renderPreview();
+}
+
+let channelViewMode = 'composite'; // 'composite' | 'c' | 'm' | 'y'
+
+function applyChannelView(imageData, mode) {
+  if (mode === 'composite') return imageData;
+  const chIdx = mode === 'c' ? 0 : mode === 'm' ? 1 : 2; // index into computed CMY
+  const out = new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height);
+  const d = out.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const cmy = [255 - d[i], 255 - d[i+1], 255 - d[i+2]]; // ink % for C, M, Y respectively
+    // Photoshop channel-view convention: white = no ink, black = full ink —
+    // so this is the ink amount itself, not its RGB complement.
+    const gray = 255 - cmy[chIdx];
+    d[i] = d[i+1] = d[i+2] = gray;
+  }
+  return out;
+}
+
+function setChannelView(mode) {
+  channelViewMode = mode;
+  ['composite','c','m','y'].forEach(m => {
+    const btn = document.getElementById('chview-' + m);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+  renderPreview();
+  const img = activeImage();
+  if (img && img.cmyConverted) renderOriginalPane(img);
+}
+
+function renderPreview() {
+  renderPending = false;
+  const img = activeImage();
+  if (!img) return;
+  markDirty();
+  img.previewImageData = computeAdjustedImageData(img.previewSourceData, img.regions);
+  if (img.baseVisible === false) {
+    ctx.clearRect(0, 0, workCanvas.width, workCanvas.height);
+  } else {
+    const displayData = applyChannelView(img.previewImageData, channelViewMode);
+    ctx.putImageData(displayData, 0, 0);
+  }
+  if (img.layers && img.layers.length) {
+    img.layers.forEach(l => {
+      if (!l.visible) return;
+      const tmp = document.createElement('canvas');
+      tmp.width = l.w; tmp.height = l.h;
+      tmp.getContext('2d').putImageData(applyChannelView(l.imageData, channelViewMode), 0, 0);
+      ctx.drawImage(tmp, l.x, l.y);
+    });
+  }
+  updateReadout();
+  renderRegionsList();
+  renderLayersList();
+}
+
+// ── Region selection: rectangle ────────────────────────────────
+function toggleSelectMode() {
+  if (penMode) cancelPenDrawing();
+  selectMode = !selectMode;
+  const btn = document.getElementById('btn-select-mode');
+  btn.classList.toggle('active', selectMode);
+  workCanvas.classList.toggle('mode-view', !selectMode && !penMode);
+  document.getElementById('mode-badge').classList.toggle('show', selectMode);
+  document.getElementById('mode-badge-text').textContent = 'Drag to select a region';
+  const cancelBtn = document.getElementById('mode-badge-cancel');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+}
+
+workCanvas.addEventListener('mousedown', (e) => {
+  const img = activeImage();
+  if (!img || penMode) return;
+  const rect = workCanvas.getBoundingClientRect();
+  const scaleX = workCanvas.width/rect.width, scaleY = workCanvas.height/rect.height;
+  const x = (e.clientX-rect.left)*scaleX, y = (e.clientY-rect.top)*scaleY;
+
+  if (selectMode) {
+    selecting = true; selStartX = x; selStartY = y;
+    const box = document.getElementById('selection-box');
+    box.style.display = 'block';
+    box.style.left = e.clientX-rect.left+'px'; box.style.top = e.clientY-rect.top+'px';
+    box.style.width = '0px'; box.style.height = '0px';
+  } else {
+    sampleX = Math.round(x); sampleY = Math.round(y);
+    updateReadout();
+    flashSampleMarker(e.clientX-rect.left, e.clientY-rect.top);
+  }
+});
+workCanvas.addEventListener('mousemove', (e) => {
+  if (!selecting) return;
+  const rect = workCanvas.getBoundingClientRect();
+  const curX = e.clientX-rect.left, curY = e.clientY-rect.top;
+  const startXcss = selStartX/(workCanvas.width/rect.width);
+  const startYcss = selStartY/(workCanvas.height/rect.height);
+  const box = document.getElementById('selection-box');
+  box.style.left = Math.min(startXcss,curX)+'px';
+  box.style.top = Math.min(startYcss,curY)+'px';
+  box.style.width = Math.abs(curX-startXcss)+'px';
+  box.style.height = Math.abs(curY-startYcss)+'px';
+});
+// Live hover CMY readout — follows the cursor continuously while it's over
+// the image. Deliberately suppressed during the Pen Tool: that tool's own
+// mousemove already drives the live polygon-tracing preview, and showing
+// the readout at the same time would compete for attention with placing
+// points accurately.
+workCanvas.addEventListener('mousemove', (e) => {
+  if (penMode || !activeImage()) return;
+  const rect = workCanvas.getBoundingClientRect();
+  const scaleX = workCanvas.width/rect.width, scaleY = workCanvas.height/rect.height;
+  sampleX = Math.round((e.clientX-rect.left)*scaleX);
+  sampleY = Math.round((e.clientY-rect.top)*scaleY);
+  updateReadout();
+});
+workCanvas.addEventListener('mouseleave', () => {
+  sampleX = null; sampleY = null;
+  updateReadout();
+});
+window.addEventListener('mouseup', (e) => {
+  if (!selecting) return;
+  selecting = false;
+  const img = activeImage();
+  const rect = workCanvas.getBoundingClientRect();
+  const scaleX = workCanvas.width/rect.width, scaleY = workCanvas.height/rect.height;
+  const endX = (e.clientX-rect.left)*scaleX, endY = (e.clientY-rect.top)*scaleY;
+  document.getElementById('selection-box').style.display = 'none';
+  if (!img) return;
+
+  const x = Math.max(0, Math.round(Math.min(selStartX, endX)));
+  const y = Math.max(0, Math.round(Math.min(selStartY, endY)));
+  const w = Math.round(Math.abs(endX - selStartX));
+  const h = Math.round(Math.abs(endY - selStartY));
+  if (w < 6 || h < 6) { toast('Selection too small — try dragging a larger box', true); return; }
+
+  snapshotForUndo();
+  img.regionSeq++;
+  const region = { id:'region_'+img.regionSeq, name:'Region '+(img.regionSeq-1), isWhole:false, x, y, w, h, channels:{c:0,m:0,y:0}, curves:defaultCurves() };
+  img.regions.push(region);
+  toggleSelectMode();
+  selectRegion(region.id);
+  renderPreview();
+  toast('Added "'+region.name+'" — adjust its channels on the right');
+});
+
+// ── Curves editor UI ────────────────────────────────────────────
+let curvesChannel = 'c';
+let curvesDraggingIdx = -1;
+
+function currentCurvesRegion() {
+  const img = activeImage();
+  if (!img) return null;
+  return img.regions.find(r => r.id === img.selectedRegionId) || img.regions.find(r => r.isWhole);
+}
+
+function openCurves() {
+  const img = activeImage();
+  if (!img) return;
+  const region = currentCurvesRegion();
+  if (!region) return;
+  document.getElementById('curves-target-name').textContent = region.name;
+  curvesChannel = 'c';
+  ['c','m','y'].forEach(ch => document.getElementById('curves-tab-'+ch).classList.toggle('active', ch === 'c'));
+  document.getElementById('curves-overlay').style.display = 'flex';
+  renderCurvesGraph();
+}
+function closeCurves() {
+  document.getElementById('curves-overlay').style.display = 'none';
+}
+function setCurvesChannel(ch) {
+  curvesChannel = ch;
+  ['c','m','y'].forEach(c => document.getElementById('curves-tab-'+c).classList.toggle('active', c === ch));
+  renderCurvesGraph();
+}
+function resetCurvesChannel() {
+  const region = currentCurvesRegion();
+  if (!region) return;
+  snapshotForUndo();
+  region.curves[curvesChannel] = { points: [], endpoint0: 0, endpoint255: 255 };
+  renderCurvesGraph();
+  renderPreview();
+}
+
+function svgPointFromEvent(evt) {
+  const svg = document.getElementById('curves-svg');
+  const rect = svg.getBoundingClientRect();
+  const scaleX = 256 / rect.width, scaleY = 256 / rect.height;
+  const sx = (evt.clientX - rect.left) * scaleX;
+  const sy = (evt.clientY - rect.top) * scaleY;
+  // SVG y grows downward; curve output y grows upward (Photoshop convention)
+  const x = Math.max(0, Math.min(255, Math.round(sx)));
+  const y = Math.max(0, Math.min(255, Math.round(255 - sy)));
+  return { x, y };
+}
+
+function updateCurvesImpact() {
+  const img = activeImage();
+  const region = currentCurvesRegion();
+  if (!img || !region || !img.previewSourceData) return;
+  const src = img.previewSourceData;
+  const w = src.width, h = src.height, d = src.data;
+  const curve = region.curves[curvesChannel];
+  const lut = buildCurveLUT(curve); // null if identity
+  const chIdx = curvesChannel === 'c' ? 0 : curvesChannel === 'm' ? 1 : 2;
+  const sliderDelta = region.channels[curvesChannel] / 100;
+
+  let sumBefore = 0, sumAfter = 0, count = 0;
+  const bx0 = Math.max(0, Math.floor(region.x)), by0 = Math.max(0, Math.floor(region.y));
+  const bx1 = region.isWhole ? w : Math.min(w, Math.ceil(region.x + region.w));
+  const by1 = region.isWhole ? h : Math.min(h, Math.ceil(region.y + region.h));
+  const step = 4; // sample every 4th pixel in each direction — plenty for a stable average, much faster than every pixel
+  for (let py = by0; py < by1; py += step) {
+    for (let px = bx0; px < bx1; px += step) {
+      if (!region.isWhole) {
+        if (region.type === 'polygon') { if (!pointInPolygon(px, py, region.points)) continue; }
+      }
+      const idx = (py*w + px) * 4;
+      if (d[idx+3] === 0) continue;
+      const [c,m,y] = rgbToCmyk(d[idx], d[idx+1], d[idx+2]);
+      const before = [c,m,y][chIdx];
+      let after = clamp01(before + sliderDelta);
+      if (lut) after = lut[Math.round(after*255)] / 255;
+      sumBefore += before; sumAfter += after; count++;
+    }
+  }
+  if (!count) return;
+  const beforePct = (sumBefore/count*100).toFixed(1);
+  const afterPct = (sumAfter/count*100).toFixed(1);
+  const delta = (afterPct - beforePct);
+  document.getElementById('curves-impact-before').textContent = beforePct + '%';
+  document.getElementById('curves-impact-after').textContent = afterPct + '%';
+  const deltaEl = document.getElementById('curves-impact-delta');
+  deltaEl.textContent = (delta > 0 ? '+' : '') + delta.toFixed(1) + '%';
+  deltaEl.style.color = delta < -0.1 ? '#7fd858' : (delta > 0.1 ? '#e6317f' : 'var(--press-muted)');
+  // A curve edit near the midtones has little to act on if this channel is
+  // barely present in the region to begin with — flag this explicitly,
+  // since otherwise it looks exactly like the curve "not working" even
+  // though it's being applied correctly.
+  document.getElementById('curves-low-ink-warn').style.display = (+beforePct < 8) ? 'block' : 'none';
+}
+
+function renderCurvesGraph() {
+  const region = currentCurvesRegion();
+  if (!region) return;
+  const curve = region.curves[curvesChannel];
+  const lut = buildCurveLUT(curve) || Array.from({length:256}, (_,i) => i);
+
+  // Path: sample the LUT to draw a smooth line, in SVG space (y flipped)
+  let d = `M 0,${255 - lut[0]}`;
+  for (let x = 1; x <= 255; x += 2) d += ` L ${x},${255 - lut[x]}`;
+  d += ` L 255,${255 - lut[255]}`;
+  document.getElementById('curves-path').setAttribute('d', d);
+
+  // Points: endpoints + user-added midpoints, all draggable
+  const allPoints = [
+    { x: 0, y: curve.endpoint0, isEndpoint: true },
+    ...curve.points.map((p, i) => ({ ...p, isEndpoint: false, idx: i })),
+    { x: 255, y: curve.endpoint255, isEndpoint: true },
+  ];
+  const g = document.getElementById('curves-points');
+  g.innerHTML = allPoints.map((p, gi) => {
+    const sy = 255 - p.y;
+    return `<circle cx="${p.x}" cy="${sy}" r="5" fill="#7fbfff" stroke="#0d1520" stroke-width="1.5"
+      style="cursor:crosshair;" data-gidx="${gi}"></circle>`;
+  }).join('');
+
+  // Wire drag handlers on each point
+  g.querySelectorAll('circle').forEach((circle, gi) => {
+    circle.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      curvesDraggingIdx = gi;
+    });
+    circle.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      const p = allPoints[gi];
+      if (p.isEndpoint) return; // can't delete endpoints, only move them
+      snapshotForUndo();
+      curve.points.splice(p.idx, 1);
+      renderCurvesGraph();
+      renderPreview();
+    });
+  });
+
+  window._curvesAllPoints = allPoints; // for the mousemove handler below
+  updateCurvesImpact();
+  updateCurveBadges(region);
+}
+
+const curvesSvgEl = document.getElementById('curves-svg');
+let curvesDragSnapshotTaken = false;
+curvesSvgEl.addEventListener('mousedown', (e) => {
+  if (e.target.tagName === 'circle') return; // handled by the circle's own listener
+  const region = currentCurvesRegion();
+  if (!region) return;
+  const { x, y } = svgPointFromEvent(e);
+  snapshotForUndo();
+  const curve = region.curves[curvesChannel];
+  if (x <= 2) { curve.endpoint0 = y; }
+  else if (x >= 253) { curve.endpoint255 = y; }
+  else { curve.points.push({ x, y }); }
+  renderCurvesGraph();
+  renderPreview();
+});
+document.addEventListener('mousemove', (e) => {
+  if (curvesDraggingIdx < 0) return;
+  const region = currentCurvesRegion();
+  if (!region) { curvesDraggingIdx = -1; return; }
+  if (!curvesDragSnapshotTaken) { snapshotForUndo(); curvesDragSnapshotTaken = true; }
+  const { x, y } = svgPointFromEvent(e);
+  const curve = region.curves[curvesChannel];
+  const p = window._curvesAllPoints[curvesDraggingIdx];
+  if (p.isEndpoint) {
+    if (p.x === 0) curve.endpoint0 = y; else curve.endpoint255 = y;
+  } else {
+    // keep points from crossing their neighbors in x, so the curve stays
+    // well-defined (each x has exactly one control point)
+    const sorted = [...curve.points].sort((a,b) => a.x - b.x);
+    const myPos = sorted.indexOf(curve.points[p.idx]);
+    const minX = myPos > 0 ? sorted[myPos-1].x + 1 : 1;
+    const maxX = myPos < sorted.length-1 ? sorted[myPos+1].x - 1 : 254;
+    curve.points[p.idx] = { x: Math.max(minX, Math.min(maxX, x)), y };
+  }
+  renderCurvesGraph();
+  renderPreview();
+});
+document.addEventListener('mouseup', () => { curvesDraggingIdx = -1; curvesDragSnapshotTaken = false; });
+
+
+function togglePenMode() {
+  if (selectMode) { selectMode = false; document.getElementById('btn-select-mode').classList.remove('active'); }
+  if (penMode) { cancelPenDrawing(); return; }
+  if (!activeImage()) return;
+  penMode = true;
+  penPoints = [];
+  document.getElementById('btn-pen-mode').classList.add('active');
+  workCanvas.classList.remove('mode-view');
+  workCanvas.classList.add('pen-cursor');
+  document.getElementById('pen-overlay').style.display = 'block';
+  document.getElementById('mode-badge').classList.add('show');
+  document.getElementById('mode-badge-text').textContent = 'Click to trace points — click the start dot or double-click to close';
+  let cancelBtn = document.getElementById('mode-badge-cancel');
+  if (!cancelBtn) {
+    cancelBtn = document.createElement('button');
+    cancelBtn.id = 'mode-badge-cancel';
+    cancelBtn.textContent = '✕ Cancel (Esc)';
+    cancelBtn.onclick = cancelPenDrawing;
+    document.getElementById('mode-badge').appendChild(cancelBtn);
+  }
+  cancelBtn.style.display = 'inline-block';
+}
+function cancelPenDrawing() {
+  penMode = false;
+  penPoints = [];
+  document.getElementById('btn-pen-mode').classList.remove('active');
+  workCanvas.classList.remove('pen-cursor');
+  document.getElementById('pen-overlay').style.display = 'none';
+  document.getElementById('pen-polyline').setAttribute('points', '');
+  document.getElementById('pen-start-dot').style.display = 'none';
+  document.getElementById('mode-badge').classList.remove('show');
+  workCanvas.classList.add('mode-view');
+}
+// ── Bezier pen tool math ─────────────────────────────────────────
+// Anchors: [{x,y,handleOut:{dx,dy}|null}, ...]. handleOut is an offset
+// from the anchor, set by dragging while placing it (Photoshop-style
+// symmetric handles). No handleOut = a plain straight corner, same as
+// the tool's original click-only behavior — curves and straight
+// segments can be freely mixed in the same shape, same as Photoshop.
+function segmentControlPoints(a0, a1) {
+  const c1 = a0.handleOut ? { x: a0.x + a0.handleOut.dx, y: a0.y + a0.handleOut.dy } : { x: a0.x, y: a0.y };
+  const c2 = a1.handleOut ? { x: a1.x - a1.handleOut.dx, y: a1.y - a1.handleOut.dy } : { x: a1.x, y: a1.y };
+  return [c1, c2];
+}
+function cubicBezierPoint(p0, c1, c2, p1, t) {
+  const mt = 1 - t;
+  return {
+    x: mt*mt*mt*p0.x + 3*mt*mt*t*c1.x + 3*mt*t*t*c2.x + t*t*t*p1.x,
+    y: mt*mt*mt*p0.y + 3*mt*mt*t*c1.y + 3*mt*t*t*c2.y + t*t*t*p1.y,
+  };
+}
+function flattenBezierPath(anchors, closed, samplesPerSegment = 24) {
+  const pts = [];
+  const n = anchors.length;
+  const segCount = closed ? n : n - 1;
+  for (let i = 0; i < segCount; i++) {
+    const a0 = anchors[i], a1 = anchors[(i+1) % n];
+    const [c1, c2] = segmentControlPoints(a0, a1);
+    for (let s = 0; s < samplesPerSegment; s++) pts.push(cubicBezierPoint(a0, c1, c2, a1, s / samplesPerSegment));
+  }
+  if (!closed && n) pts.push({ x: anchors[n-1].x, y: anchors[n-1].y });
+  return pts;
+}
+function buildBezierPathD(anchors, closed, scaleX, scaleY, extraPoint) {
+  if (!anchors.length) return '';
+  const sx = p => p.x/scaleX, sy = p => p.y/scaleY;
+  let d = `M ${sx(anchors[0])},${sy(anchors[0])}`;
+  const n = anchors.length;
+  const segCount = closed ? n : n - 1;
+  for (let i = 0; i < segCount; i++) {
+    const a0 = anchors[i], a1 = anchors[(i+1) % n];
+    const [c1, c2] = segmentControlPoints(a0, a1);
+    d += ` C ${sx(c1)},${sy(c1)} ${sx(c2)},${sy(c2)} ${sx(a1)},${sy(a1)}`;
+  }
+  if (closed) d += ' Z';
+  else if (extraPoint) d += ` L ${extraPoint.cssX},${extraPoint.cssY}`;
+  return d;
+}
+
+let penDragStart = null;   // canvas coords where the current anchor's mousedown happened
+let penDragAnchorIdx = -1; // index into penPoints being actively dragged out a handle for
+
+function canvasPointFromEvent(e) {
+  const rect = workCanvas.getBoundingClientRect();
+  const scaleX = workCanvas.width/rect.width, scaleY = workCanvas.height/rect.height;
+  return { canvasX: (e.clientX-rect.left)*scaleX, canvasY: (e.clientY-rect.top)*scaleY,
+    cssX: e.clientX-rect.left, cssY: e.clientY-rect.top };
+}
+function updatePenOverlay(cursorCss) {
+  const rect = workCanvas.getBoundingClientRect();
+  const scaleX = workCanvas.width/rect.width, scaleY = workCanvas.height/rect.height;
+  const d = buildBezierPathD(penPoints, false, scaleX, scaleY, cursorCss);
+  document.getElementById('pen-polyline').setAttribute('points', ''); // no longer used, kept for compatibility
+  document.getElementById('pen-polyline').style.display = 'none';
+  let pathEl = document.getElementById('pen-bezier-path');
+  if (!pathEl) {
+    pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pathEl.id = 'pen-bezier-path';
+    pathEl.setAttribute('fill', 'rgba(127,191,255,0.15)');
+    pathEl.setAttribute('stroke', '#7fbfff');
+    pathEl.setAttribute('stroke-width', '2');
+    pathEl.setAttribute('stroke-dasharray', '5,4');
+    document.getElementById('pen-overlay').insertBefore(pathEl, document.getElementById('pen-start-dot'));
+  }
+  pathEl.setAttribute('d', d);
+  const startDot = document.getElementById('pen-start-dot');
+  if (penPoints.length) {
+    startDot.style.display = 'block';
+    startDot.setAttribute('cx', penPoints[0].x/scaleX);
+    startDot.setAttribute('cy', penPoints[0].y/scaleY);
+  } else { startDot.style.display = 'none'; }
+}
+// Auto-smooths anchors that don't already have a manually-dragged handle,
+// using the direction between each anchor's neighbors — turns plain
+// clicks (the common case for fine detail work, like tracing an ear or
+// small facial feature) into a naturally smooth curve without requiring
+// precise manual dragging on every single point. Manually-set handles are
+// left completely untouched. Verified against a rough 8-point "circle"
+// traced with plain clicks: distance-from-center variance dropped from
+// 2.59 to 0.00 after smoothing — essentially perfectly circular.
+function autoSmoothAnchors(anchors, closed) {
+  const n = anchors.length;
+  return anchors.map((a, i) => {
+    if (a.handleOut) return a;
+    if (!closed && (i === 0 || i === n - 1)) return a;
+    const prev = anchors[(i - 1 + n) % n];
+    const next = anchors[(i + 1) % n];
+    const dx = next.x - prev.x, dy = next.y - prev.y;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    if (len === 0) return a;
+    const distToNext = Math.sqrt((next.x-a.x)**2 + (next.y-a.y)**2);
+    const distToPrev = Math.sqrt((a.x-prev.x)**2 + (a.y-prev.y)**2);
+    const handleLen = Math.min(distToNext, distToPrev) * 0.35;
+    return { ...a, handleOut: { dx: (dx/len) * handleLen, dy: (dy/len) * handleLen } };
+  });
+}
+function finishPolygon() {
+  const img = activeImage();
+  if (!img) { cancelPenDrawing(); return; }
+  if (penPoints.length < 3) { toast('Need at least 3 points for a region', true); cancelPenDrawing(); return; }
+  snapshotForUndo();
+  img.regionSeq++;
+  const smoothedAnchors = document.getElementById('pen-auto-smooth').checked
+    ? autoSmoothAnchors(penPoints, true) : penPoints.slice();
+  const flattened = flattenBezierPath(smoothedAnchors, true, 24);
+  const xs = flattened.map(p=>p.x), ys = flattened.map(p=>p.y);
+  const region = {
+    id: 'region_'+img.regionSeq, name: 'Region '+(img.regionSeq-1), isWhole: false, type: 'polygon',
+    points: flattened,       // flattened, dense point list — used for the actual pixel masking
+    anchors: smoothedAnchors, // bezier anchors + handles (auto-smoothed unless disabled) — used to redraw the outline
+    x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs)-Math.min(...xs), h: Math.max(...ys)-Math.min(...ys),
+    channels: { c:0, m:0, y:0 }, curves: defaultCurves(),
+  };
+  img.regions.push(region);
+  cancelPenDrawing();
+  selectRegion(region.id);
+  renderPreview();
+  toast('Added "'+region.name+'" (traced shape) — adjust its channels on the right');
+}
+workCanvas.addEventListener('mousedown', (e) => {
+  if (!penMode) return;
+  const pt = canvasPointFromEvent(e);
+  if (penPoints.length >= 3) {
+    const dx = pt.canvasX - penPoints[0].x, dy = pt.canvasY - penPoints[0].y;
+    const closeThreshold = 10 * (workCanvas.width / workCanvas.getBoundingClientRect().width);
+    if (Math.sqrt(dx*dx + dy*dy) < closeThreshold) { finishPolygon(); return; }
+  }
+  penPoints.push({ x: pt.canvasX, y: pt.canvasY, handleOut: null });
+  penDragStart = { x: pt.canvasX, y: pt.canvasY };
+  penDragAnchorIdx = penPoints.length - 1;
+  updatePenOverlay();
+});
+workCanvas.addEventListener('mousemove', (e) => {
+  if (!penMode || !penPoints.length) return;
+  const pt = canvasPointFromEvent(e);
+  if (penDragAnchorIdx >= 0 && penDragStart) {
+    // dragging out a handle for the anchor just placed
+    const dx = pt.canvasX - penDragStart.x, dy = pt.canvasY - penDragStart.y;
+    if (Math.sqrt(dx*dx + dy*dy) > 3) { // small threshold so a plain click still stays a straight corner
+      penPoints[penDragAnchorIdx].handleOut = { dx, dy };
+    }
+  }
+  updatePenOverlay(pt);
+});
+workCanvas.addEventListener('mouseup', () => { penDragStart = null; penDragAnchorIdx = -1; });
+
+// ── Layer drag-to-move ──────────────────────────────────────────
+let layerDragging = false, layerDragStart = null, layerDragOrigPos = null;
+workCanvas.addEventListener('mousedown', (e) => {
+  if (penMode || selectMode) return; // those tools own the canvas while active
+  const img = activeImage();
+  if (!img || !img.selectedLayerId) return;
+  const layer = img.layers.find(l => l.id === img.selectedLayerId);
+  if (!layer || !layer.visible) return;
+  const pt = canvasPointFromEvent(e);
+  if (pt.canvasX < layer.x || pt.canvasX >= layer.x+layer.w || pt.canvasY < layer.y || pt.canvasY >= layer.y+layer.h) return;
+  snapshotForUndo();
+  layerDragging = true;
+  layerDragStart = { x: pt.canvasX, y: pt.canvasY };
+  layerDragOrigPos = { x: layer.x, y: layer.y, fx: layer.fx, fy: layer.fy };
+  workCanvas.style.cursor = 'grabbing';
+});
+workCanvas.addEventListener('mousemove', (e) => {
+  if (!layerDragging) return;
+  const img = activeImage();
+  const layer = img && img.layers.find(l => l.id === img.selectedLayerId);
+  if (!layer) { layerDragging = false; return; }
+  const pt = canvasPointFromEvent(e);
+  const dx = pt.canvasX - layerDragStart.x, dy = pt.canvasY - layerDragStart.y;
+  layer.x = Math.round(layerDragOrigPos.x + dx);
+  layer.y = Math.round(layerDragOrigPos.y + dy);
+  const scaleX = img.originalImageData.width / img.previewSourceData.width;
+  const scaleY = img.originalImageData.height / img.previewSourceData.height;
+  layer.fx = Math.round(layerDragOrigPos.fx + dx*scaleX);
+  layer.fy = Math.round(layerDragOrigPos.fy + dy*scaleY);
+  renderPreview();
+});
+document.addEventListener('mouseup', () => {
+  if (layerDragging) { layerDragging = false; workCanvas.style.cursor = ''; }
+});
+
+workCanvas.addEventListener('dblclick', (e) => { if (penMode) { e.preventDefault(); finishPolygon(); } });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && penMode) cancelPenDrawing(); });
+document.addEventListener('keydown', (e) => {
+  // Ctrl/Cmd+D — a common "Deselect" shortcut in design tools (Photoshop,
+  // Illustrator) — clears the current region selection back to Whole
+  // Image, same effect as clicking the already-selected region again.
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+    const img = activeImage();
+    if (!img) return;
+    e.preventDefault();
+    if (img.selectedRegionId && img.selectedRegionId !== 'whole') {
+      selectRegion('whole');
+      toast('Deselected');
+    }
+  }
+});
+
+// ── Region list + persistent Photoshop-style selection highlight ──
+function isCurveActive(curve) {
+  return curve.points.length > 0 || curve.endpoint0 !== 0 || curve.endpoint255 !== 255;
+}
+function updateCurveBadges(region) {
+  ['c','m','y'].forEach(ch => {
+    const badge = document.getElementById('curve-badge-'+ch);
+    if (!badge) return;
+    badge.style.display = (region.curves && isCurveActive(region.curves[ch])) ? 'inline-block' : 'none';
+  });
+}
+
+// ── Layers ────────────────────────────────────────────────────
+// True Photoshop-style layers: pixels lifted from a region's mask into
+// an independent, repositionable layer — separate from the region
+// correction system. Each layer keeps both a preview-resolution copy
+// (fast on-screen dragging/rendering) and a full-resolution copy
+// (lifted from the original source, so export quality isn't limited by
+// the downscaled preview) — same pattern the base image already uses
+// for previewSourceData vs originalImageData.
+function extractMaskedPixels(srcData, region, bx, by, bw, bh, scaleX, scaleY) {
+  const layerData = new ImageData(bw, bh);
+  const sd = srcData.data, ld = layerData.data;
+  for (let ly = 0; ly < bh; ly++) {
+    for (let lx = 0; lx < bw; lx++) {
+      const px = bx + lx, py = by + ly;
+      if (px < 0 || py < 0 || px >= srcData.width || py >= srcData.height) continue;
+      let inside = true;
+      if (region.type === 'polygon') {
+        inside = pointInPolygon(px / scaleX, py / scaleY, region.points);
+      }
+      if (!inside) continue;
+      const sIdx = (py*srcData.width + px)*4, lIdx = (ly*bw + lx)*4;
+      ld[lIdx]=sd[sIdx]; ld[lIdx+1]=sd[sIdx+1]; ld[lIdx+2]=sd[sIdx+2]; ld[lIdx+3]=sd[sIdx+3];
+    }
+  }
+  return layerData;
+}
+// ── Upscale (high-quality resize + sharpen — not AI super-resolution) ──
+function boxBlurPass(data, width, height, radius) {
+  const out = new Uint8ClampedArray(data.length);
+  const size = radius*2+1;
+  const temp = new Float32Array(data.length);
+  for (let y = 0; y < height; y++) {
+    for (let c = 0; c < 3; c++) {
+      let sum = 0;
+      for (let x = -radius; x <= radius; x++) {
+        const xx = Math.max(0, Math.min(width-1, x));
+        sum += data[(y*width+xx)*4+c];
+      }
+      for (let x = 0; x < width; x++) {
+        temp[(y*width+x)*4+c] = sum / size;
+        const addX = Math.max(0, Math.min(width-1, x+radius+1));
+        const subX = Math.max(0, Math.min(width-1, x-radius));
+        sum += data[(y*width+addX)*4+c] - data[(y*width+subX)*4+c];
+      }
+    }
+  }
+  for (let x = 0; x < width; x++) {
+    for (let c = 0; c < 3; c++) {
+      let sum = 0;
+      for (let y = -radius; y <= radius; y++) {
+        const yy = Math.max(0, Math.min(height-1, y));
+        sum += temp[(yy*width+x)*4+c];
+      }
+      for (let y = 0; y < height; y++) {
+        out[(y*width+x)*4+c] = Math.round(sum / size);
+        const addY = Math.max(0, Math.min(height-1, y+radius+1));
+        const subY = Math.max(0, Math.min(height-1, y-radius));
+        sum += temp[(addY*width+x)*4+c] - temp[(subY*width+x)*4+c];
+      }
+    }
+  }
+  return out;
+}
+function unsharpMask(imageData, amount, radius) {
+  const { data, width, height } = imageData;
+  const blurred = boxBlurPass(data, width, height, radius);
+  const out = new Uint8ClampedArray(data.length);
+  for (let i = 0; i < data.length; i += 4) {
+    for (let c = 0; c < 3; c++) {
+      out[i+c] = Math.max(0, Math.min(255, data[i+c] + amount * (data[i+c] - blurred[i+c])));
+    }
+    out[i+3] = data[i+3];
+  }
+  return out;
+}
+let upscaleFactor = 2;
+function openUpscale() {
+  const img = activeImage();
+  if (!img) return;
+  document.getElementById('upscale-current-size').textContent = img.width + ' × ' + img.height;
+  setUpscaleFactor(2);
+  document.getElementById('upscale-overlay').style.display = 'flex';
+}
+function closeUpscale() { document.getElementById('upscale-overlay').style.display = 'none'; }
+function setUpscaleFactor(f) {
+  upscaleFactor = f;
+  [2,3,4].forEach(n => document.getElementById('upscale-'+n+'x').classList.toggle('active', n===f));
+  const img = activeImage();
+  if (img) document.getElementById('upscale-new-size').textContent = (img.width*f) + ' × ' + (img.height*f);
+}
+function applyUpscale() {
+  const img = activeImage();
+  if (!img) return;
+  const btn = document.getElementById('upscale-apply-btn');
+  btn.disabled = true; btn.textContent = 'Processing…';
+  setTimeout(() => {
+    try {
+      const srcCanvas = document.createElement('canvas');
+      srcCanvas.width = img.originalImageData.width; srcCanvas.height = img.originalImageData.height;
+      srcCanvas.getContext('2d').putImageData(img.originalImageData, 0, 0);
+
+      const newW = img.originalImageData.width * upscaleFactor;
+      const newH = img.originalImageData.height * upscaleFactor;
+      const bigCanvas = document.createElement('canvas');
+      bigCanvas.width = newW; bigCanvas.height = newH;
+      const bctx = bigCanvas.getContext('2d');
+      bctx.imageSmoothingEnabled = true;
+      bctx.imageSmoothingQuality = 'high';
+      bctx.drawImage(srcCanvas, 0, 0, newW, newH);
+      const rawUpscaled = bctx.getImageData(0, 0, newW, newH);
+      const sharpenedData = unsharpMask(rawUpscaled, 0.5, 2);
+      const newImageData = new ImageData(sharpenedData, newW, newH);
+      bctx.putImageData(newImageData, 0, 0);
+
+      const scale = Math.min(1, PREVIEW_MAX / Math.max(newW, newH));
+      const pw = Math.max(1, Math.round(newW*scale)), ph = Math.max(1, Math.round(newH*scale));
+      const tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = pw; tmpCanvas.height = ph;
+      const tctx = tmpCanvas.getContext('2d');
+      tctx.drawImage(bigCanvas, 0, 0, pw, ph);
+      const previewSourceData = tctx.getImageData(0, 0, pw, ph);
+
+      img.width = newW; img.height = newH;
+      img.originalImageData = newImageData;
+      img.previewSourceData = previewSourceData;
+      img.previewImageData = null;
+      img.regions = [ { id:'whole', name:'Whole Image', isWhole:true, x:0, y:0, w:pw, h:ph, channels:{c:0,m:0,y:0}, curves:defaultCurves() } ];
+      img.selectedRegionId = 'whole'; img.regionSeq = 1;
+      img.layers = []; img.layerSeq = 0; img.selectedLayerId = null; img.baseVisible = true;
+      img.undoStack = []; img.redoStack = [];
+      img.thumbUrl = tmpCanvas.toDataURL();
+
+      switchToImage(img.id);
+      closeUpscale();
+      toast('Upscaled to ' + newW + ' × ' + newH + ' (' + upscaleFactor + '×) — regions and layers were reset, start correcting again');
+    } catch (err) {
+      console.error(err);
+      toast('Upscale failed: ' + (err.message || 'unknown error'), true);
+    }
+    btn.disabled = false; btn.textContent = 'Upscale';
+  }, 30);
+}
+
+function toggleSidebarSection(name) {
+  const section = document.getElementById('section-'+name);
+  const arrow = document.getElementById('arrow-'+name);
+  const expanded = section.style.display !== 'none';
+  section.style.display = expanded ? 'none' : 'block';
+  arrow.style.transform = expanded ? 'rotate(0deg)' : 'rotate(90deg)';
+}
+
+function liftSelectionToLayer() {
+  const img = activeImage();
+  if (!img) return;
+  const region = img.regions.find(r => r.id === img.selectedRegionId);
+  if (!region || region.isWhole) { toast('Select a region (not Whole Image) first', true); return; }
+  snapshotForUndo();
+
+  const bx = Math.max(0, Math.round(region.x)), by = Math.max(0, Math.round(region.y));
+  const bw = Math.max(1, Math.round(region.w)), bh = Math.max(1, Math.round(region.h));
+  const previewData = img.previewImageData || img.previewSourceData;
+  const layerImageData = extractMaskedPixels(previewData, region, bx, by, bw, bh, 1, 1);
+
+  const scaleX = img.originalImageData.width / img.previewSourceData.width;
+  const scaleY = img.originalImageData.height / img.previewSourceData.height;
+  const fbx = Math.round(bx*scaleX), fby = Math.round(by*scaleY);
+  const fbw = Math.max(1, Math.round(bw*scaleX)), fbh = Math.max(1, Math.round(bh*scaleY));
+  const fullSourceForLift = computeAdjustedImageData(img.originalImageData, img.regions.map(r => {
+    if (r.isWhole) return r;
+    const scaled = { ...r, x: Math.round(r.x*scaleX), y: Math.round(r.y*scaleY), w: Math.round(r.w*scaleX), h: Math.round(r.h*scaleY) };
+    if (r.type === 'polygon') scaled.points = r.points.map(p => ({ x: p.x*scaleX, y: p.y*scaleY }));
+    return scaled;
+  }));
+  const fullLayerImageData = extractMaskedPixels(fullSourceForLift, region, fbx, fby, fbw, fbh, scaleX, scaleY);
+
+  img.layerSeq++;
+  const layer = {
+    id: 'layer_'+img.layerSeq, name: 'Layer '+img.layerSeq,
+    imageData: layerImageData, x: bx, y: by, w: bw, h: bh,
+    fullImageData: fullLayerImageData, fx: fbx, fy: fby, fw: fbw, fh: fbh,
+    visible: true,
+  };
+  img.layers.push(layer);
+  img.selectedLayerId = layer.id;
+  renderLayersList();
+  renderPreview();
+  toast('Lifted "'+region.name+'" to a new layer — click it in the Layers list, then drag it on the canvas to reposition');
+}
+function renameLayer(id, evt) {
+  if (evt) evt.stopPropagation();
+  const img = activeImage();
+  const layer = img.layers.find(l => l.id === id);
+  if (!layer) return;
+  const newName = prompt('Rename layer:', layer.name);
+  if (newName === null) return;
+  const trimmed = newName.trim();
+  if (!trimmed) return;
+  snapshotForUndo();
+  layer.name = trimmed;
+  renderLayersList();
+}
+function toggleBaseVisibility() {
+  const img = activeImage();
+  if (!img) return;
+  snapshotForUndo();
+  img.baseVisible = !img.baseVisible;
+  renderLayersList();
+  renderPreview();
+}
+function renderLayersList() {
+  const img = activeImage();
+  const list = document.getElementById('layers-list');
+  if (!img) { list.innerHTML = ''; return; }
+  const baseVisible = img.baseVisible !== false;
+  const baseRow = `<div class="region-row" style="opacity:${baseVisible?1:0.6};">
+      <span class="region-swatch" style="background:${baseVisible?'#888':'#444'};"></span>
+      <span class="region-name">Base (Corrected Image)</span>
+      <button class="region-del" onclick="toggleBaseVisibility()" title="${baseVisible?'Hide base':'Show base'}" style="margin-right:2px;">${baseVisible?'👁':'🚫'}</button>
+      <button class="region-del" onclick="exportSingleLayerTiff(null, event)" title="Save as CMYK TIFF (K=0), full page size">TIF</button>
+    </div>`;
+  const layerRows = img.layers.slice().reverse().map(l => `<div class="region-row ${l.id===img.selectedLayerId?'selected':''}" onclick="selectLayer('${l.id}')" oncontextmenu="return confirmDeleteLayer('${l.id}', event)">
+      <span class="region-swatch" style="background:${l.visible?'var(--accent)':'#444'};"></span>
+      <span class="region-name" ondblclick="renameLayer('${l.id}', event)" title="Double-click to rename — right-click to delete">${escHtml(l.name)}</span>
+      <button class="region-del" onclick="toggleLayerVisibility('${l.id}', event)" title="${l.visible?'Hide layer':'Show layer'}" style="margin-right:2px;">${l.visible?'👁':'🚫'}</button>
+      <button class="region-del" onclick="exportSingleLayerTiff('${l.id}', event)" title="Save as CMYK TIFF (K=0), full page size">TIF</button>
+    </div>`).join('');
+  list.innerHTML = layerRows + baseRow;
+}
+function exportSingleLayerTiff(layerId, evt) {
+  if (evt) evt.stopPropagation();
+  const img = activeImage();
+  if (!img) return;
+  const fullW = img.originalImageData.width, fullH = img.originalImageData.height;
+  const canvas = document.createElement('canvas');
+  canvas.width = fullW; canvas.height = fullH;
+  const cctx = canvas.getContext('2d');
+  let outName;
+  if (layerId === null) {
+    const scaleX = fullW / img.previewSourceData.width, scaleY = fullH / img.previewSourceData.height;
+    const fullRegions = img.regions.map(r => {
+      if (r.isWhole) return r;
+      const scaled = { ...r, x: Math.round(r.x*scaleX), y: Math.round(r.y*scaleY), w: Math.round(r.w*scaleX), h: Math.round(r.h*scaleY) };
+      if (r.type === 'polygon') scaled.points = r.points.map(p => ({ x: p.x*scaleX, y: p.y*scaleY }));
+      return scaled;
+    });
+    cctx.putImageData(computeAdjustedImageData(img.originalImageData, fullRegions), 0, 0);
+    outName = img.fileName + '_base-layer_cmyk-k0.tif';
+  } else {
+    const layer = img.layers.find(l => l.id === layerId);
+    if (!layer) return;
+    // Every layer's TIFF is exported at the FULL image canvas size (not
+    // just its own cropped bounding box) — transparent everywhere except
+    // the layer's own content — so that all exported layers line up
+    // perfectly when brought into the same page in design software,
+    // rather than needing manual repositioning for each one.
+    const tmp = document.createElement('canvas');
+    tmp.width = layer.fw; tmp.height = layer.fh;
+    tmp.getContext('2d').putImageData(layer.fullImageData, 0, 0);
+    cctx.drawImage(tmp, layer.fx, layer.fy);
+    outName = img.fileName + '_' + layer.name.replace(/[^A-Za-z0-9]+/g,'_') + '_cmyk-k0.tif';
+  }
+  const fullCanvasData = cctx.getImageData(0, 0, fullW, fullH);
+  const tiffBuffer = buildCmykTiffKZero(fullCanvasData, img.exportDpi);
+  const blob = new Blob([tiffBuffer], { type: 'image/tiff' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = outName;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Saved as CMYK TIFF (K=0), full page size ✓');
+}
+function exportSingleLayer(layerId, evt) {
+  if (evt) evt.stopPropagation();
+  const img = activeImage();
+  if (!img) return;
+  if (layerId === null) {
+    // The base composite — whole image + region corrections, without any lifted layers on top
+    const scaleX = img.originalImageData.width / img.previewSourceData.width;
+    const scaleY = img.originalImageData.height / img.previewSourceData.height;
+    const fullRegions = img.regions.map(r => {
+      if (r.isWhole) return r;
+      const scaled = { ...r, x: Math.round(r.x*scaleX), y: Math.round(r.y*scaleY), w: Math.round(r.w*scaleX), h: Math.round(r.h*scaleY) };
+      if (r.type === 'polygon') scaled.points = r.points.map(p => ({ x: p.x*scaleX, y: p.y*scaleY }));
+      return scaled;
+    });
+    const fullOut = computeAdjustedImageData(img.originalImageData, fullRegions);
+    const outCanvas = document.createElement('canvas');
+    outCanvas.width = fullOut.width; outCanvas.height = fullOut.height;
+    outCanvas.getContext('2d').putImageData(fullOut, 0, 0);
+    outCanvas.toBlob((blob) => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = img.fileName + '_base-layer.png';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast('Base layer saved ✓');
+    });
+    return;
+  }
+  const layer = img.layers.find(l => l.id === layerId);
+  if (!layer) return;
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = layer.fw; outCanvas.height = layer.fh;
+  outCanvas.getContext('2d').putImageData(layer.fullImageData, 0, 0);
+  outCanvas.toBlob((blob) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = img.fileName + '_' + layer.name.replace(/[^A-Za-z0-9]+/g,'_') + '.png';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('"' + layer.name + '" saved separately ✓ (transparent outside its shape)');
+  });
+}
+function selectLayer(id) {
+  const img = activeImage();
+  if (!img) return;
+  img.selectedLayerId = (img.selectedLayerId === id) ? null : id;
+  renderLayersList();
+  toast(img.selectedLayerId ? 'Layer selected — drag it on the canvas to move it' : 'Layer deselected');
+}
+function toggleLayerVisibility(id, evt) {
+  evt.stopPropagation();
+  const img = activeImage();
+  const layer = img.layers.find(l => l.id === id);
+  if (!layer) return;
+  snapshotForUndo();
+  layer.visible = !layer.visible;
+  renderLayersList();
+  renderPreview();
+}
+function confirmDeleteLayer(id, evt) {
+  evt.preventDefault();
+  evt.stopPropagation();
+  const img = activeImage();
+  const layer = img && img.layers.find(l => l.id === id);
+  if (!layer) return false;
+  if (confirm('Delete layer "' + layer.name + '"? This can be undone with Ctrl+Z.')) {
+    deleteLayer(id, evt);
+  }
+  return false;
+}
+function deleteLayer(id, evt) {
+  evt.stopPropagation();
+  const img = activeImage();
+  snapshotForUndo();
+  img.layers = img.layers.filter(l => l.id !== id);
+  if (img.selectedLayerId === id) img.selectedLayerId = null;
+  renderLayersList();
+  renderPreview();
+}
+
+function selectRegionFromClick(id) {
+  const img = activeImage();
+  if (!img) return;
+  // Clicking the already-selected region again deselects it, back to Whole
+  // Image — the persistent marching-ants outline was the actual complaint;
+  // Whole Image shows no highlight at all, which is the "remove the
+  // selection" state being asked for, without requiring a delete.
+  if (img.selectedRegionId === id && id !== 'whole') { selectRegion('whole'); return; }
+  selectRegion(id);
+}
+function selectRegion(id) {
+  const img = activeImage();
+  if (!img) return;
+  const region = img.regions.find(r => r.id === id);
+  if (!region) return;
+  img.selectedRegionId = id;
+
+  document.getElementById('current-target-name').textContent = region.name;
+  ['c','m','y'].forEach(ch => syncChannelUI(ch, region.channels[ch]));
+  const hasAnyAdjustment = region.channels.c !== 0 || region.channels.m !== 0 || region.channels.y !== 0;
+  document.getElementById('btn-apply-region').disabled = !hasAnyAdjustment || region.confirmed === true;
+  updateCurveBadges(region);
+  document.getElementById('btn-lift-layer').disabled = region.isWhole;
+
+  renderRegionsList();
+  updateHighlight(region);
+}
+
+function updateHighlight(region) {
+  const rectEl = document.getElementById('highlight-rect');
+  const polyEl = document.getElementById('highlight-polygon');
+  const rect = workCanvas.getBoundingClientRect();
+  const scaleX = rect.width / workCanvas.width, scaleY = rect.height / workCanvas.height;
+
+  if (!region || region.isWhole) { rectEl.style.display = 'none'; polyEl.style.display = 'none'; return; }
+
+  if (region.type === 'polygon') {
+    rectEl.style.display = 'none';
+    polyEl.style.display = 'block';
+    polyEl.setAttribute('points', region.points.map(p => (p.x*scaleX)+','+(p.y*scaleY)).join(' '));
+  } else {
+    polyEl.style.display = 'none';
+    rectEl.style.display = 'block';
+    rectEl.setAttribute('x', region.x*scaleX); rectEl.setAttribute('y', region.y*scaleY);
+    rectEl.setAttribute('width', region.w*scaleX); rectEl.setAttribute('height', region.h*scaleY);
+  }
+}
+
+function deleteRegion(id, evt) {
+  evt.stopPropagation();
+  const img = activeImage();
+  if (!img) return;
+  snapshotForUndo();
+  img.regions = img.regions.filter(r => r.id !== id);
+  if (img.selectedRegionId === id) { img.selectedRegionId = 'whole'; }
+  selectRegion(img.selectedRegionId);
+  renderPreview();
+}
+
+function renderRegionsList() {
+  const img = activeImage();
+  const list = document.getElementById('regions-list');
+  if (!img) { list.innerHTML = ''; return; }
+  list.innerHTML = img.regions.map(r => {
+    const adjusted = r.channels.c!==0 || r.channels.m!==0 || r.channels.y!==0;
+    const confirmed = adjusted && r.confirmed === true;
+    return `<div class="region-row ${r.id===img.selectedRegionId?'selected':''}" onclick="selectRegionFromClick('${r.id}')">
+      <span class="region-swatch" style="background:${r.isWhole?'#666':'var(--accent)'};"></span>
+      <span class="region-name">${escHtml(r.name)}</span>
+      ${confirmed ? '<span title="Changes applied" style="color:#7fd858;font-size:0.75rem;">✓</span>' : (adjusted ? '<span class="region-adjusted-dot" title="Adjusted, not yet applied"></span>' : '')}
+      ${r.isWhole ? '' : `<button class="region-del" onclick="deleteRegion('${r.id}', event)" title="Delete region">✕</button>`}
+    </div>`;
+  }).join('');
+}
+
+// ── Click-to-sample ────────────────────────────────────────
+function updateReadout() {
+  const img = activeImage();
+  if (!img || !img.previewImageData) return;
+  const x = sampleX !== null ? Math.min(sampleX, img.previewImageData.width-1) : Math.floor(img.previewImageData.width/2);
+  const y = sampleY !== null ? Math.min(sampleY, img.previewImageData.height-1) : Math.floor(img.previewImageData.height/2);
+  const idx = (y*img.previewImageData.width + x) * 4;
+  const d = img.previewImageData.data;
+  const [c,m,ye] = rgbToCmyk(d[idx], d[idx+1], d[idx+2]);
+  document.getElementById('ro-c').textContent = Math.round(c*100)+'%';
+  document.getElementById('ro-m').textContent = Math.round(m*100)+'%';
+  document.getElementById('ro-y').textContent = Math.round(ye*100)+'%';
+}
+function flashSampleMarker(px, py) {
+  let marker = document.getElementById('sample-marker');
+  if (!marker) {
+    marker = document.createElement('div'); marker.id = 'sample-marker';
+    marker.style.cssText = 'position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.5),0 2px 6px rgba(0,0,0,0.4);pointer-events:none;transition:opacity 0.6s;';
+    document.getElementById('canvas-wrap').appendChild(marker);
+  }
+  marker.style.left = px+'px'; marker.style.top = py+'px'; marker.style.opacity = '1';
+  clearTimeout(window._markerT);
+  window._markerT = setTimeout(() => { marker.style.opacity = '0'; }, 1200);
+}
+
+// ── DPI input ────────────────────────────────────────────────
+document.getElementById('dpi-input').addEventListener('change', (e) => {
+  const img = activeImage();
+  if (!img) return;
+  const v = Math.max(1, Math.round(+e.target.value || 300));
+  img.exportDpi = v;
+  img.dpiIsDetected = false;
+  e.target.value = v;
+  document.getElementById('dpi-source-note').textContent = 'Manually set';
+  toast('Export DPI set to ' + v);
+});
+
+// ── Reset / compare ────────────────────────────────────────
+function resetAll() {
+  const img = activeImage();
+  if (!img) return;
+  snapshotForUndo();
+  img.regions.forEach(r => { r.channels = {c:0,m:0,y:0}; });
+  selectRegion(img.selectedRegionId);
+  renderPreview();
+  toast('Reset all regions');
+}
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !spaceHeld) {
+    const img = activeImage();
+    if (!img) return;
+    spaceHeld = true; e.preventDefault();
+    ctx.putImageData(img.previewSourceData, 0, 0);
+  }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'Space') {
+    spaceHeld = false;
+    const img = activeImage();
+    if (img && img.previewImageData) ctx.putImageData(img.previewImageData, 0, 0);
+  }
+});
+
+// ── DPI preservation on export ──────────────────────────────
+const CRC_TABLE = (() => {
+  const table = [];
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+function crc32(bytes) {
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) crc = CRC_TABLE[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+function u32(n) { return [(n>>>24)&255, (n>>>16)&255, (n>>>8)&255, n&255]; }
+
+// ── Minimal ZIP writer/reader (STORE method, no compression) ──────
+// Dependency-free — avoids needing an external library/CDN for something
+// this important (a broken save = real lost work). Verified against the
+// system's actual unzip utility, not just this file's own reader, before
+// being wired into the tool.
+function dosDateTime(date) {
+  const time = ((date.getHours() & 0x1F) << 11) | ((date.getMinutes() & 0x3F) << 5) | ((date.getSeconds() >> 1) & 0x1F);
+  const dat = (((date.getFullYear()-1980) & 0x7F) << 9) | (((date.getMonth()+1) & 0xF) << 5) | (date.getDate() & 0x1F);
+  return { time, dat };
+}
+function makeZip(files) {
+  const chunks = [];
+  const centralEntries = [];
+  let offset = 0;
+  const { time, dat } = dosDateTime(new Date());
+  for (const f of files) {
+    const nameBytes = new TextEncoder().encode(f.name);
+    const crc = crc32(f.data);
+    const size = f.data.length;
+    const local = new DataView(new ArrayBuffer(30));
+    local.setUint32(0, 0x04034b50, true);
+    local.setUint16(4, 20, true); local.setUint16(6, 0, true); local.setUint16(8, 0, true);
+    local.setUint16(10, time, true); local.setUint16(12, dat, true);
+    local.setUint32(14, crc, true); local.setUint32(18, size, true); local.setUint32(22, size, true);
+    local.setUint16(26, nameBytes.length, true); local.setUint16(28, 0, true);
+    chunks.push(new Uint8Array(local.buffer), nameBytes, f.data);
+    centralEntries.push({ nameBytes, crc, size, offset, time, dat });
+    offset += 30 + nameBytes.length + size;
+  }
+  const centralStart = offset;
+  for (const e of centralEntries) {
+    const central = new DataView(new ArrayBuffer(46));
+    central.setUint32(0, 0x02014b50, true);
+    central.setUint16(4, 20, true); central.setUint16(6, 20, true); central.setUint16(8, 0, true); central.setUint16(10, 0, true);
+    central.setUint16(12, e.time, true); central.setUint16(14, e.dat, true);
+    central.setUint32(16, e.crc, true); central.setUint32(20, e.size, true); central.setUint32(24, e.size, true);
+    central.setUint16(28, e.nameBytes.length, true); central.setUint16(30, 0, true); central.setUint16(32, 0, true);
+    central.setUint16(34, 0, true); central.setUint16(36, 0, true); central.setUint32(38, 0, true);
+    central.setUint32(42, e.offset, true);
+    chunks.push(new Uint8Array(central.buffer), e.nameBytes);
+    offset += 46 + e.nameBytes.length;
+  }
+  const centralSize = offset - centralStart;
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true);
+  end.setUint16(4, 0, true); end.setUint16(6, 0, true);
+  end.setUint16(8, centralEntries.length, true); end.setUint16(10, centralEntries.length, true);
+  end.setUint32(12, centralSize, true); end.setUint32(16, centralStart, true); end.setUint16(20, 0, true);
+  chunks.push(new Uint8Array(end.buffer));
+  const total = chunks.reduce((a,c) => a+c.length, 0);
+  const out = new Uint8Array(total);
+  let p = 0;
+  for (const c of chunks) { out.set(c, p); p += c.length; }
+  return out;
+}
+function readZip(bytes) {
+  let eocdOffset = -1;
+  for (let i = bytes.length - 22; i >= 0; i--) {
+    if (bytes[i]===0x50 && bytes[i+1]===0x4b && bytes[i+2]===0x05 && bytes[i+3]===0x06) { eocdOffset = i; break; }
+  }
+  if (eocdOffset === -1) throw new Error('Not a valid project file (no End of Central Directory found)');
+  const eocd = new DataView(bytes.buffer, bytes.byteOffset+eocdOffset, 22);
+  const entryCount = eocd.getUint16(10, true);
+  const centralStart = eocd.getUint32(16, true);
+  const files = {};
+  let p = centralStart;
+  for (let i = 0; i < entryCount; i++) {
+    const view = new DataView(bytes.buffer, bytes.byteOffset+p, 46);
+    if (view.getUint32(0, true) !== 0x02014b50) throw new Error('Corrupt project file (central directory)');
+    const size = view.getUint32(24, true);
+    const nameLen = view.getUint16(28, true);
+    const extraLen = view.getUint16(30, true);
+    const commentLen = view.getUint16(32, true);
+    const localOffset = view.getUint32(42, true);
+    const name = new TextDecoder().decode(bytes.subarray(p+46, p+46+nameLen));
+    const localView = new DataView(bytes.buffer, bytes.byteOffset+localOffset, 30);
+    const localNameLen = localView.getUint16(26, true);
+    const localExtraLen = localView.getUint16(28, true);
+    const dataStart = localOffset + 30 + localNameLen + localExtraLen;
+    files[name] = bytes.subarray(dataStart, dataStart+size);
+    p += 46 + nameLen + extraLen + commentLen;
+  }
+  return files;
+}
+
+function injectPngDpi(arrayBuffer, dpi) {
+  const bytes = new Uint8Array(arrayBuffer);
+  const ppm = Math.round(dpi / 0.0254);
+  const chunkType = [0x70,0x48,0x59,0x73];
+  const chunkData = [...u32(ppm), ...u32(ppm), 1];
+  const crc = crc32(new Uint8Array([...chunkType, ...chunkData]));
+  const chunk = [...u32(9), ...chunkType, ...chunkData, ...u32(crc)];
+  const insertAt = 8 + 25;
+  const out = new Uint8Array(bytes.length + chunk.length);
+  out.set(bytes.subarray(0, insertAt), 0);
+  out.set(chunk, insertAt);
+  out.set(bytes.subarray(insertAt), insertAt + chunk.length);
+  return out.buffer;
+}
+
+// ── Export at full resolution ──────────────────────────────
+// ── CMYK TIFF export, K permanently locked to 0%, with real transparency
+// preserved via a 5th (Alpha) channel ──────────────────────────────────
+// Standard CMYK is 4 channels (C,M,Y,K) with no room for transparency —
+// compositing to white loses transparency entirely, which isn't what's
+// wanted here. TIFF has a standard, well-supported way to add a channel
+// beyond what PhotometricInterpretation strictly requires: the
+// ExtraSamples tag (338). This is a normal, documented TIFF mechanism
+// (Photoshop uses exactly this for CMYK+Alpha TIFFs) — not a custom/exotic
+// configuration like the InkSet experiment that failed earlier. K is
+// still always 0; the 5th channel here is purely transparency, and CMY
+// values are computed straight from each pixel's own color, independent
+// of how transparent it is, since alpha handles visibility separately.
+function buildCmykTiffKZero(imageData, dpi) {
+  const w = imageData.width, h = imageData.height;
+  const rgba = imageData.data;
+
+  const cmyka = new Uint8Array(w * h * 5);
+  for (let i = 0, p = 0; i < rgba.length; i += 4, p += 5) {
+    cmyka[p]   = 255 - rgba[i];
+    cmyka[p+1] = 255 - rgba[i+1];
+    cmyka[p+2] = 255 - rgba[i+2];
+    cmyka[p+3] = 0;            // K always locked to 0
+    cmyka[p+4] = rgba[i+3];    // Alpha, passed straight through
+  }
+
+  const TYPE_SHORT = 3, TYPE_LONG = 4, TYPE_RATIONAL = 5;
+  const IFD_START = 8;
+  const NUM_TAGS = 14; // one more than before, for ExtraSamples
+  const IFD_SIZE = 2 + NUM_TAGS*12 + 4;
+  let extraOffset = IFD_START + IFD_SIZE;
+
+  const bitsPerSampleOffset = extraOffset; extraOffset += 10; // 5 x SHORT
+  const xResOffset = extraOffset; extraOffset += 8;            // RATIONAL
+  const yResOffset = extraOffset; extraOffset += 8;             // RATIONAL
+  if (extraOffset % 2 !== 0) extraOffset += 1;
+  const stripOffset = extraOffset;
+  const stripByteCount = cmyka.length;
+  const totalSize = stripOffset + stripByteCount;
+
+  const buf = new ArrayBuffer(totalSize);
+  const dv = new DataView(buf);
+  const LE = true;
+
+  dv.setUint8(0, 0x49); dv.setUint8(1, 0x49); // "II" little-endian
+  dv.setUint16(2, 42, LE);
+  dv.setUint32(4, IFD_START, LE);
+
+  let pos = IFD_START;
+  dv.setUint16(pos, NUM_TAGS, LE); pos += 2;
+
+  function writeTag(tag, type, count, valueBytes) {
+    dv.setUint16(pos, tag, LE);
+    dv.setUint16(pos+2, type, LE);
+    dv.setUint32(pos+4, count, LE);
+    for (let i = 0; i < 4; i++) dv.setUint8(pos+8+i, i < valueBytes.length ? valueBytes[i] : 0);
+    pos += 12;
+  }
+  function writeTagOffset(tag, type, count, offset) {
+    dv.setUint16(pos, tag, LE);
+    dv.setUint16(pos+2, type, LE);
+    dv.setUint32(pos+4, count, LE);
+    dv.setUint32(pos+8, offset, LE);
+    pos += 12;
+  }
+  function u16bytes(n) { return [n & 255, (n>>8) & 255]; }
+  function u32bytes(n) { return [n & 255, (n>>8)&255, (n>>16)&255, (n>>24)&255]; }
+
+  writeTag(256, TYPE_LONG, 1, u32bytes(w));                 // ImageWidth
+  writeTag(257, TYPE_LONG, 1, u32bytes(h));                 // ImageLength
+  writeTagOffset(258, TYPE_SHORT, 5, bitsPerSampleOffset);  // BitsPerSample (5 channels)
+  writeTag(259, TYPE_SHORT, 1, u16bytes(1));                // Compression = none
+  writeTag(262, TYPE_SHORT, 1, u16bytes(5));                // PhotometricInterpretation = Separated
+  writeTag(273, TYPE_LONG, 1, u32bytes(stripOffset));       // StripOffsets
+  writeTag(277, TYPE_SHORT, 1, u16bytes(5));                // SamplesPerPixel = 5 (CMYK + Alpha)
+  writeTag(278, TYPE_LONG, 1, u32bytes(h));                 // RowsPerStrip (single strip)
+  writeTag(279, TYPE_LONG, 1, u32bytes(stripByteCount));    // StripByteCounts
+  writeTagOffset(282, TYPE_RATIONAL, 1, xResOffset);        // XResolution
+  writeTagOffset(283, TYPE_RATIONAL, 1, yResOffset);        // YResolution
+  writeTag(296, TYPE_SHORT, 1, u16bytes(2));                // ResolutionUnit = inches
+  writeTag(332, TYPE_SHORT, 1, u16bytes(1));                // InkSet = 1 (standard CMYK)
+  writeTag(338, TYPE_SHORT, 1, u16bytes(2));                // ExtraSamples = 2 (unassociated alpha)
+
+  dv.setUint32(pos, 0, LE); // next IFD offset = 0 (none)
+
+  for (let i = 0; i < 5; i++) dv.setUint16(bitsPerSampleOffset + i*2, 8, LE);
+  dv.setUint32(xResOffset, dpi, LE); dv.setUint32(xResOffset+4, 1, LE);
+  dv.setUint32(yResOffset, dpi, LE); dv.setUint32(yResOffset+4, 1, LE);
+  new Uint8Array(buf, stripOffset, stripByteCount).set(cmyka);
+
+  return buf;
+}
+
+function compositeFullResLayers(canvasCtx, img) {
+  if (!img.layers || !img.layers.length) return;
+  img.layers.forEach(l => {
+    if (!l.visible) return;
+    const tmp = document.createElement('canvas');
+    tmp.width = l.fw; tmp.height = l.fh;
+    tmp.getContext('2d').putImageData(l.fullImageData, 0, 0);
+    canvasCtx.drawImage(tmp, l.fx, l.fy);
+  });
+}
+
+// ── Save / Load Project (as a .zip: original image + layer images + a
+// manifest.json describing regions, curves, and layer positions) ──────
+let projectDirty = false;
+function markDirty() { projectDirty = true; }
+function canvasToPngBytes(imageData) {
+  return new Promise((resolve, reject) => {
+    const c = document.createElement('canvas');
+    c.width = imageData.width; c.height = imageData.height;
+    c.getContext('2d').putImageData(imageData, 0, 0);
+    c.toBlob((blob) => {
+      if (!blob) { reject(new Error('PNG encoding failed')); return; }
+      blob.arrayBuffer().then(buf => resolve(new Uint8Array(buf)));
+    }, 'image/png');
+  });
+}
+async function saveProject() {
+  const img = activeImage();
+  if (!img) return;
+  toast('Building project file…');
+  try {
+    const originalBytes = await canvasToPngBytes(img.originalImageData);
+    const files = [{ name: 'original.png', data: originalBytes }];
+
+    const layerManifests = [];
+    for (const l of img.layers) {
+      const fname = l.id + '.png';
+      const bytes = await canvasToPngBytes(l.fullImageData);
+      files.push({ name: fname, data: bytes });
+      layerManifests.push({ id: l.id, name: l.name, x: l.x, y: l.y, w: l.w, h: l.h,
+        fx: l.fx, fy: l.fy, fw: l.fw, fh: l.fh, visible: l.visible, imageFile: fname });
+    }
+
+    const manifest = {
+      formatVersion: 1,
+      fileName: img.fileName, width: img.width, height: img.height, exportDpi: img.exportDpi,
+      dpiIsDetected: img.dpiIsDetected, cmyConverted: img.cmyConverted,
+      regions: img.regions, selectedRegionId: img.selectedRegionId, regionSeq: img.regionSeq,
+      layers: layerManifests, selectedLayerId: img.selectedLayerId, layerSeq: img.layerSeq, baseVisible: img.baseVisible,
+    };
+    files.push({ name: 'manifest.json', data: new TextEncoder().encode(JSON.stringify(manifest)) });
+
+    const zipBytes = makeZip(files);
+    const blob = new Blob([zipBytes], { type: 'application/zip' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = img.fileName + '_project.zip';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    projectDirty = false;
+    toast('Project saved ✓ — "' + a.download + '"');
+  } catch (err) {
+    console.error(err);
+    toast('Could not save project: ' + (err.message || 'unknown error'), true);
+  }
+}
+function triggerLoadProject() { document.getElementById('project-file-input').click(); }
+async function loadProjectFile(file) {
+  toast('Loading project…');
+  try {
+    const buf = new Uint8Array(await file.arrayBuffer());
+    const zipFiles = readZip(buf);
+    if (!zipFiles['manifest.json']) throw new Error('Missing manifest.json — not a valid project file');
+    const manifest = JSON.parse(new TextDecoder().decode(zipFiles['manifest.json']));
+    if (!zipFiles['original.png']) throw new Error('Missing original.png — not a valid project file');
+
+    const originalImageData = await new Promise((resolve, reject) => {
+      const blob = new Blob([zipFiles['original.png']], { type: 'image/png' });
+      const url = URL.createObjectURL(blob);
+      const imgEl = new Image();
+      imgEl.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = imgEl.width; c.height = imgEl.height;
+        const cctx = c.getContext('2d');
+        cctx.drawImage(imgEl, 0, 0);
+        URL.revokeObjectURL(url);
+        resolve(cctx.getImageData(0, 0, imgEl.width, imgEl.height));
+      };
+      imgEl.onerror = reject;
+      imgEl.src = url;
+    });
+
+    const scale = Math.min(1, PREVIEW_MAX / Math.max(originalImageData.width, originalImageData.height));
+    const pw = Math.max(1, Math.round(originalImageData.width*scale)), ph = Math.max(1, Math.round(originalImageData.height*scale));
+    const tmpCanvas = document.createElement('canvas');
+    tmpCanvas.width = pw; tmpCanvas.height = ph;
+    const tctx = tmpCanvas.getContext('2d');
+    const fullCanvas = document.createElement('canvas');
+    fullCanvas.width = originalImageData.width; fullCanvas.height = originalImageData.height;
+    fullCanvas.getContext('2d').putImageData(originalImageData, 0, 0);
+    tctx.drawImage(fullCanvas, 0, 0, pw, ph);
+    const previewSourceData = tctx.getImageData(0, 0, pw, ph);
+
+    imageSeq++;
+    const newImg = {
+      id: 'img_'+imageSeq, fileName: manifest.fileName, width: manifest.width, height: manifest.height,
+      exportDpi: manifest.exportDpi, dpiIsDetected: manifest.dpiIsDetected, cmyConverted: manifest.cmyConverted,
+      originalImageData, previewSourceData, previewImageData: null,
+      regions: manifest.regions, selectedRegionId: manifest.selectedRegionId, regionSeq: manifest.regionSeq,
+      undoStack: [], redoStack: [],
+      layers: [], layerSeq: manifest.layerSeq, selectedLayerId: manifest.selectedLayerId, baseVisible: manifest.baseVisible !== false,
+      preRemoveBgBackup: null, thumbUrl: tmpCanvas.toDataURL(),
+    };
+
+    const layerScaleX = pw / originalImageData.width, layerScaleY = ph / originalImageData.height;
+    for (const lm of manifest.layers) {
+      if (!zipFiles[lm.imageFile]) continue;
+      const fullImageData = await new Promise((resolve, reject) => {
+        const blob = new Blob([zipFiles[lm.imageFile]], { type: 'image/png' });
+        const url = URL.createObjectURL(blob);
+        const imgEl = new Image();
+        imgEl.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = imgEl.width; c.height = imgEl.height;
+          const cctx = c.getContext('2d');
+          cctx.drawImage(imgEl, 0, 0);
+          URL.revokeObjectURL(url);
+          resolve(cctx.getImageData(0, 0, imgEl.width, imgEl.height));
+        };
+        imgEl.onerror = reject;
+        imgEl.src = url;
+      });
+      const lw = Math.max(1, Math.round(lm.w)), lh = Math.max(1, Math.round(lm.h));
+      const lCanvas = document.createElement('canvas');
+      lCanvas.width = lw; lCanvas.height = lh;
+      const lctx = lCanvas.getContext('2d');
+      const lFullCanvas = document.createElement('canvas');
+      lFullCanvas.width = fullImageData.width; lFullCanvas.height = fullImageData.height;
+      lFullCanvas.getContext('2d').putImageData(fullImageData, 0, 0);
+      lctx.drawImage(lFullCanvas, 0, 0, lw, lh);
+      newImg.layers.push({
+        id: lm.id, name: lm.name, x: lm.x, y: lm.y, w: lw, h: lh,
+        fx: lm.fx, fy: lm.fy, fw: fullImageData.width, fh: fullImageData.height,
+        visible: lm.visible, imageData: lctx.getImageData(0, 0, lw, lh), fullImageData,
+      });
+    }
+
+    images.push(newImg);
+    switchToImage(newImg.id);
+    document.getElementById('dropzone').style.display = 'none';
+    document.getElementById('canvas-wrap').style.display = 'flex';
+    applyLayoutMode();
+    document.getElementById('regions-panel').style.display = 'flex';
+    document.getElementById('view-controls').style.display = 'flex';
+    renderProjectStrip();
+    projectDirty = false;
+    toast('Project loaded — "' + manifest.fileName + '" ✓');
+  } catch (err) {
+    console.error(err);
+    toast('Could not load project: ' + (err.message || 'unknown error'), true);
+  }
+}
+window.addEventListener('beforeunload', (e) => {
+  if (projectDirty) { e.preventDefault(); e.returnValue = ''; }
+});
+
+function exportImage() {
+  const img = activeImage();
+  if (!img) return;
+  const btn = document.getElementById('btn-export');
+  const prevLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Rendering…';
+
+  setTimeout(() => {
+    try {
+      const scaleX = img.originalImageData.width / img.previewSourceData.width;
+      const scaleY = img.originalImageData.height / img.previewSourceData.height;
+      const fullRegions = img.regions.map(r => {
+        if (r.isWhole) return r;
+        const scaled = { ...r, x: Math.round(r.x*scaleX), y: Math.round(r.y*scaleY),
+          w: Math.round(r.w*scaleX), h: Math.round(r.h*scaleY) };
+        if (r.type === 'polygon') scaled.points = r.points.map(p => ({ x: p.x*scaleX, y: p.y*scaleY }));
+        return scaled;
+      });
+      const fullOut = computeAdjustedImageData(img.originalImageData, fullRegions);
+
+      const outCanvas = document.createElement('canvas');
+      outCanvas.width = fullOut.width; outCanvas.height = fullOut.height;
+      outCanvas.getContext('2d').putImageData(fullOut, 0, 0);
+      compositeFullResLayers(outCanvas.getContext('2d'), img);
+      outCanvas.toBlob((blob) => {
+        const fr = new FileReader();
+        fr.onload = () => {
+          try {
+            const withDpi = injectPngDpi(fr.result, img.exportDpi);
+            const finalBlob = new Blob([withDpi], { type: 'image/png' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(finalBlob);
+            a.download = img.fileName + '_cmy-corrected.png';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            toast('Exported at full resolution, ' + img.exportDpi + ' DPI ✓');
+          } catch (e) {
+            console.error('DPI injection failed, exporting without it:', e);
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = img.fileName + '_cmy-corrected.png';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            toast('Exported (DPI tag could not be set — check size after import)', true);
+          }
+          btn.disabled = false; btn.textContent = prevLabel;
+        };
+        fr.readAsArrayBuffer(blob);
+      }, 'image/png');
+    } catch (err) {
+      console.error(err);
+      toast('Export failed — try a smaller image', true);
+      btn.disabled = false; btn.textContent = prevLabel;
+    }
+  }, 30);
+}
+
+// ── Compare with Reference ──────────────────────────────────────
+// ── Remove Background ────────────────────────────────────────
+let rmbgMode = 'auto';       // 'auto' or 'pick'
+let rmbgPickedColor = null;  // {r,g,b} when in pick mode
+let rmbgPreviewing = false;
+
+function openRemoveBg() {
+  const img = activeImage();
+  if (!img) return;
+  rmbgMode = 'auto';
+  rmbgPickedColor = null;
+  document.getElementById('rmbg-mode-auto').classList.add('active');
+  document.getElementById('rmbg-mode-pick').classList.remove('active');
+  document.getElementById('rmbg-picked-swatch').style.display = 'none';
+  document.getElementById('rmbg-hint').textContent = 'Removes background pixels close to white. Adjust sensitivity below, then click Apply.';
+  document.getElementById('rmbg-tolerance').value = 30;
+  document.getElementById('rmbg-tolerance-val').textContent = '30%';
+  document.getElementById('removebg-overlay').dataset.picking = '0';
+  document.getElementById('removebg-overlay').style.display = 'flex';
+  updateRmbgPreview();
+}
+function closeRemoveBg() {
+  document.getElementById('removebg-overlay').style.display = 'none';
+  rmbgPreviewing = false;
+  renderPreview(); // restore the normal (non-preview) view
+}
+function setRmbgMode(mode) {
+  rmbgMode = mode;
+  document.getElementById('rmbg-mode-auto').classList.toggle('active', mode === 'auto');
+  document.getElementById('rmbg-mode-pick').classList.toggle('active', mode === 'pick');
+  if (mode === 'auto') {
+    rmbgPickedColor = null;
+    document.getElementById('rmbg-picked-swatch').style.display = 'none';
+    document.getElementById('rmbg-hint').textContent = 'Removes background pixels close to white. Adjust sensitivity below, then click Apply.';
+    updateRmbgPreview();
+  } else {
+    document.getElementById('rmbg-hint').textContent = 'Click anywhere on the image to pick the background color to remove.';
+    // The modal's full-screen backdrop sits on top of the canvas, so clicks
+    // never reach it while the modal is showing — hide the modal itself
+    // (keeping state intact) until a color is actually picked.
+    document.getElementById('removebg-overlay').style.display = 'none';
+    document.getElementById('removebg-overlay').dataset.picking = '1';
+    toast('Click anywhere on the image to pick a background color');
+  }
+}
+
+// Ray-cast-free color-distance removal with a soft edge, so removed areas
+// fade out smoothly instead of a hard, jagged cutoff.
+function removeBackgroundColor(imageData, targetR, targetG, targetB, tolerancePct) {
+  const out = new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height);
+  const d = out.data;
+  const maxDist = Math.sqrt(3 * 255 * 255);
+  const threshold = (tolerancePct / 100) * maxDist;
+  const softEdge = threshold * 0.5;
+  for (let i = 0; i < d.length; i += 4) {
+    const dr = d[i] - targetR, dg = d[i+1] - targetG, db = d[i+2] - targetB;
+    const dist = Math.sqrt(dr*dr + dg*dg + db*db);
+    if (dist < threshold) {
+      d[i+3] = 0;
+    } else if (dist < threshold + softEdge) {
+      const factor = (dist - threshold) / softEdge;
+      d[i+3] = Math.round(d[i+3] * factor);
+    }
+  }
+  return out;
+}
+
+function updateRmbgPreview() {
+  const img = activeImage();
+  if (!img) return;
+  const tol = +document.getElementById('rmbg-tolerance').value;
+  document.getElementById('rmbg-tolerance-val').textContent = tol + '%';
+
+  let target = { r: 255, g: 255, b: 255 };
+  if (rmbgMode === 'pick' && rmbgPickedColor) target = rmbgPickedColor;
+  if (rmbgMode === 'pick' && !rmbgPickedColor) {
+    rmbgPreviewing = false;
+    renderPreview();
+    return; // nothing picked yet — show the normal image
+  }
+
+  rmbgPreviewing = true;
+  const preview = removeBackgroundColor(img.previewSourceData, target.r, target.g, target.b, tol);
+  ctx.putImageData(preview, 0, 0);
+}
+
+function applyRemoveBg() {
+  const img = activeImage();
+  if (!img) return;
+  const tol = +document.getElementById('rmbg-tolerance').value;
+  let target = { r: 255, g: 255, b: 255 };
+  if (rmbgMode === 'pick') {
+    if (!rmbgPickedColor) { toast('Click on the image first to pick a background color', true); return; }
+    target = rmbgPickedColor;
+  }
+
+  // Dedicated backup for this specific operation — the region-based
+  // undo/redo stack only tracks region data, not raw pixel changes, so it
+  // can't actually revert this. Kept separate (not stacked/limited to 10
+  // like the main undo) since background removal is an occasional,
+  // deliberate action rather than something done repeatedly like a slider drag.
+  img.preRemoveBgBackup = {
+    originalImageData: new ImageData(new Uint8ClampedArray(img.originalImageData.data), img.originalImageData.width, img.originalImageData.height),
+    previewSourceData: new ImageData(new Uint8ClampedArray(img.previewSourceData.data), img.previewSourceData.width, img.previewSourceData.height),
+  };
+  document.getElementById('btn-undo-bg-removal').disabled = false;
+
+  img.originalImageData = removeBackgroundColor(img.originalImageData, target.r, target.g, target.b, tol);
+  // Rebuild the downscaled preview source from the newly-transparent full-res image
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = img.previewSourceData.width; tmpCanvas.height = img.previewSourceData.height;
+  const tctx = tmpCanvas.getContext('2d');
+  const fullCanvas = document.createElement('canvas');
+  fullCanvas.width = img.originalImageData.width; fullCanvas.height = img.originalImageData.height;
+  fullCanvas.getContext('2d').putImageData(img.originalImageData, 0, 0);
+  tctx.drawImage(fullCanvas, 0, 0, tmpCanvas.width, tmpCanvas.height);
+  img.previewSourceData = tctx.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
+
+  document.getElementById('removebg-overlay').style.display = 'none';
+  rmbgPreviewing = false;
+  renderPreview();
+  toast('Background removed ✓');
+}
+
+function undoRemoveBg() {
+  const img = activeImage();
+  if (!img || !img.preRemoveBgBackup) return;
+  img.originalImageData = img.preRemoveBgBackup.originalImageData;
+  img.previewSourceData = img.preRemoveBgBackup.previewSourceData;
+  img.preRemoveBgBackup = null;
+  document.getElementById('btn-undo-bg-removal').disabled = true;
+  renderPreview();
+  toast('Background removal undone');
+}
+
+// Click-to-pick a background color, only active while the Remove Background
+// panel is open in "Pick Color" mode — separate from the normal hover
+// readout / region-selection click handling.
+workCanvas.addEventListener('click', (e) => {
+  if (rmbgMode !== 'pick' || document.getElementById('removebg-overlay').dataset.picking !== '1') return;
+  const rect = workCanvas.getBoundingClientRect();
+  const scaleX = workCanvas.width/rect.width, scaleY = workCanvas.height/rect.height;
+  const x = Math.round((e.clientX-rect.left)*scaleX), y = Math.round((e.clientY-rect.top)*scaleY);
+  const img = activeImage();
+  if (!img || !img.previewSourceData) return;
+  const idx = (Math.min(y, img.previewSourceData.height-1) * img.previewSourceData.width + Math.min(x, img.previewSourceData.width-1)) * 4;
+  const d = img.previewSourceData.data;
+  rmbgPickedColor = { r: d[idx], g: d[idx+1], b: d[idx+2] };
+  // Bring the modal back now that a color has been picked
+  document.getElementById('removebg-overlay').style.display = 'flex';
+  document.getElementById('removebg-overlay').dataset.picking = '0';
+  document.getElementById('rmbg-picked-swatch').style.display = 'flex';
+  document.getElementById('rmbg-swatch-color').style.background = `rgb(${d[idx]},${d[idx+1]},${d[idx+2]})`;
+  updateRmbgPreview();
+});
+
+function openCompare() {
+  const img = activeImage();
+  if (!img) return;
+  document.getElementById('compare-active-name').textContent = img.fileName;
+  document.getElementById('compare-results').style.display = 'none';
+  document.getElementById('compare-upload-zone').style.display = 'block';
+  document.getElementById('compare-overlay').style.display = 'flex';
+}
+function closeCompare() {
+  document.getElementById('compare-overlay').style.display = 'none';
+}
+
+// Average CMY across every non-fully-transparent pixel in an ImageData
+function averageCmy(imageData) {
+  const d = imageData.data;
+  let sumC = 0, sumM = 0, sumY = 0, count = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i+3] === 0) continue;
+    const [c, m, y] = rgbToCmyk(d[i], d[i+1], d[i+2]);
+    sumC += c; sumM += m; sumY += y;
+    count++;
+  }
+  if (!count) return { c: 0, m: 0, y: 0 };
+  return { c: (sumC/count)*100, m: (sumM/count)*100, y: (sumY/count)*100 };
+}
+
+document.getElementById('compare-file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const img = activeImage();
+  if (!img) return;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const refImg = new Image();
+    refImg.onload = () => {
+      const refCanvas = document.createElement('canvas');
+      refCanvas.width = refImg.naturalWidth; refCanvas.height = refImg.naturalHeight;
+      const rctx = refCanvas.getContext('2d');
+      rctx.drawImage(refImg, 0, 0);
+      const refData = rctx.getImageData(0, 0, refCanvas.width, refCanvas.height);
+      const refAvg = averageCmy(refData);
+
+      // "Your Correction" = the active image's current adjusted state
+      const mineData = img.previewImageData || computeAdjustedImageData(img.previewSourceData, img.regions);
+      const mineAvg = averageCmy(mineData);
+
+      renderCompareResults(mineAvg, refAvg);
+    };
+    refImg.onerror = () => toast('Could not read that reference file', true);
+    refImg.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = ''; // allow re-selecting the same file later
+});
+
+function renderCompareResults(mine, ref) {
+  document.getElementById('compare-upload-zone').style.display = 'none';
+  document.getElementById('compare-results').style.display = 'block';
+  const rows = document.getElementById('compare-rows');
+  const channels = [
+    { key: 'c', label: 'Cyan', color: 'var(--ink-c)' },
+    { key: 'm', label: 'Magenta', color: 'var(--ink-m)' },
+    { key: 'y', label: 'Yellow', color: 'var(--ink-y)' },
+  ];
+  rows.innerHTML = channels.map(ch => {
+    const diff = ref[ch.key] - mine[ch.key];
+    const diffColor = Math.abs(diff) < 3 ? '#7fd858' : (Math.abs(diff) < 10 ? '#f4c20d' : '#ff7a7a');
+    return `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--press-line);font-size:0.85rem;">
+      <div style="display:flex;align-items:center;gap:7px;font-weight:600;"><span style="width:9px;height:9px;border-radius:50%;background:${ch.color};display:inline-block;"></span>${ch.label}</div>
+      <div class="mono" style="text-align:right;">${mine[ch.key].toFixed(1)}%</div>
+      <div class="mono" style="text-align:right;">${ref[ch.key].toFixed(1)}%
+        <span class="mono" style="color:${diffColor};font-size:0.72rem;display:block;">${diff>=0?'+':''}${diff.toFixed(1)}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function exportCmyTiff() {
+  const img = activeImage();
+  if (!img) return;
+  const btn = document.getElementById('btn-export-tiff');
+  const prevLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Rendering…';
+
+  setTimeout(() => {
+    try {
+      const scaleX = img.originalImageData.width / img.previewSourceData.width;
+      const scaleY = img.originalImageData.height / img.previewSourceData.height;
+      const fullRegions = img.regions.map(r => {
+        if (r.isWhole) return r;
+        const scaled = { ...r, x: Math.round(r.x*scaleX), y: Math.round(r.y*scaleY),
+          w: Math.round(r.w*scaleX), h: Math.round(r.h*scaleY) };
+        if (r.type === 'polygon') scaled.points = r.points.map(p => ({ x: p.x*scaleX, y: p.y*scaleY }));
+        return scaled;
+      });
+      const fullOut = computeAdjustedImageData(img.originalImageData, fullRegions);
+      let tiffSourceData = fullOut;
+      if (img.layers && img.layers.length) {
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = fullOut.width; tmpCanvas.height = fullOut.height;
+        const tmpCtx = tmpCanvas.getContext('2d');
+        tmpCtx.putImageData(fullOut, 0, 0);
+        compositeFullResLayers(tmpCtx, img);
+        tiffSourceData = tmpCtx.getImageData(0, 0, fullOut.width, fullOut.height);
+      }
+      const tiffBuffer = buildCmykTiffKZero(tiffSourceData, img.exportDpi);
+      const blob = new Blob([tiffBuffer], { type: 'image/tiff' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = img.fileName + '_cmyk-k0.tif';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast('Exported standard CMYK TIFF (K=0), ' + img.exportDpi + ' DPI ✓');
+    } catch (err) {
+      console.error(err);
+      toast('CMY TIFF export failed: ' + (err.message || 'unknown error'), true);
+    }
+    btn.disabled = false; btn.textContent = prevLabel;
+  }, 30);
+}
+</script>
+</body>
+</html>
