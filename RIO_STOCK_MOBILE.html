@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#00695c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stock Update">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Stock Update">
+<title>RIO Stock Update</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Rajdhani:wght@600;700;900&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --teal:#00695c;
+  --teal-dark:#004d40;
+  --teal-light:#e0f2f1;
+  --bg:#f5f6fa;
+  --card:#fff;
+  --border:#e8eaf0;
+  --text:#1a1d2e;
+  --muted:#6b7280;
+  --green:#16a34a;
+  --red:#dc2626;
+  --amber:#d97706;
+  --radius:14px;
+  --shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+html,body{height:100%;background:var(--bg);font-family:'Nunito',system-ui,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased;}
+body{padding-bottom:max(20px, env(safe-area-inset-bottom));}
+#top-bar{
+  position:sticky;top:0;z-index:50;
+  background:linear-gradient(135deg,var(--teal) 0%,var(--teal-dark) 100%);
+  padding:max(14px, env(safe-area-inset-top)) 16px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 10px rgba(0,0,0,0.15);
+}
+#top-bar h1{color:#fff;font-family:'Rajdhani',sans-serif;font-weight:800;font-size:1.15rem;letter-spacing:0.3px;display:flex;align-items:center;gap:8px;}
+#co-toggle{display:flex;background:rgba(255,255,255,0.18);border-radius:20px;padding:3px;gap:2px;}
+#co-toggle button{border:none;background:transparent;color:rgba(255,255,255,0.75);font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.72rem;padding:6px 12px;border-radius:16px;cursor:pointer;transition:all 0.15s;}
+#co-toggle button.active{background:#fff;color:var(--teal-dark);}
+
+#tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:64px;z-index:40;}
+#tabs button{flex:1;border:none;background:transparent;padding:13px 8px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.85rem;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.15s;}
+#tabs button.active{color:var(--teal);border-bottom-color:var(--teal);}
+
+.screen{display:none;padding:16px;max-width:520px;margin:0 auto;}
+.screen.active{display:block;}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:0.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;}
+.field select,.field input,.field textarea{
+  width:100%;height:48px;border:1.5px solid var(--border);border-radius:10px;
+  padding:0 14px;font-size:0.95rem;font-family:'Nunito',sans-serif;color:var(--text);
+  background:#fafbfc;outline:none;transition:border-color 0.15s;
+}
+.field select:focus,.field input:focus,.field textarea:focus{border-color:var(--teal);background:#fff;}
+.field textarea{height:72px;padding:12px 14px;resize:none;}
+.field select:disabled{color:#b0b6c0;background:#f0f1f4;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+#submit-btn{
+  width:100%;height:52px;border:none;border-radius:12px;
+  background:var(--teal);color:#fff;font-family:'Rajdhani',sans-serif;font-weight:800;
+  font-size:1.05rem;letter-spacing:0.5px;cursor:pointer;box-shadow:0 4px 14px rgba(0,105,92,0.35);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+#submit-btn:active{transform:scale(0.98);}
+#submit-btn:disabled{background:#b0b6c0;box-shadow:none;}
+
+.toast{
+  position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);
+  background:#1a1d2e;color:#fff;padding:12px 22px;border-radius:10px;font-size:0.88rem;font-weight:600;
+  box-shadow:0 6px 20px rgba(0,0,0,0.3);opacity:0;pointer-events:none;transition:all 0.25s;z-index:999;
+  max-width:88vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.error{background:var(--red);}
+.toast.success{background:var(--green);}
+
+/* Stock balance list */
+#balance-search{margin-bottom:12px;}
+.bal-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;box-shadow:var(--shadow);
+}
+.bal-row .name{font-weight:700;font-size:0.92rem;color:var(--text);}
+.bal-val{font-family:'Rajdhani',sans-serif;font-weight:800;font-size:1.15rem;}
+.bal-val.pos{color:var(--green);}
+.bal-val.neg{color:var(--red);}
+.bal-val.zero{color:var(--muted);}
+.bal-unit{font-size:0.68rem;color:var(--muted);font-weight:600;margin-left:3px;}
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted);}
+.empty-state .icon{font-size:2.2rem;margin-bottom:10px;opacity:0.5;}
+.loading-spinner{
+  display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.4);
+  border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.refresh-btn{
+  display:flex;align-items:center;gap:6px;background:var(--teal-light);color:var(--teal-dark);
+  border:none;border-radius:8px;padding:8px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;
+  margin-bottom:12px;
+}
+
+/* Locked field (shown, not editable) */
+.field.locked select,.field.locked input{
+  background:#f0f1f4;color:#6b7280;cursor:not-allowed;
+}
+.field .lock-note{font-size:0.68rem;color:#9aa1ad;font-weight:600;margin-top:4px;display:flex;align-items:center;gap:4px;}
+
+/* Updated By row with Add button */
+.field-with-btn{display:flex;gap:8px;align-items:flex-end;}
+.field-with-btn .field{flex:1;margin-bottom:0;}
+.add-emp-btn{
+  height:48px;padding:0 16px;border:1.5px solid var(--teal);border-radius:10px;background:#fff;
+  color:var(--teal);font-weight:800;font-size:0.82rem;cursor:pointer;white-space:nowrap;
+}
+
+/* Entries list */
+.entry-card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px;}
+.entry-card .row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.entry-card .product{font-weight:800;font-size:0.95rem;color:var(--text);}
+.entry-card .qty{font-family:'Rajdhani',sans-serif;font-weight:800;font-size:1.05rem;color:var(--red);}
+.entry-card .meta{font-size:0.78rem;color:var(--muted);line-height:1.5;}
+.entry-card .meta b{color:var(--text);font-weight:700;}
+.entry-card .edit-btn{
+  margin-top:10px;width:100%;height:38px;border:1.5px solid var(--teal);border-radius:8px;background:var(--teal-light);
+  color:var(--teal-dark);font-weight:700;font-size:0.8rem;cursor:pointer;
+}
+
+/* Modal (Add Employee) */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:#fff;border-radius:14px;width:100%;max-width:340px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,0.3);}
+.modal-box h3{font-family:'Rajdhani',sans-serif;font-weight:800;font-size:1.05rem;margin-bottom:14px;color:var(--text);}
+.modal-actions{display:flex;gap:10px;margin-top:16px;}
+.modal-actions button{flex:1;height:44px;border-radius:8px;border:none;font-weight:700;font-size:0.85rem;cursor:pointer;}
+.modal-actions .btn-cancel{background:#f0f1f4;color:var(--muted);}
+.modal-actions .btn-save{background:var(--teal);color:#fff;}
+
+/* Banner shown at top of edit form when fields are locked */
+.edit-banner{
+  background:#fff3e0;border:1px solid #ffcc80;border-radius:10px;padding:10px 14px;margin-bottom:14px;
+  font-size:0.78rem;color:#e65100;font-weight:600;display:flex;align-items:center;gap:8px;
+}
+
+/* PIN gate */
+#pin-screen{
+  position:fixed;inset:0;z-index:5000;background:linear-gradient(135deg,var(--teal) 0%,var(--teal-dark) 100%);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+}
+#pin-screen.hidden{display:none;}
+.pin-box{background:#fff;border-radius:18px;padding:32px 26px;width:100%;max-width:340px;box-shadow:0 16px 50px rgba(0,0,0,0.3);text-align:center;}
+.pin-box .icon{font-size:2.4rem;margin-bottom:6px;}
+.pin-box h2{font-family:'Rajdhani',sans-serif;font-weight:800;font-size:1.2rem;color:var(--text);margin-bottom:4px;}
+.pin-box p{font-size:0.82rem;color:var(--muted);margin-bottom:20px;}
+.pin-digits{display:flex;gap:10px;justify-content:center;margin-bottom:18px;}
+.pin-digits input{
+  width:48px;height:56px;text-align:center;font-size:1.6rem;font-weight:800;
+  border:1.5px solid var(--border);border-radius:12px;font-family:'Rajdhani',sans-serif;
+  color:var(--text);outline:none;background:#fafbfc;
+}
+.pin-digits input:focus{border-color:var(--teal);background:#fff;}
+#pin-error{color:var(--red);font-size:0.8rem;font-weight:700;margin-bottom:10px;min-height:18px;}
+#pin-submit{
+  width:100%;height:50px;border:none;border-radius:12px;background:var(--teal);color:#fff;
+  font-family:'Rajdhani',sans-serif;font-weight:800;font-size:1rem;cursor:pointer;
+}
+#pin-submit:disabled{background:#b0b6c0;}
+</style>
+</head>
+<body>
+
+<div id="pin-screen">
+  <div class="pin-box">
+    <div class="icon">🔒</div>
+    <h2>Stock Update Access</h2>
+    <p>Enter the 4-digit access code to continue</p>
+    <div class="pin-digits">
+      <input type="tel" inputmode="numeric" maxlength="1" class="pin-d" data-i="0">
+      <input type="tel" inputmode="numeric" maxlength="1" class="pin-d" data-i="1">
+      <input type="tel" inputmode="numeric" maxlength="1" class="pin-d" data-i="2">
+      <input type="tel" inputmode="numeric" maxlength="1" class="pin-d" data-i="3">
+    </div>
+    <div id="pin-error"></div>
+    <button id="pin-submit" onclick="submitPin()">UNLOCK</button>
+  </div>
+</div>
+
+<div id="top-bar">
+  <h1>📦 Stock Update</h1>
+  <div id="co-toggle">
+    <button id="co-btn-rio" onclick="setCompany('rio')" class="active">RIO</button>
+    <button id="co-btn-rainbow" onclick="setCompany('rainbow')">RAINBOW</button>
+  </div>
+</div>
+
+<div id="tabs">
+  <button id="tab-btn-out" class="active" onclick="showTab('out')">➖ Add OUT</button>
+  <button id="tab-btn-entries" onclick="showTab('entries')">📋 Entries</button>
+  <button id="tab-btn-balance" onclick="showTab('balance')">📊 Balance</button>
+</div>
+
+<!-- ADD / EDIT OUT ENTRY -->
+<div id="screen-out" class="screen active">
+  <div class="card">
+    <div id="edit-banner-wrap"></div>
+    <input type="hidden" id="f-editing-id" value="">
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="f-date">
+    </div>
+    <div class="field">
+      <label>Product *</label>
+      <select id="f-product">
+        <option value="">— Select product —</option>
+      </select>
+    </div>
+    <div class="field" id="field-customer-wrap">
+      <label>Customer name</label>
+      <select id="f-customer" onchange="refreshJobs()">
+        <option value="">— Select customer —</option>
+      </select>
+    </div>
+    <div class="field" id="field-job-wrap">
+      <label>Job name</label>
+      <select id="f-job" disabled>
+        <option value="">— Select customer first —</option>
+      </select>
+    </div>
+    <div class="two-col">
+      <div class="field" id="field-jobsize-wrap">
+        <label>Job Size</label>
+        <select id="f-jobsize">
+          <option value="">— Select size —</option>
+        </select>
+      </div>
+      <div class="field" id="field-jobqty-wrap">
+        <label>Job Qty</label>
+        <input type="number" id="f-jobqty" placeholder="0" inputmode="decimal">
+      </div>
+    </div>
+    <div class="lock-note" id="lock-note" style="display:none;">🔒 Customer, Job, Job Size & Job Qty are locked once an entry is created</div>
+    <div class="two-col" style="margin-top:16px;">
+      <div class="field">
+        <label>Qty Used *</label>
+        <input type="number" id="f-qty" placeholder="0" min="0.01" step="0.01" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>Unit</label>
+        <select id="f-unit">
+          <option>Nos</option><option>Kg</option><option>Rolls</option><option>Sheets</option>
+          <option>Boxes</option><option>Bags</option><option>Pcs</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-with-btn">
+      <div class="field">
+        <label>Updated By</label>
+        <select id="f-updatedby">
+          <option value="">— Select employee —</option>
+        </select>
+      </div>
+      <button class="add-emp-btn" onclick="openAddEmployee()">+ Add</button>
+    </div>
+    <div class="field" style="margin-bottom:20px;margin-top:16px;">
+      <label>Remarks</label>
+      <textarea id="f-remarks" placeholder="Notes… (optional)"></textarea>
+    </div>
+    <div class="two-col" style="margin-bottom:0;">
+      <button class="btn-cancel-out" onclick="cancelOutForm()" style="height:52px;border:1.5px solid var(--border);border-radius:12px;background:#fff;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:800;font-size:1rem;cursor:pointer;">CANCEL</button>
+      <button id="submit-btn" onclick="submitOut()">SUBMIT OUT ENTRY</button>
+    </div>
+  </div>
+</div>
+
+<!-- ENTRIES -->
+<div id="screen-entries" class="screen">
+  <button class="refresh-btn" onclick="loadEntries()">🔄 Refresh</button>
+  <input type="text" id="entries-search" class="field" oninput="renderEntries()" placeholder="🔍 Search product, customer, job…"
+    style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:10px;padding:0 14px;font-size:0.9rem;background:#fff;outline:none;margin-bottom:12px;">
+  <div id="entries-list"></div>
+</div>
+
+<!-- STOCK BALANCE -->
+<div id="screen-balance" class="screen">
+  <button class="refresh-btn" onclick="loadBalance()">🔄 Refresh</button>
+  <input type="text" id="balance-search" class="field" oninput="renderBalance()" placeholder="🔍 Search product…"
+    style="width:100%;height:44px;border:1.5px solid var(--border);border-radius:10px;padding:0 14px;font-size:0.9rem;background:#fff;outline:none;">
+  <div id="balance-list"></div>
+</div>
+
+<!-- ADD EMPLOYEE MODAL -->
+<div id="emp-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Add Employee</h3>
+    <div class="field" style="margin-bottom:0;">
+      <label>Employee Name</label>
+      <input type="text" id="emp-name" placeholder="e.g. Ramesh Kumar">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeAddEmployee()">Cancel</button>
+      <button class="btn-save" onclick="saveNewEmployee()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+window.RIO_BACKEND_URL = ''; // same backend as desktop/mobile — served from the same origin
+
+function api(path, opts = {}) {
+  const base = (window.RIO_BACKEND_URL || window.location.origin);
+  const headers = { 'Content-Type': 'application/json', ...opts.headers };
+  return fetch(base + path, { ...opts, headers }).then(r => r.json());
+}
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { t.className = 'toast'; }, 2600);
+}
+
+function getCompany() { return sessionStorage.getItem('rioCompany') || 'rio'; }
+
+function setCompany(co) {
+  sessionStorage.setItem('rioCompany', co);
+  document.getElementById('co-btn-rio').classList.toggle('active', co === 'rio');
+  document.getElementById('co-btn-rainbow').classList.toggle('active', co === 'rainbow');
+  loadInitialData();
+  if (document.getElementById('screen-balance').classList.contains('active')) loadBalance();
+  if (document.getElementById('screen-entries').classList.contains('active')) loadEntries();
+}
+
+function showTab(tab) {
+  document.getElementById('screen-out').classList.toggle('active', tab === 'out');
+  document.getElementById('screen-entries').classList.toggle('active', tab === 'entries');
+  document.getElementById('screen-balance').classList.toggle('active', tab === 'balance');
+  document.getElementById('tab-btn-out').classList.toggle('active', tab === 'out');
+  document.getElementById('tab-btn-entries').classList.toggle('active', tab === 'entries');
+  document.getElementById('tab-btn-balance').classList.toggle('active', tab === 'balance');
+  if (tab === 'balance') loadBalance();
+  if (tab === 'entries') loadEntries();
+}
+
+let _salesCache = [];
+let _sizesCache = [];
+let _employeesCache = [];
+
+async function loadInitialData() {
+  const co = getCompany();
+
+  // Products — from the Purchase Products catalog (same list desktop's Purchases/Stock OUT use)
+  try {
+    const pd = await api(`/api/billing/purchase-products?company=${encodeURIComponent(co)}`);
+    const sel = document.getElementById('f-product');
+    sel.innerHTML = '<option value="">— Select product —</option>' +
+      (pd?.data || []).map(p => `<option value="${escAttr(p.Name)}">${escHtml(p.Name)}</option>`).join('');
+  } catch (e) { toast('Could not load products — check connection', 'error'); }
+
+  // Customers — same shared list the desktop Sales Tracker uses
+  try {
+    const clients = await api('/api/clients');
+    const sel = document.getElementById('f-customer');
+    sel.innerHTML = '<option value="">— Select customer —</option>' +
+      (Array.isArray(clients) ? clients : []).map(c => `<option value="${escAttr(c)}">${escHtml(c)}</option>`).join('');
+  } catch (e) { toast('Could not load customers — check connection', 'error'); }
+
+  // Sales records — used to derive Job names per customer, same as desktop
+  try {
+    const sd = await api(`/api/sales?limit=3000&company=${encodeURIComponent(co)}`);
+    _salesCache = Array.isArray(sd) ? sd : (sd?.data || []);
+  } catch (e) { _salesCache = []; }
+
+  // Sizes — same master list Sales Tracker uses, for the Job Size dropdown
+  try {
+    const sr = await api(`/api/sizes?company=${encodeURIComponent(co)}`);
+    _sizesCache = Array.isArray(sr?.sizes) ? sr.sizes : [];
+    const sel = document.getElementById('f-jobsize');
+    sel.innerHTML = '<option value="">— Select size —</option>' +
+      _sizesCache.map(s => `<option value="${escAttr(s)}">${escHtml(s)}</option>`).join('');
+  } catch (e) { _sizesCache = []; }
+
+  await loadEmployees();
+  resetOutForm();
+}
+
+async function loadEmployees() {
+  const co = getCompany();
+  try {
+    const er = await api(`/api/billing/employees?company=${encodeURIComponent(co)}`);
+    _employeesCache = er?.data || [];
+  } catch (e) { _employeesCache = []; }
+  const sel = document.getElementById('f-updatedby');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Select employee —</option>' +
+    _employeesCache.map(e => `<option value="${escAttr(e.Name)}">${escHtml(e.Name)}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function openAddEmployee() {
+  document.getElementById('emp-name').value = '';
+  document.getElementById('emp-modal').classList.add('show');
+  setTimeout(() => document.getElementById('emp-name')?.focus(), 50);
+}
+function closeAddEmployee() {
+  document.getElementById('emp-modal').classList.remove('show');
+}
+async function saveNewEmployee() {
+  const nameEl = document.getElementById('emp-name');
+  const name = (nameEl.value || '').trim();
+  if (!name) { nameEl.focus(); return; }
+  const co = getCompany();
+  try {
+    await api(`/api/billing/employees?company=${encodeURIComponent(co)}`, { method: 'POST', body: JSON.stringify({ Name: name }) });
+    closeAddEmployee();
+    toast('✓ Employee added', 'success');
+    await loadEmployees();
+    document.getElementById('f-updatedby').value = name;
+  } catch (e) { toast('Could not add employee', 'error'); }
+}
+
+function refreshJobs() {
+  const cust = document.getElementById('f-customer').value;
+  const jobSel = document.getElementById('f-job');
+  if (!cust) {
+    jobSel.innerHTML = '<option value="">— Select customer first —</option>';
+    jobSel.disabled = true;
+    return;
+  }
+  const jobs = Array.from(new Set(
+    _salesCache
+      .filter(r => (r.Customer || '').trim().toLowerCase() === cust.trim().toLowerCase())
+      .map(r => (r.JobName || '').trim())
+      .filter(Boolean)
+  )).sort();
+  jobSel.innerHTML = '<option value="">— Select job —</option>' +
+    (jobs.length ? jobs.map(j => `<option value="${escAttr(j)}">${escHtml(j)}</option>`).join('')
+                 : '<option value="" disabled>No jobs found for this customer</option>');
+  jobSel.disabled = false;
+}
+
+// ── Locking Customer/Job/JobSize/JobQty when editing an existing entry ──
+function lockJobFields(lock) {
+  ['f-customer','f-job','f-jobsize','f-jobqty'].forEach(id => {
+    document.getElementById(id).disabled = lock;
+  });
+  ['field-customer-wrap','field-job-wrap','field-jobsize-wrap','field-jobqty-wrap'].forEach(id => {
+    document.getElementById(id).classList.toggle('locked', lock);
+  });
+  document.getElementById('lock-note').style.display = lock ? 'flex' : 'none';
+}
+
+function resetOutForm() {
+  document.getElementById('f-editing-id').value = '';
+  document.getElementById('edit-banner-wrap').innerHTML = '';
+  document.getElementById('submit-btn').textContent = 'SUBMIT OUT ENTRY';
+  lockJobFields(false);
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-product').value = '';
+  document.getElementById('f-customer').value = '';
+  refreshJobs();
+  document.getElementById('f-jobsize').value = '';
+  document.getElementById('f-jobqty').value = '';
+  document.getElementById('f-qty').value = '';
+  document.getElementById('f-unit').value = 'Nos';
+  document.getElementById('f-updatedby').value = '';
+  document.getElementById('f-remarks').value = '';
+}
+
+function cancelOutForm() {
+  const wasEditing = !!document.getElementById('f-editing-id').value;
+  resetOutForm();
+  if (wasEditing) showTab('entries'); // was editing an existing entry — go back to the list
+}
+
+async function submitOut() {
+  const editingId = document.getElementById('f-editing-id').value;
+  const product = document.getElementById('f-product').value;
+  const qty = parseFloat(document.getElementById('f-qty').value) || 0;
+  if (!product) { toast('Please select a product', 'error'); return; }
+  if (qty <= 0)  { toast('Qty Used must be greater than zero', 'error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span> Saving…';
+
+  const co = getCompany();
+  const payload = {
+    ProductName:  product,
+    Qty:          qty,
+    Unit:         document.getElementById('f-unit').value || 'Nos',
+    Date:         document.getElementById('f-date').value,
+    CustomerName: document.getElementById('f-customer').value.trim(),
+    JobName:      document.getElementById('f-job').value.trim(),
+    JobSize:      document.getElementById('f-jobsize').value.trim(),
+    JobQty:       document.getElementById('f-jobqty').value.trim(),
+    UpdatedBy:    document.getElementById('f-updatedby').value.trim(),
+    Remarks:      document.getElementById('f-remarks').value.trim(),
+  };
+  try {
+    const url = editingId
+      ? `/api/billing/stock/ledger/${editingId}?company=${encodeURIComponent(co)}`
+      : `/api/billing/stock/out?company=${encodeURIComponent(co)}`;
+    const r = await api(url, { method: editingId ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+    if (r?.error) { toast(r.error, 'error'); }
+    else {
+      toast(editingId ? '✓ Entry updated' : '✓ OUT entry saved', 'success');
+      resetOutForm();
+      showTab('entries');
+    }
+  } catch (e) { toast('Network error — could not save', 'error'); }
+  btn.disabled = false;
+  btn.innerHTML = editingId ? 'SAVE CHANGES' : 'SUBMIT OUT ENTRY';
+}
+
+// ── Entries list (view + edit) ──────────────────────────────────
+let _entriesCache = [];
+
+async function loadEntries() {
+  const list = document.getElementById('entries-list');
+  list.innerHTML = '<div class="empty-state"><div class="icon">⏳</div>Loading…</div>';
+  const co = getCompany();
+  try {
+    const r = await api(`/api/billing/stock/ledger?company=${encodeURIComponent(co)}&type_filter=OUT`);
+    _entriesCache = (r?.data || []).slice(0, 100); // most recent 100 for performance
+    renderEntries();
+  } catch (e) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div>Could not load entries<br>Check your connection and tap Refresh</div>';
+  }
+}
+
+function renderEntries() {
+  const list = document.getElementById('entries-list');
+  const q = (document.getElementById('entries-search').value || '').toLowerCase().trim();
+  const rows = _entriesCache.filter(r => !q ||
+    (r.ProductName||'').toLowerCase().includes(q) ||
+    (r.CustomerName||'').toLowerCase().includes(q) ||
+    (r.JobName||'').toLowerCase().includes(q));
+  if (!rows.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📭</div>No entries found</div>';
+    return;
+  }
+  list.innerHTML = rows.map(r => `
+    <div class="entry-card">
+      <div class="row1">
+        <span class="product">${escHtml(r.ProductName||'')}</span>
+        <span class="qty">− ${r.Qty||0} ${escHtml(r.Unit||'')}</span>
+      </div>
+      <div class="meta">
+        📅 ${escHtml(r.Date||'')}<br>
+        👤 <b>${escHtml(r.CustomerName||'—')}</b> &nbsp;·&nbsp; 🗂 <b>${escHtml(r.JobName||'—')}</b><br>
+        📐 ${escHtml(r.JobSize||'—')} &nbsp;·&nbsp; Job Qty: ${escHtml(String(r.JobQty||'—'))}<br>
+        ${r.UpdatedBy ? '✍️ Updated by <b>'+escHtml(r.UpdatedBy)+'</b><br>' : ''}
+        ${r.Remarks ? '📝 '+escHtml(r.Remarks) : ''}
+      </div>
+      <button class="edit-btn" onclick="editEntry(${r.Id})">✏ Edit</button>
+    </div>`).join('');
+}
+
+function editEntry(id) {
+  const entry = _entriesCache.find(r => r.Id === id);
+  if (!entry) { toast('Could not find that entry', 'error'); return; }
+  document.getElementById('f-editing-id').value = id;
+  document.getElementById('edit-banner-wrap').innerHTML =
+    '<div class="edit-banner">✏ Editing existing entry — Customer, Job, Job Size & Job Qty can\'t be changed here</div>';
+  document.getElementById('submit-btn').textContent = 'SAVE CHANGES';
+
+  document.getElementById('f-date').value = entry.Date || '';
+  document.getElementById('f-product').value = entry.ProductName || '';
+  document.getElementById('f-customer').value = entry.CustomerName || '';
+  refreshJobs();
+  document.getElementById('f-job').value = entry.JobName || '';
+  document.getElementById('f-jobsize').value = entry.JobSize || '';
+  document.getElementById('f-jobqty').value = entry.JobQty || '';
+  document.getElementById('f-qty').value = entry.Qty || '';
+  document.getElementById('f-unit').value = entry.Unit || 'Nos';
+  document.getElementById('f-updatedby').value = entry.UpdatedBy || '';
+  document.getElementById('f-remarks').value = entry.Remarks || '';
+
+  lockJobFields(true);
+  showTab('out');
+}
+
+let _balanceCache = [];
+
+async function loadBalance() {
+  const list = document.getElementById('balance-list');
+  list.innerHTML = '<div class="empty-state"><div class="icon">⏳</div>Loading…</div>';
+  const co = getCompany();
+  try {
+    const r = await api(`/api/billing/stock/summary?company=${encodeURIComponent(co)}`);
+    _balanceCache = r?.data || [];
+    renderBalance();
+  } catch (e) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div>Could not load stock balance<br>Check your connection and tap Refresh</div>';
+  }
+}
+
+function renderBalance() {
+  const list = document.getElementById('balance-list');
+  const q = (document.getElementById('balance-search').value || '').toLowerCase().trim();
+  const rows = _balanceCache.filter(r => !q || (r.ProductName || '').toLowerCase().includes(q));
+  if (!rows.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📭</div>No products found</div>';
+    return;
+  }
+  list.innerHTML = rows.map(r => {
+    const bal = r.Balance || 0;
+    const cls = bal > 0 ? 'pos' : (bal < 0 ? 'neg' : 'zero');
+    return `<div class="bal-row">
+      <span class="name">${escHtml(r.ProductName || '')}</span>
+      <span class="bal-val ${cls}">${bal.toLocaleString('en-IN')}</span>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escAttr(s) { return escHtml(s); }
+
+// ── INIT ──────────────────────────────────────────────────────
+function initApp() {
+  document.getElementById('pin-screen').classList.add('hidden');
+  const co = getCompany();
+  document.getElementById('co-btn-rio').classList.toggle('active', co === 'rio');
+  document.getElementById('co-btn-rainbow').classList.toggle('active', co === 'rainbow');
+  loadInitialData();
+}
+
+const PIN_SESSION_KEY = 'stockPinSession';
+
+function checkPinSession() {
+  try {
+    const raw = localStorage.getItem(PIN_SESSION_KEY);
+    if (raw) {
+      const sess = JSON.parse(raw);
+      const days = sess.sessionDays || 7;
+      const expiresAt = sess.verifiedAt + (days * 24 * 60 * 60 * 1000);
+      if (Date.now() < expiresAt) { initApp(); return; }
+    }
+  } catch (e) {}
+  // No valid session — show PIN screen and wire up digit inputs
+  const digits = Array.from(document.querySelectorAll('.pin-d'));
+  digits.forEach((el, i) => {
+    el.addEventListener('input', () => {
+      el.value = el.value.replace(/\D/g, '').slice(0, 1);
+      if (el.value && digits[i+1]) digits[i+1].focus();
+      if (el.value && i === 3) submitPin();
+    });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !el.value && digits[i-1]) digits[i-1].focus();
+    });
+  });
+  setTimeout(() => digits[0]?.focus(), 300);
+}
+
+async function submitPin() {
+  const digits = Array.from(document.querySelectorAll('.pin-d')).map(el => el.value).join('');
+  const errEl = document.getElementById('pin-error');
+  if (digits.length !== 4) { errEl.textContent = 'Enter all 4 digits'; return; }
+  const btn = document.getElementById('pin-submit');
+  btn.disabled = true; btn.textContent = 'Checking…';
+  errEl.textContent = '';
+  try {
+    const r = await api('/api/billing/stock-pin/verify', {
+      method: 'POST', body: JSON.stringify({ Pin: digits, Device: navigator.userAgent })
+    });
+    if (r?.verified) {
+      localStorage.setItem(PIN_SESSION_KEY, JSON.stringify({ verifiedAt: Date.now(), sessionDays: r.sessionDays || 7 }));
+      initApp();
+    } else {
+      errEl.textContent = r?.error || 'Incorrect PIN';
+      document.querySelectorAll('.pin-d').forEach(el => el.value = '');
+      document.querySelector('.pin-d')?.focus();
+    }
+  } catch (e) {
+    errEl.textContent = 'Network error — try again';
+  }
+  btn.disabled = false; btn.textContent = 'UNLOCK';
+}
+
+checkPinSession();
+</script>
+</body>
+</html>
