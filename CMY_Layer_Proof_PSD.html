@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rio Print Media — CMY Layer Proof — PSD Color Correction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/ag-psd/dist/bundle.js"></script>
+<style>
+:root{
+  --press-bg: #16171a;
+  --press-panel: #1e2024;
+  --press-panel-raised: #24262b;
+  --press-line: #34363c;
+  --press-text: #e8e6e1;
+  --press-muted: #8a8d94;
+  --ink-c: #00b7c3;
+  --ink-m: #e6317f;
+  --ink-y: #f4c20d;
+  --accent-text: #7fbfff;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;background:var(--press-bg);color:var(--press-text);
+  font-family:'Inter',system-ui,sans-serif;overflow:hidden;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+
+#app{display:flex;flex-direction:column;height:100vh;}
+
+header{
+  flex-shrink:0;height:56px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;border-bottom:1px solid var(--press-line);background:var(--press-panel);
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-plates{display:flex;gap:3px;}
+.brand-plates span{width:9px;height:9px;border-radius:2px;display:inline-block;}
+.brand-title{font-weight:800;font-size:0.95rem;letter-spacing:0.3px;}
+.brand-sub{font-size:0.68rem;color:var(--press-muted);margin-left:10px;
+  padding-left:10px;border-left:1px solid var(--press-line);text-transform:uppercase;letter-spacing:1px;}
+.header-actions{display:flex;gap:10px;}
+.btn{
+  height:34px;padding:0 16px;border-radius:6px;border:1px solid var(--press-line);
+  background:var(--press-panel-raised);color:var(--press-text);font-family:'Inter',sans-serif;
+  font-size:0.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;
+  transition:border-color 0.15s, background 0.15s;
+}
+.btn:hover{border-color:#4a4d55;background:#2a2d33;}
+.btn:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-primary{background:var(--press-text);color:#111;border-color:var(--press-text);font-weight:700;}
+.btn-primary:hover{background:#fff;border-color:#fff;}
+.btn-primary:disabled{background:var(--press-panel-raised);color:var(--press-muted);border-color:var(--press-line);}
+
+main{flex:1;display:flex;min-height:0;}
+
+/* Left: layer list */
+#layers-panel{
+  width:260px;flex-shrink:0;background:var(--press-panel);border-right:1px solid var(--press-line);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+#layers-panel h3{
+  font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--press-muted);margin:0;padding:16px 18px 10px;
+}
+.layer-row{
+  display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;
+  border-left:3px solid transparent;transition:background 0.12s;
+}
+.layer-row:hover{background:rgba(255,255,255,0.03);}
+.layer-row.selected{background:rgba(127,191,255,0.08);border-left-color:var(--accent-text);}
+.layer-thumb{
+  width:36px;height:36px;border-radius:4px;background:#0c0d0f;flex-shrink:0;
+  background-size:cover;background-position:center;border:1px solid var(--press-line);
+  background-image:
+    linear-gradient(45deg, #232427 25%, transparent 25%),
+    linear-gradient(-45deg, #232427 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #232427 75%),
+    linear-gradient(-45deg, transparent 75%, #232427 75%);
+  background-size:10px 10px, 10px 10px, 10px 10px, 10px 10px;
+  background-position:0 0, 0 5px, 5px -5px, -5px 0;
+}
+.layer-meta{min-width:0;flex:1;}
+.layer-name{font-size:0.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.layer-type{font-size:0.64rem;color:var(--press-muted);margin-top:2px;display:flex;align-items:center;gap:5px;}
+.type-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.type-image .type-dot{background:#7fbfff;}
+.type-text .type-dot{background:#f4c20d;}
+.type-shape .type-dot{background:#7fd858;}
+.layer-adjusted-badge{
+  font-size:0.6rem;background:var(--ink-m);color:#fff;padding:1px 6px;border-radius:8px;font-weight:700;
+  margin-left:auto;flex-shrink:0;
+}
+
+/* Center: stage */
+.stage{
+  flex:1;display:flex;align-items:center;justify-content:center;position:relative;
+  padding:28px;min-width:0;
+  background-image:
+    linear-gradient(45deg, #1c1d20 25%, transparent 25%),
+    linear-gradient(-45deg, #1c1d20 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1c1d20 75%),
+    linear-gradient(-45deg, transparent 75%, #1c1d20 75%);
+  background-size:22px 22px;
+  background-position:0 0, 0 11px, 11px -11px, -11px 0px;
+  background-color:#141517;
+}
+#canvas-wrap{position:relative;max-width:100%;max-height:100%;box-shadow:0 20px 60px rgba(0,0,0,0.55);}
+#work-canvas{display:block;max-width:100%;max-height:calc(100vh - 112px);}
+#stage-label{
+  position:absolute;top:10px;left:10px;background:rgba(10,10,11,0.75);backdrop-filter:blur(6px);
+  padding:5px 12px;border-radius:20px;font-size:0.68rem;font-weight:700;letter-spacing:0.5px;
+  color:#fff;pointer-events:none;
+}
+
+#dropzone{
+  width:100%;max-width:560px;border:2px dashed var(--press-line);border-radius:14px;
+  padding:56px 40px;text-align:center;cursor:pointer;transition:border-color 0.15s, background 0.15s;
+  background:rgba(255,255,255,0.015);
+}
+#dropzone:hover, #dropzone.dragover{border-color:var(--press-muted);background:rgba(255,255,255,0.03);}
+#dropzone .icon{font-size:2.4rem;margin-bottom:14px;filter:grayscale(1) opacity(0.7);}
+#dropzone h2{font-size:1.05rem;font-weight:700;margin:0 0 8px;}
+#dropzone p{font-size:0.8rem;color:var(--press-muted);margin:0 0 20px;line-height:1.6;}
+#dropzone .btn-primary{display:inline-flex;margin:0 auto;}
+#dropzone .warn{
+  margin-top:18px;padding:10px 14px;background:rgba(230,49,127,0.08);border:1px solid rgba(230,49,127,0.25);
+  border-radius:8px;font-size:0.7rem;color:#ff9ec7;text-align:left;line-height:1.5;
+}
+
+/* Right: adjustment sidebar */
+#sidebar{
+  width:320px;flex-shrink:0;background:var(--press-panel);border-left:1px solid var(--press-line);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.sidebar-section{padding:20px 22px;border-bottom:1px solid var(--press-line);}
+.sidebar-section h3{
+  font-size:0.66rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--press-muted);margin:0 0 4px;
+}
+#selected-layer-name{font-size:0.85rem;font-weight:700;margin-bottom:16px;color:var(--accent-text);}
+#no-layer-msg{font-size:0.78rem;color:var(--press-muted);line-height:1.6;padding:4px 0;}
+
+.channel{margin-bottom:20px;}
+.channel:last-child{margin-bottom:0;}
+.channel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.channel-name{display:flex;align-items:center;gap:8px;font-size:0.82rem;font-weight:600;}
+.channel-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.channel-val{font-size:0.82rem;font-weight:600;min-width:46px;text-align:right;}
+.channel-val.pos{color:#7fd858;}
+.channel-val.neg{color:#ff7a7a;}
+
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;
+  outline:none;cursor:pointer;background:var(--press-panel-raised);
+}
+input[type=range]:disabled{opacity:0.3;cursor:not-allowed;}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:#fff;border:3px solid var(--thumb-color, #888);cursor:pointer;
+  box-shadow:0 2px 6px rgba(0,0,0,0.4);
+}
+input[type=range]::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;background:#fff;
+  border:3px solid var(--thumb-color, #888);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.4);
+}
+#slider-c{--thumb-color:var(--ink-c);}
+#slider-m{--thumb-color:var(--ink-m);}
+#slider-y{--thumb-color:var(--ink-y);}
+
+.readout{
+  display:flex;gap:8px;margin-top:16px;padding:14px;background:var(--press-panel-raised);
+  border-radius:8px;border:1px solid var(--press-line);
+}
+.readout-item{flex:1;text-align:center;}
+.readout-item .rv{font-size:1.05rem;font-weight:600;}
+.readout-item .rl{font-size:0.6rem;color:var(--press-muted);text-transform:uppercase;letter-spacing:0.8px;margin-top:3px;}
+
+.view-toggle{display:flex;gap:6px;margin-bottom:4px;}
+.view-toggle button{
+  flex:1;height:30px;border-radius:6px;border:1px solid var(--press-line);background:transparent;
+  color:var(--press-muted);font-size:0.7rem;font-weight:600;cursor:pointer;
+}
+.view-toggle button.active{background:var(--press-panel-raised);color:var(--press-text);border-color:#4a4d55;}
+
+.compare-hint{font-size:0.68rem;color:var(--press-muted);line-height:1.6;margin-top:12px;}
+.file-meta{font-size:0.68rem;color:var(--press-muted);margin-top:auto;padding:18px 22px;line-height:1.7;}
+.file-meta span{color:var(--press-text);}
+
+#file-input{display:none;}
+
+#layers-panel::-webkit-scrollbar, #sidebar::-webkit-scrollbar{width:8px;}
+#layers-panel::-webkit-scrollbar-track, #sidebar::-webkit-scrollbar-track{background:transparent;}
+#layers-panel::-webkit-scrollbar-thumb, #sidebar::-webkit-scrollbar-thumb{background:var(--press-line);border-radius:4px;}
+
+#toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:#fff;color:#111;padding:11px 20px;border-radius:8px;font-size:0.82rem;font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);opacity:0;pointer-events:none;transition:all 0.2s;z-index:999;
+  max-width:70vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.err{background:#3d1e22;color:#ff9e9e;}
+
+#loading-overlay{
+  position:fixed;inset:0;background:rgba(10,10,11,0.85);display:none;align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;z-index:2000;backdrop-filter:blur(2px);
+}
+#loading-overlay.show{display:flex;}
+.spinner{width:34px;height:34px;border:3px solid var(--press-line);border-top-color:var(--accent-text);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#loading-text{font-size:0.82rem;color:var(--press-muted);}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="brand-plates">
+        <span style="background:var(--ink-c);"></span>
+        <span style="background:var(--ink-m);"></span>
+        <span style="background:var(--ink-y);"></span>
+      </div>
+      <span class="brand-title">CMY <b>Layer Proof</b></span>
+      <span class="brand-sub">PSD Separation</span>
+      <span class="brand-sub" style="border-left:1px solid var(--press-line);padding-left:10px;margin-left:10px;font-weight:900;letter-spacing:0.5px;font-size:0.92rem;">
+        <span style="color:#22d3ee;">RIO</span> <span style="color:#d63d8f;">PRINT MEDIA</span>
+      </span>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="btn-new" onclick="triggerUpload()">📁 Open PSD</button>
+      <button class="btn" id="btn-reset-all" onclick="resetAllLayers()" disabled>↺ Reset All</button>
+      <button class="btn btn-primary" id="btn-export" onclick="exportAllLayers()" disabled>⬇ Export Layers</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="layers-panel" style="display:none;">
+      <h3>Layers</h3>
+      <div id="layers-list"></div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div id="dropzone" onclick="triggerUpload()">
+        <div class="icon">🗂️</div>
+        <h2>Drop a PSD to separate</h2>
+        <p>Upload a layered Photoshop file. Each layer is read out<br>
+        individually — image, text, and shape layers are told apart<br>
+        automatically — so you can correct the Cyan, Magenta &amp; Yellow<br>
+        ink channels on each one independently before positive film.</p>
+        <button class="btn btn-primary" onclick="event.stopPropagation();triggerUpload()">Choose a .psd file</button>
+        <div class="warn">⚠️ CorelDRAW (.cdr) files can't be read directly — no browser tool can parse that closed format. Export/save as .psd from CorelDRAW first, then open that file here.</div>
+        <div class="warn" id="cmyk-psd-warn" style="display:none;">⚠️ <b>This PSD is saved in CMYK mode</b>, which this tool's reader library cannot parse (RGB and Grayscale only). In Photoshop: <b>Image → Mode → RGB Color</b>, then flatten and save again before uploading here — or use "Export → Save as" to a flattened PNG and use the CMY Proof tool instead.</div>
+      </div>
+      <div id="canvas-wrap" style="display:none;">
+        <canvas id="work-canvas"></canvas>
+        <div id="stage-label">Combined preview</div>
+      </div>
+    </div>
+
+    <div id="sidebar">
+      <div class="sidebar-section">
+        <h3>Selected Layer</h3>
+        <div id="selected-layer-name">—</div>
+        <div id="no-layer-msg">Click a layer on the left to adjust its ink channels.</div>
+
+        <div id="channel-controls" style="display:none;">
+          <div class="channel">
+            <div class="channel-head">
+              <div class="channel-name"><span class="channel-dot" style="background:var(--ink-c);"></span>Cyan</div>
+              <div class="channel-val mono" id="val-c">+0%</div>
+            </div>
+            <input type="range" id="slider-c" min="-100" max="100" value="0" step="1" oninput="onSlider('c', this.value)">
+          </div>
+          <div class="channel">
+            <div class="channel-head">
+              <div class="channel-name"><span class="channel-dot" style="background:var(--ink-m);"></span>Magenta</div>
+              <div class="channel-val mono" id="val-m">+0%</div>
+            </div>
+            <input type="range" id="slider-m" min="-100" max="100" value="0" step="1" oninput="onSlider('m', this.value)">
+          </div>
+          <div class="channel">
+            <div class="channel-head">
+              <div class="channel-name"><span class="channel-dot" style="background:var(--ink-y);"></span>Yellow</div>
+              <div class="channel-val mono" id="val-y">+0%</div>
+            </div>
+            <input type="range" id="slider-y" min="-100" max="100" value="0" step="1" oninput="onSlider('y', this.value)">
+          </div>
+
+          <div class="readout">
+            <div class="readout-item"><div class="rv mono" id="ro-c" style="color:var(--ink-c);">0%</div><div class="rl">C</div></div>
+            <div class="readout-item"><div class="rv mono" id="ro-m" style="color:var(--ink-m);">0%</div><div class="rl">M</div></div>
+            <div class="readout-item"><div class="rv mono" id="ro-y" style="color:var(--ink-y);">0%</div><div class="rl">Y</div></div>
+          </div>
+          <p class="compare-hint">No Key (Black) channel — this tool works in CMY only, matching a positive-film workflow. Adjustments apply only to this layer; other layers are untouched.</p>
+          <button class="btn" style="width:100%;justify-content:center;margin-top:14px;" onclick="resetCurrentLayer()">↺ Reset this layer</button>
+        </div>
+      </div>
+
+      <div class="file-meta" id="file-meta" style="display:none;">
+        <div>📄 <span id="meta-name">—</span></div>
+        <div>📐 <span id="meta-dims">—</span> px</div>
+        <div>📚 <span id="meta-layers">—</span> layers</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="file-input" accept=".psd">
+<div id="toast"></div>
+<div id="loading-overlay"><div class="spinner"></div><div id="loading-text">Reading PSD…</div></div>
+
+<script>
+// Right-click disabled as a light deterrent against casual copying — worth
+// knowing this does not actually protect the source code (see chat for why
+// that's not achievable for any client-side web page). DevTools (F12) still
+// bypasses this instantly for anyone who knows to look.
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// ── State ─────────────────────────────────────────────────────
+let psdDoc = null;
+let flatLayers = [];       // flat list of { id, name, kind, top, left, canvas (pristine), workCanvas (adjusted), channels:{c,m,y} }
+let selectedLayerId = null;
+let docWidth = 0, docHeight = 0;
+let fileBaseName = 'design';
+
+const workCanvas = document.getElementById('work-canvas');
+const ctx = workCanvas.getContext('2d');
+
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isErr ? ' err' : '');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(() => { t.className = ''; }, isErr ? 5000 : 2400);
+}
+function showLoading(msg) {
+  document.getElementById('loading-text').textContent = msg || 'Working…';
+  document.getElementById('loading-overlay').classList.add('show');
+}
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); }
+
+function triggerUpload() { document.getElementById('file-input').click(); }
+document.getElementById('file-input').addEventListener('change', (e) => {
+  if (e.target.files && e.target.files[0]) loadPsdFile(e.target.files[0]);
+});
+
+const dropzone = document.getElementById('dropzone');
+const stage = document.getElementById('stage');
+['dragover','dragenter'].forEach(evt => stage.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); }));
+['dragleave'].forEach(evt => stage.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); }));
+stage.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('dragover');
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (!f) return;
+  if (!/\.psd$/i.test(f.name)) { toast('Please drop a .psd file — CDR and other formats can\'t be read', true); return; }
+  loadPsdFile(f);
+});
+
+// ── PSD loading ─────────────────────────────────────────────────
+function showCmykPsdWarning() {
+  const el = document.getElementById('cmyk-psd-warn');
+  if (el) el.style.display = 'block';
+  toast('This PSD is in CMYK mode — see the note below the upload button', true);
+}
+
+function loadPsdFile(file) {
+  if (typeof agPsd === 'undefined') {
+    toast('The PSD reader library failed to load — check your internet connection and reload the page', true);
+    return;
+  }
+  fileBaseName = file.name.replace(/\.psd$/i, '');
+  showLoading('Reading PSD…');
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const buffer = ev.target.result;
+      psdDoc = agPsd.readPsd(buffer, { skipCompositeImageData: false });
+      docWidth = psdDoc.width;
+      docHeight = psdDoc.height;
+      flatLayers = [];
+      collectLayers(psdDoc.children || [], 0);
+      if (!flatLayers.length) {
+        hideLoading();
+        toast('No readable layers found in this PSD', true);
+        return;
+      }
+      onPsdReady(file.name);
+    } catch (err) {
+      hideLoading();
+      console.error(err);
+      if (err && /CMYK/i.test(err.message || '')) {
+        showCmykPsdWarning();
+      } else {
+        toast('Could not read this PSD — ' + (err && err.message ? err.message : 'unknown error'), true);
+      }
+    }
+  };
+  reader.onerror = () => { hideLoading(); toast('Could not read that file', true); };
+  reader.readAsArrayBuffer(file);
+}
+
+// Recursively flattens groups into a single ordered list (bottom-to-top, matching PSD's own child order)
+function collectLayers(children, depth) {
+  for (const node of children) {
+    if (node.children && node.children.length) {
+      collectLayers(node.children, depth + 1); // group: descend, don't add the group itself
+      continue;
+    }
+    if (node.hidden) continue; // skip hidden layers — nothing to correct if it's not visible
+    if (!node.canvas) continue; // no bitmap to work with (empty/adjustment layer etc.)
+
+    let kind = 'image';
+    if (node.text) kind = 'text';
+    else if (node.vectorFill || node.vectorMask || node.vectorStroke) kind = 'shape';
+
+    flatLayers.push({
+      id: 'layer_' + flatLayers.length,
+      name: node.name || ('Layer ' + (flatLayers.length + 1)),
+      kind: kind,
+      top: node.top || 0,
+      left: node.left || 0,
+      sourceCanvas: node.canvas,     // pristine, from ag-psd — never mutated
+      channels: { c: 0, m: 0, y: 0 },
+      workImageData: null,          // rebuilt on demand
+    });
+  }
+}
+
+function onPsdReady(displayFileName) {
+  document.getElementById('dropzone').style.display = 'none';
+  document.getElementById('canvas-wrap').style.display = 'block';
+  document.getElementById('layers-panel').style.display = 'flex';
+  document.getElementById('btn-reset-all').disabled = false;
+  document.getElementById('btn-export').disabled = false;
+  document.getElementById('file-meta').style.display = 'block';
+  document.getElementById('meta-name').textContent = displayFileName.length > 28 ? displayFileName.slice(0,25) + '…' : displayFileName;
+  document.getElementById('meta-dims').textContent = docWidth + ' × ' + docHeight;
+  document.getElementById('meta-layers').textContent = flatLayers.length;
+
+  workCanvas.width = docWidth;
+  workCanvas.height = docHeight;
+
+  renderLayerList();
+  renderComposite();
+  hideLoading();
+  toast('Loaded ' + flatLayers.length + ' layer(s) — select one to adjust its ink channels');
+}
+
+// ── Layer list UI ─────────────────────────────────────────────
+function renderLayerList() {
+  const list = document.getElementById('layers-list');
+  // Show topmost layer first (reverse of PSD's bottom-to-top child order) to match how Photoshop lists layers
+  const ordered = flatLayers.slice().reverse();
+  list.innerHTML = ordered.map(layer => {
+    const isSel = layer.id === selectedLayerId;
+    const adjusted = (layer.channels.c !== 0 || layer.channels.m !== 0 || layer.channels.y !== 0);
+    let thumbStyle = '';
+    try { thumbStyle = 'background-image:url(' + layer.sourceCanvas.toDataURL() + ')'; } catch(e) {}
+    return `<div class="layer-row ${isSel ? 'selected' : ''}" onclick="selectLayer('${layer.id}')">
+      <div class="layer-thumb" style="${thumbStyle}"></div>
+      <div class="layer-meta">
+        <div class="layer-name">${escHtml(layer.name)}</div>
+        <div class="layer-type type-${layer.kind}"><span class="type-dot"></span>${layer.kind}</div>
+      </div>
+      ${adjusted ? '<span class="layer-adjusted-badge">●</span>' : ''}
+    </div>`;
+  }).join('');
+}
+function escHtml(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function selectLayer(id) {
+  selectedLayerId = id;
+  const layer = flatLayers.find(l => l.id === id);
+  if (!layer) return;
+
+  document.getElementById('no-layer-msg').style.display = 'none';
+  document.getElementById('channel-controls').style.display = 'block';
+  document.getElementById('selected-layer-name').textContent = layer.name + '  ·  ' + layer.kind;
+
+  document.getElementById('slider-c').value = layer.channels.c;
+  document.getElementById('slider-m').value = layer.channels.m;
+  document.getElementById('slider-y').value = layer.channels.y;
+  ['c','m','y'].forEach(ch => {
+    const v = layer.channels[ch];
+    const el = document.getElementById('val-'+ch);
+    el.textContent = (v >= 0 ? '+' : '') + v + '%';
+    el.className = 'channel-val mono ' + (v > 0 ? 'pos' : (v < 0 ? 'neg' : ''));
+  });
+
+  renderLayerList();
+  updateReadoutForLayer(layer);
+}
+
+// ── CMY conversion (K deliberately excluded — positive-film workflow) ──
+function rgbToCmyk(r, g, b) {
+  const rp = r/255, gp = g/255, bp = b/255;
+  const k = 1 - Math.max(rp, gp, bp);
+  if (k >= 1) return [0,0,0,1];
+  const c = (1-rp-k)/(1-k);
+  const m = (1-gp-k)/(1-k);
+  const y = (1-bp-k)/(1-k);
+  return [c,m,y,k];
+}
+function cmykToRgb(c,m,y,k) { return [255*(1-c)*(1-k), 255*(1-m)*(1-k), 255*(1-y)*(1-k)]; }
+function clamp01(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+
+// Adjusts C/M/Y only — K is read from the source pixel and always passed
+// through unchanged, so relative darkness is preserved but no channel
+// slider ever touches Key, matching this workflow's CMY-only separations.
+function applyLayerAdjustment(srcCanvas, dC, dM, dY) {
+  const w = srcCanvas.width, h = srcCanvas.height;
+  const tmp = document.createElement('canvas');
+  tmp.width = w; tmp.height = h;
+  const tctx = tmp.getContext('2d');
+  tctx.drawImage(srcCanvas, 0, 0);
+  const imgData = tctx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i+3] === 0) continue; // fully transparent — skip
+    const [c,m,y,k] = rgbToCmyk(d[i], d[i+1], d[i+2]);
+    const [r2,g2,b2] = cmykToRgb(clamp01(c+dC), clamp01(m+dM), clamp01(y+dY), k);
+    d[i] = r2; d[i+1] = g2; d[i+2] = b2;
+  }
+  tctx.putImageData(imgData, 0, 0);
+  return tmp;
+}
+
+let renderPending = false;
+function onSlider(ch, val) {
+  const layer = flatLayers.find(l => l.id === selectedLayerId);
+  if (!layer) return;
+  layer.channels[ch] = +val;
+  const el = document.getElementById('val-'+ch);
+  el.textContent = (val >= 0 ? '+' : '') + val + '%';
+  el.className = 'channel-val mono ' + (val > 0 ? 'pos' : (val < 0 ? 'neg' : ''));
+  if (!renderPending) { renderPending = true; requestAnimationFrame(doRender); }
+}
+function doRender() {
+  renderPending = false;
+  renderComposite();
+  const layer = flatLayers.find(l => l.id === selectedLayerId);
+  if (layer) updateReadoutForLayer(layer);
+  renderLayerList();
+}
+
+function renderComposite() {
+  ctx.clearRect(0, 0, workCanvas.width, workCanvas.height);
+  // Draw bottom-to-top (flatLayers is already stored bottom-to-top)
+  flatLayers.forEach(layer => {
+    const hasAdj = layer.channels.c !== 0 || layer.channels.m !== 0 || layer.channels.y !== 0;
+    const drawCanvas = hasAdj
+      ? applyLayerAdjustment(layer.sourceCanvas, layer.channels.c/100, layer.channels.m/100, layer.channels.y/100)
+      : layer.sourceCanvas;
+    ctx.drawImage(drawCanvas, layer.left, layer.top);
+  });
+}
+
+function updateReadoutForLayer(layer) {
+  // Sample this layer's own center pixel (post-adjustment) for the CMY readout
+  const hasAdj = layer.channels.c !== 0 || layer.channels.m !== 0 || layer.channels.y !== 0;
+  const src = hasAdj
+    ? applyLayerAdjustment(layer.sourceCanvas, layer.channels.c/100, layer.channels.m/100, layer.channels.y/100)
+    : layer.sourceCanvas;
+  const w = src.width, h = src.height;
+  if (!w || !h) return;
+  const sctx = src.getContext ? src.getContext('2d') : null;
+  if (!sctx) return;
+  const x = Math.floor(w/2), y = Math.floor(h/2);
+  const px = sctx.getImageData(x, y, 1, 1).data;
+  const [c,m,ye] = rgbToCmyk(px[0], px[1], px[2]);
+  document.getElementById('ro-c').textContent = Math.round(c*100) + '%';
+  document.getElementById('ro-m').textContent = Math.round(m*100) + '%';
+  document.getElementById('ro-y').textContent = Math.round(ye*100) + '%';
+}
+
+function resetCurrentLayer() {
+  const layer = flatLayers.find(l => l.id === selectedLayerId);
+  if (!layer) return;
+  layer.channels = { c:0, m:0, y:0 };
+  selectLayer(layer.id);
+  renderComposite();
+  toast('Reset "' + layer.name + '"');
+}
+
+function resetAllLayers() {
+  if (!flatLayers.length) return;
+  flatLayers.forEach(l => { l.channels = { c:0, m:0, y:0 }; });
+  if (selectedLayerId) selectLayer(selectedLayerId);
+  renderLayerList();
+  renderComposite();
+  toast('Reset all layers');
+}
+
+// ── Export: each layer as its own full-canvas-size PNG (for registration) ──
+function exportAllLayers() {
+  if (!flatLayers.length) return;
+  showLoading('Rendering layers…');
+  setTimeout(() => {
+    let i = 0;
+    function next() {
+      if (i >= flatLayers.length) { hideLoading(); toast('Exported ' + flatLayers.length + ' layer file(s) ✓'); return; }
+      const layer = flatLayers[i];
+      const hasAdj = layer.channels.c !== 0 || layer.channels.m !== 0 || layer.channels.y !== 0;
+      const adjusted = hasAdj
+        ? applyLayerAdjustment(layer.sourceCanvas, layer.channels.c/100, layer.channels.m/100, layer.channels.y/100)
+        : layer.sourceCanvas;
+      // Place onto a full-document-size transparent canvas so every exported
+      // layer shares the same dimensions and registration point — needed for
+      // aligning separate positive films.
+      const full = document.createElement('canvas');
+      full.width = docWidth; full.height = docHeight;
+      full.getContext('2d').drawImage(adjusted, layer.left, layer.top);
+      full.toBlob((blob) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const safeName = (layer.name || ('layer_' + i)).replace(/[^a-z0-9_\- ]/gi, '_');
+        a.download = fileBaseName + '__' + String(i+1).padStart(2,'0') + '_' + safeName + '_' + layer.kind + '.png';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        i++;
+        setTimeout(next, 250); // stagger downloads so the browser doesn't block them
+      }, 'image/png');
+    }
+    next();
+  }, 30);
+}
+</script>
+</body>
+</html>

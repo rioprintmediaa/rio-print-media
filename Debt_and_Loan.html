@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debt &amp; Loan — Rio</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0; min-height: 100vh;
+    background: #eef2f6; font-family: 'Nunito', sans-serif;
+  }
+  .page-wrap { max-width: 900px; margin: 20px auto; padding: 0 20px 40px; }
+  .section-header {
+    background: linear-gradient(135deg,#e65100,#ff9800);
+    padding: 14px 20px; border-radius: 12px 12px 0 0;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  }
+  .section-header .left { display: flex; align-items: center; gap: 10px; }
+  .icon-chip { width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .section-title { font-family: 'Exo 2',sans-serif; font-weight: 800; font-size: 0.9rem; color: white; display: block; }
+  .section-subtitle { font-family: 'Nunito',sans-serif; font-size: 0.72rem; color: rgba(255,255,255,0.85); display: block; margin-top: 2px; }
+  .section-body { background: white; border-radius: 0 0 12px 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .back-link { color: white; background: rgba(255,255,255,0.18); border: none; border-radius: 6px; padding: 6px 12px; font-family: 'Exo 2',sans-serif; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+
+  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .search-wrap { position: relative; flex: 1; min-width: 160px; max-width: 260px; }
+  .search-wrap svg { position: absolute; left: 9px; top: 9px; opacity: .4; }
+  #search { width: 100%; height: 34px; padding: 0 10px 0 30px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 0.82rem; outline: none; font-family: 'Nunito',sans-serif; }
+  .btn { height: 34px; padding: 0; border: none; border-radius: 6px; font-family: 'Exo 2',sans-serif; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: stretch; overflow: hidden; text-transform: uppercase; letter-spacing: 0.5px; }
+  .btn .bchip { width: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .btn .btxt { padding: 0 16px; display: flex; align-items: center; }
+  .btn-primary { box-shadow: 0 3px 10px rgba(230,81,0,0.35); }
+  .btn-primary .bchip { background: rgba(0,0,0,0.18); }
+  .btn-primary .btxt { background: #e65100; color: white; }
+  .btn-secondary { border: 1.5px solid #e65100; }
+  .btn-secondary .bchip { background: rgba(230,81,0,0.08); }
+  .btn-secondary .btxt { background: white; color: #e65100; }
+  #summary-total { margin-left: auto; font-size: 0.8rem; font-family: 'Exo 2',sans-serif; font-weight: 800; }
+
+  .member-card {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #f7f9fb; border-radius: 10px; padding: 14px 16px; margin-bottom: 8px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .member-card:hover { background: #fdf0e6; }
+  .member-name { font-weight: 700; font-size: 0.9rem; color: #1a1a2e; }
+  .member-sub { font-size: 0.7rem; color: #888; margin-top: 2px; }
+  .bal-owes-you { color: #2e7d32; font-weight: 800; font-size: 0.88rem; }
+  .bal-you-owe { color: #c62828; font-weight: 800; font-size: 0.88rem; }
+  .bal-zero { color: #999; font-weight: 700; font-size: 0.85rem; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: #fff3e0; padding: 9px 12px; text-align: left; font-family: 'Exo 2',sans-serif; font-size: 0.62rem; font-weight: 800; color: #e65100; text-transform: uppercase; letter-spacing: 0.4px; }
+  tbody td { padding: 9px 12px; border-bottom: 1px solid #eef0f5; font-size: 0.8rem; color: #1a1a2e; }
+  .type-badge { padding: 3px 9px; border-radius: 10px; font-size: 0.65rem; font-weight: 700; white-space: nowrap; }
+  .type-gave { background: #ffebee; color: #c62828; }
+  .type-returned_by_them { background: #e8f5e9; color: #2e7d32; }
+  .type-took { background: #e3f2fd; color: #1565c0; }
+  .type-returned_by_me { background: #fff3e0; color: #e65100; }
+  .icon-btn { width: 28px; height: 28px; border: none; border-radius: 6px; cursor: pointer; background: #ffebee; display: inline-flex; align-items: center; justify-content: center; }
+  .actions { display: flex; gap: 5px; }
+
+  #modal, #member-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; align-items: center; justify-content: center; padding: 16px; }
+  .modal-box { background: #1c2333; border-radius: 12px; width: 100%; max-width: 420px; overflow: hidden; font-family: 'Exo 2',sans-serif; }
+  .modal-head { background: #141922; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #2a3348; }
+  .modal-head span { color: #4dd9e0; font-size: 0.88rem; font-weight: 700; }
+  .modal-head .x { color: #aaa; cursor: pointer; font-size: 1.1rem; }
+  .modal-body { padding: 20px 24px 10px; display: grid; gap: 14px; }
+  .modal-body label { font-size: 0.65rem; font-weight: 700; color: #7a8aa0; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 5px; }
+  .modal-body input, .modal-body select { width: 100%; height: 36px; border: 1.5px solid #2a3348; border-radius: 8px; padding: 0 12px; font-size: 0.85rem; font-family: 'Nunito',sans-serif; outline: none; background: #141922; color: #ddeeff; }
+  .modal-foot { padding: 16px 20px 20px; display: flex; gap: 12px; }
+  .save-btn { background: #4dd9e0; color: #0d1520; border: none; border-radius: 6px; padding: 10px 32px; font-family: 'Exo 2',sans-serif; font-weight: 800; font-size: 0.82rem; letter-spacing: 1px; cursor: pointer; text-transform: uppercase; }
+  .cancel-btn { background: #1e2d40; color: #8ab4cc; border: none; border-radius: 6px; padding: 10px 24px; font-family: 'Exo 2',sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; text-transform: uppercase; }
+
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: white; padding: 10px 20px; border-radius: 8px; font-size: 0.82rem; z-index: 1000; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 600px) {
+    table, thead, tbody, th, td, tr { display: block; }
+    thead { display: none; }
+    tbody tr { border-radius: 8px; margin-bottom: 8px; padding: 8px 10px; border: 1px solid #eef0f5; }
+    tbody td { border: none; padding: 3px 0; }
+    tbody td::before { content: attr(data-label); font-weight: 800; font-size: 0.6rem; color: #888; text-transform: uppercase; display: block; }
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- ── LOGIN OVERLAY — shown until a valid Debt & Loan session exists ── -->
+    <div id="login-overlay" style="position:fixed;inset:0;background:#1a0f05;background-image:radial-gradient(ellipse at 15% 50%, rgba(191,54,12,0.85) 0%, transparent 55%),radial-gradient(ellipse at 85% 20%, rgba(230,81,0,0.65) 0%, transparent 50%),radial-gradient(ellipse at 70% 90%, rgba(255,152,0,0.4) 0%, transparent 45%);z-index:2000;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+  <div style="content:'';position:absolute;inset:0;pointer-events:none;background-image:repeating-linear-gradient(0deg,rgba(255,183,77,0.06) 0px,rgba(255,183,77,0.06) 1px,transparent 1px,transparent 70px),repeating-linear-gradient(90deg,rgba(255,183,77,0.06) 0px,rgba(255,183,77,0.06) 1px,transparent 1px,transparent 70px);"></div>
+  <div style="display:grid;grid-template-columns:260px 320px;max-width:580px;width:100%;margin:16px;border-radius:14px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.06);position:relative;z-index:2;">
+
+    <!-- LEFT: Debt & Loan branding -->
+    <div style="background:#2a1607;padding:32px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+      <div style="width:64px;height:64px;background:rgba(255,152,0,0.18);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+        <svg viewBox="0 0 24 24" fill="#ff9800" width="32" height="32"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+      </div>
+      <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.15rem;color:white;">Debt &amp; Loan</div>
+      <div style="font-size:0.68rem;color:rgba(255,255,255,0.6);margin-top:6px;line-height:1.5;">Money given to and<br>borrowed from friends</div>
+    </div>
+
+    <!-- RIGHT: login form -->
+    <div style="background:#20120a;padding:32px 28px;">
+      <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.05rem;color:white;margin-bottom:2px;">Welcome Back</div>
+      <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-bottom:22px;">Sign in to continue</div>
+      <div style="display:grid;gap:12px;">
+        <div>
+          <label style="font-size:0.63rem;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:5px;">Username</label>
+          <input id="login-username" type="text" style="width:100%;height:38px;border:1.5px solid rgba(255,152,0,0.25);border-radius:8px;padding:0 12px;font-size:0.88rem;outline:none;font-family:'Nunito',sans-serif;box-sizing:border-box;background:rgba(255,255,255,0.05);color:white;">
+        </div>
+        <div>
+          <label style="font-size:0.63rem;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:5px;">Password</label>
+          <div style="position:relative;">
+            <input id="login-password" type="password" style="width:100%;height:38px;border:1.5px solid rgba(255,152,0,0.25);border-radius:8px;padding:0 38px 0 12px;font-size:0.88rem;outline:none;font-family:'Nunito',sans-serif;box-sizing:border-box;background:rgba(255,255,255,0.05);color:white;" onkeydown="if(event.key==='Enter') doLogin()">
+            <span onclick="togglePasswordVisibility()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:rgba(255,255,255,0.4);display:flex;">
+              <svg id="pw-eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </span>
+          </div>
+        </div>
+        <div id="login-error" style="color:#ff8a65;font-size:0.75rem;min-height:16px;"></div>
+        <button id="signin-btn" onclick="doLogin()" style="height:40px;border:none;border-radius:8px;background:linear-gradient(135deg,#e65100,#ff9800);color:white;font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.82rem;letter-spacing:0.5px;cursor:pointer;text-transform:uppercase;">Sign In</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position:absolute;bottom:12px;right:18px;pointer-events:none;z-index:3;">
+    <span style="font-size:0.65rem;color:#ffffff;font-family:'Nunito',sans-serif;letter-spacing:0.6px;">Designed &amp; Developed by <strong style="color:#e65100;">Manivannan M</strong></span>
+  </div>
+</div>
+
+<!-- ── CHANGE PASSWORD MODAL ─────────────────────────────────── -->
+<div id="pw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1500;align-items:center;justify-content:center;padding:16px;">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>Change Password</span>
+      <span class="x" onclick="document.getElementById('pw-modal').style.display='none'">&#10005;</span>
+    </div>
+    <div class="modal-body">
+      <div><label>Current Password</label><input id="pw-old" type="password"></div>
+      <div><label>New Password</label><input id="pw-new" type="password" placeholder="At least 6 characters"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="save-btn" onclick="doChangePassword()">Update</button>
+      <button class="cancel-btn" onclick="document.getElementById('pw-modal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="page-wrap">
+  <div class="section-header">
+    <div class="left">
+      <div class="icon-chip">
+        <svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+      </div>
+      <div>
+        <span class="section-title">Debt &amp; Loan</span>
+        <span class="section-subtitle">Money given to and borrowed from friends</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="back-link" id="back-btn" onclick="showMemberList()" style="display:none;">&#8592; All Members</button>
+      <button class="back-link" onclick="openPwModal()">Change Password</button>
+      <button class="back-link" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="section-body">
+
+    <!-- ── TOP-LEVEL TAB SWITCHER ───────────────────────────── -->
+    <div id="main-tabs" style="display:flex;gap:6px;margin-bottom:16px;background:#eef2f6;padding:4px;border-radius:8px;width:fit-content;">
+      <button id="tab-friends-btn" onclick="switchMainTab('friends')" style="height:32px;padding:0 16px;border:none;border-radius:6px;background:#e65100;color:white;font-family:'Exo 2',sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;">Friends</button>
+      <button id="tab-loans-btn" onclick="switchMainTab('loans')" style="height:32px;padding:0 16px;border:none;border-radius:6px;background:transparent;color:#555;font-family:'Exo 2',sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;">Bank Loans</button>
+    </div>
+
+    <!-- ── MEMBER LIST VIEW ─────────────────────────────────── -->
+    <div id="view-list">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="search" type="text" placeholder="Search name...">
+        </div>
+        <button class="btn btn-secondary" onclick="loadMembers()"><span class="bchip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></span><span class="btxt">Refresh</span></button>
+        <button class="btn btn-primary" onclick="openMemberModal(null)"><span class="bchip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg></span><span class="btxt">Add Member</span></button>
+        <button class="btn btn-secondary" onclick="exportFriendsXLSX()"><span class="bchip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></span><span class="btxt">Export Excel</span></button>
+        <span id="summary-total"></span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Phone</th><th>Current Balance</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="member-list">
+          <tr><td colspan="4" style="text-align:center;padding:30px;color:#aaa;">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── MEMBER DETAIL VIEW ───────────────────────────────── -->
+    <div id="view-detail" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div id="detail-name" style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;color:#1a1a2e;"></div>
+          <div id="detail-balance" style="font-size:0.95rem;margin-top:2px;"></div>
+        </div>
+        <button class="btn btn-primary" onclick="openTxnModal()"><span class="bchip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span><span class="btxt">Add Transaction</span></button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Type</th><th>Amount</th><th>Current Balance</th><th>Note</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="txn-tbody">
+        </tbody>
+      </table>
+      <p id="txn-empty" style="text-align:center;color:#aaa;padding:30px;display:none;">No transactions yet. Click + Add Transaction.</p>
+    </div>
+
+    <!-- ── BANK LOANS LIST VIEW ─────────────────────────────── -->
+    <div id="view-loans-list" style="display:none;">
+      <div class="toolbar">
+        <button class="btn btn-secondary" onclick="loadBankLoans()"><span class="bchip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></span><span class="btxt">Refresh</span></button>
+        <button class="btn btn-primary" onclick="openLoanModal(null)"><span class="bchip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/><path d="M12 8v8M8 12h8" stroke="white"/></svg></span><span class="btxt">Add Bank Loan</span></button>
+        <button class="btn btn-secondary" onclick="exportBankLoansXLSX()"><span class="bchip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></span><span class="btxt">Export Excel</span></button>
+      </div>
+      <div id="bank-loans-list">
+        <p style="text-align:center;color:#aaa;padding:30px;">Loading…</p>
+      </div>
+    </div>
+
+    <!-- ── BANK LOAN DETAIL VIEW ────────────────────────────── -->
+    <div id="view-loan-detail" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div id="loan-detail-name" style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:1.1rem;color:#1a1a2e;"></div>
+          <div id="loan-detail-stats" style="font-size:0.8rem;margin-top:4px;color:#555;"></div>
+        </div>
+      </div>
+
+      <div id="emi-schedule-wrap" style="margin-bottom:24px;">
+        <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.82rem;color:#e65100;margin-bottom:8px;">EMI Schedule (Planned)</div>
+        <table>
+          <thead>
+            <tr><th>Month</th><th>Due Date</th><th>Expected Amount</th><th>Principal Amt</th><th>Interest Amount</th><th>Current Outstanding</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="emi-schedule-tbody">
+          </tbody>
+        </table>
+        <p id="emi-schedule-empty" style="text-align:center;color:#aaa;padding:20px;display:none;">No EMI schedule set for this loan.</p>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-family:'Exo 2',sans-serif;font-weight:800;font-size:0.82rem;color:#e65100;">Actual Payments Made</div>
+        <button class="btn btn-primary" onclick="openLoanPaymentModal()"><span class="bchip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></span><span class="btxt">Add Monthly Payment</span></button>
+        <button class="btn btn-secondary" onclick="exportSingleLoanXLSX()"><span class="bchip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></span><span class="btxt">Export Excel</span></button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Amount</th><th>Paid By</th><th>Note</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="loan-payment-tbody">
+        </tbody>
+      </table>
+      <p id="loan-payment-empty" style="text-align:center;color:#aaa;padding:30px;display:none;">No payments recorded yet. Click + Add Monthly Payment.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── ADD/EDIT MEMBER MODAL ─────────────────────────────────── -->
+<div id="member-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span id="member-modal-title">Add Member</span>
+      <span class="x" onclick="document.getElementById('member-modal').style.display='none'">&#10005;</span>
+    </div>
+    <input type="hidden" id="mf-id">
+    <div class="modal-body">
+      <div><label>Name *</label><input id="mf-name" type="text" placeholder="Full name"></div>
+      <div><label>Phone</label><input id="mf-phone" type="tel" placeholder="+91 XXXXX XXXXX"></div>
+      <div><label>Notes</label><input id="mf-notes" type="text" placeholder="Optional"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="save-btn" onclick="saveMember()">Save</button>
+      <button class="cancel-btn" onclick="document.getElementById('member-modal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD TRANSACTION MODAL ─────────────────────────────────── -->
+<div id="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>Add Transaction</span>
+      <span class="x" onclick="document.getElementById('modal').style.display='none'">&#10005;</span>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label>Type</label>
+        <select id="tf-type" onchange="onTxnTypeChange()">
+          <option value="gave">I gave them money</option>
+          <option value="returned_by_them">They returned money to me</option>
+          <option value="took">I took a loan from them</option>
+          <option value="returned_by_me">I returned money to them</option>
+        </select>
+      </div>
+      <div><label>Amount *</label><input id="tf-amount" type="number" min="0" step="0.01" placeholder="0.00"></div>
+      <div><label>Date</label><input id="tf-date" type="date"></div>
+      <div id="tf-source-wrap" style="display:none;">
+        <label>Source of Funds</label>
+        <select id="tf-source" onchange="onTxnSourceChange()">
+          <option value="own">My own money</option>
+          <option value="bank_loan">From a bank loan</option>
+        </select>
+      </div>
+      <div id="tf-bankloan-wrap" style="display:none;">
+        <label>Which Bank Loan</label>
+        <select id="tf-bankloan"></select>
+      </div>
+      <div><label>Note</label><input id="tf-note" type="text" placeholder="Optional"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="save-btn" onclick="saveTransaction()">Save</button>
+      <button class="cancel-btn" onclick="document.getElementById('modal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD/EDIT BANK LOAN MODAL ──────────────────────────────── -->
+<div id="loan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+  <div class="modal-box" style="max-width:460px;margin:20px 0;">
+    <div class="modal-head">
+      <span id="loan-modal-title">Add Bank Loan</span>
+      <span class="x" onclick="document.getElementById('loan-modal').style.display='none'">&#10005;</span>
+    </div>
+    <input type="hidden" id="lf-id">
+    <div class="modal-body">
+      <div><label>Loan Name / Bank *</label><input id="lf-name" type="text" placeholder="e.g. HDFC Personal Loan"></div>
+      <div><label>Principal Amount *</label><input id="lf-principal" type="number" min="0" step="0.01" placeholder="0.00" oninput="recalcEMI()"></div>
+      <div><label>Date Taken</label><input id="lf-date" type="date"></div>
+      <div><label>Total EMI Months *</label><input id="lf-tenure" type="number" min="1" step="1" placeholder="e.g. 12" oninput="recalcEMI()"></div>
+      <div><label>Monthly EMI Due Date (day of month)</label><input id="lf-emiday" type="number" min="1" max="31" placeholder="e.g. 5"></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="lf-has-interest" onchange="onInterestToggle()" style="width:16px;height:16px;">
+        <label style="margin:0;">This loan has interest</label>
+      </div>
+      <div id="lf-interest-wrap" style="display:none;">
+        <label>Annual Interest Rate (%)</label>
+        <input id="lf-interest-rate" type="number" min="0" step="0.01" placeholder="e.g. 10.5" oninput="recalcEMI()">
+      </div>
+      <div>
+        <label>Monthly EMI Amount <span id="lf-emi-auto-tag" style="color:#4dd9e0;text-transform:none;font-weight:600;"></span></label>
+        <input id="lf-emi-amount" type="number" min="0" step="0.01" placeholder="Auto-calculated, or enter manually" oninput="updateTotalAmountDisplay()">
+      </div>
+      <div id="lf-total-wrap" style="display:none;background:#141922;border-radius:8px;padding:10px 12px;">
+        <div style="font-size:0.62rem;color:#7a8aa0;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Total Amount (Principal + Interest)</div>
+        <div id="lf-total-amount" style="font-size:0.95rem;font-weight:800;color:#4dd9e0;"></div>
+        <div id="lf-total-breakdown" style="font-size:0.68rem;color:#7a8aa0;margin-top:3px;"></div>
+      </div>
+      <div><label>Notes</label><input id="lf-notes" type="text" placeholder="Optional"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="save-btn" onclick="saveBankLoan()">Save</button>
+      <button class="cancel-btn" onclick="document.getElementById('loan-modal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MARK EMI AS PAID MODAL ────────────────────────────────── -->
+<div id="emi-paid-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;padding:16px;">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span id="emi-paid-title">Mark Month's EMI as Paid</span>
+      <span class="x" onclick="document.getElementById('emi-paid-modal').style.display='none'">&#10005;</span>
+    </div>
+    <div class="modal-body">
+      <div><label>Paid Date *</label><input id="emi-paid-date" type="date"></div>
+      <div>
+        <label>Paid By</label>
+        <select id="emi-paid-member"></select>
+      </div>
+      <div style="font-size:0.68rem;color:#7a8aa0;line-height:1.5;">This automatically records the payment against this loan, AND adds an entry on this person's Friends page (since you now owe them back for paying on your behalf) - both update from this one action.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="save-btn" onclick="confirmEMIPaid()">Confirm Paid</button>
+      <button class="cancel-btn" onclick="document.getElementById('emi-paid-modal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EDIT EMI SCHEDULE ENTRY MODAL ────────────────────────── -->
+<div id="emi-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;padding:16px;">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span id="emi-edit-title">Edit Month's EMI</span>
+      <span class="x" onclick="document.getElementById('emi-edit-modal').style.display='none'">&#10005;</span>
+    </div>
+    <div class="modal-body">
+      <div><label>Expected Amount for this month *</label><input id="emi-edit-amount" type="number" min="0" step="0.01"></div>
+      <div style="font-size:0.68rem;color:#7a8aa0;line-height:1.5;">Use this if a specific month's EMI differs from the rest — for example, the last month of the loan is often a bit less due to rounding.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="save-btn" onclick="saveEMIScheduleEdit()">Save</button>
+      <button class="cancel-btn" onclick="document.getElementById('emi-edit-modal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD MONTHLY LOAN PAYMENT MODAL ───────────────────────── -->
+<div id="loan-payment-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;padding:16px;">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>Add Monthly Payment</span>
+      <span class="x" onclick="document.getElementById('loan-payment-modal').style.display='none'">&#10005;</span>
+    </div>
+    <div class="modal-body">
+      <div><label>Amount *</label><input id="lpf-amount" type="number" min="0" step="0.01" placeholder="0.00"></div>
+      <div><label>Date</label><input id="lpf-date" type="date"></div>
+      <div>
+        <label>Paid By</label>
+        <select id="lpf-member"></select>
+      </div>
+      <div><label>Note</label><input id="lpf-note" type="text" placeholder="Optional"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="save-btn" onclick="saveLoanPayment()">Save</button>
+      <button class="cancel-btn" onclick="document.getElementById('loan-payment-modal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentMemberId = null;
+let currentMemberName = '';
+let allMembers = [];
+
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+async function api(path, opts) {
+  opts = opts || {};
+  const token = sessionStorage.getItem('debtLoanToken') || '';
+  opts.headers = Object.assign({ 'Content-Type': 'application/json', 'X-Debt-Token': token }, opts.headers || {});
+  const res = await fetch(path, opts);
+  if (res.status === 401) {
+    sessionStorage.removeItem('debtLoanToken');
+    document.getElementById('login-overlay').style.display = 'flex';
+    throw new Error('Session expired — please log in again');
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || body.detail || ('HTTP ' + res.status));
+  }
+  return res.json();
+}
+
+function togglePasswordVisibility() {
+  const input = document.getElementById('login-password');
+  const icon = document.getElementById('pw-eye-icon');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    input.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('signin-btn');
+  errEl.textContent = '';
+  if (!username || !password) { errEl.textContent = 'Enter username and password'; return; }
+  btn.disabled = true;
+  btn.textContent = 'Signing In…';
+  try {
+    const res = await fetch('/api/debt-loan/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    let data;
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      errEl.textContent = `Server error (HTTP ${res.status}) — please try again`;
+      return;
+    }
+    if (!res.ok || !data.ok) { errEl.textContent = data.error || data.detail || 'Invalid username or password'; return; }
+    sessionStorage.setItem('debtLoanToken', data.token);
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('login-password').value = '';
+    loadMembers();
+  } catch (e) {
+    errEl.textContent = 'Could not reach server: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('debtLoanToken');
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+}
+
+function openPwModal() {
+  document.getElementById('pw-old').value = '';
+  document.getElementById('pw-new').value = '';
+  document.getElementById('pw-modal').style.display = 'flex';
+}
+
+async function doChangePassword() {
+  const oldPw = document.getElementById('pw-old').value;
+  const newPw = document.getElementById('pw-new').value;
+  if (!oldPw || !newPw) return showToast('Fill in both fields');
+  if (newPw.length < 6) return showToast('New password must be at least 6 characters');
+  try {
+    const token = sessionStorage.getItem('debtLoanToken') || '';
+    const res = await fetch('/api/debt-loan/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, old_password: oldPw, new_password: newPw }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.ok === false) { showToast(data.error || 'Failed to update password'); return; }
+    document.getElementById('pw-modal').style.display = 'none';
+    showToast('Password updated');
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+// On load: if a token from an earlier login this session still exists,
+// skip straight past the login screen; otherwise show it and stop -
+// loadMembers() only runs after a successful login in that case.
+if (sessionStorage.getItem('debtLoanToken')) {
+  document.getElementById('login-overlay').style.display = 'none';
+} else {
+  document.getElementById('login-overlay').style.display = 'flex';
+}
+
+function fmtMoney(n) {
+  return '₹' + Math.round(Number(n || 0)).toLocaleString('en-IN');
+}
+
+function showMemberList() {
+  currentMemberId = null;
+  document.getElementById('view-list').style.display = 'block';
+  document.getElementById('view-detail').style.display = 'none';
+  document.getElementById('back-btn').style.display = 'none';
+  loadMembers();
+}
+
+async function loadMembers() {
+  const listEl = document.getElementById('member-list');
+  listEl.innerHTML = '<p style="text-align:center;color:#aaa;padding:30px;">Loading…</p>';
+  try {
+    const res = await api('/api/debt-members');
+    allMembers = res.rows || [];
+    renderMemberList();
+  } catch (e) {
+    listEl.innerHTML = '<p style="text-align:center;color:#e53935;padding:30px;">Error: ' + escHtml(e.message) + '</p>';
+  }
+}
+
+function renderMemberList() {
+  const listEl = document.getElementById('member-list');
+  const search = (document.getElementById('search').value || '').toLowerCase();
+  const filtered = allMembers.filter(m => (m.Name || '').toLowerCase().includes(search));
+
+  let netTotal = 0;
+  allMembers.forEach(m => netTotal += (m.Balance || 0));
+  const totalEl = document.getElementById('summary-total');
+  if (netTotal > 0) totalEl.innerHTML = `Net: <span style="color:#2e7d32;">owed to you ${fmtMoney(netTotal)}</span>`;
+  else if (netTotal < 0) totalEl.innerHTML = `Net: <span style="color:#c62828;">you owe ${fmtMoney(-netTotal)}</span>`;
+  else totalEl.innerHTML = `Net: <span style="color:#999;">settled</span>`;
+
+  if (!filtered.length) {
+    listEl.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aaa;padding:30px;">No members found. Click + Add Member.</td></tr>';
+    return;
+  }
+  listEl.innerHTML = filtered.map(m => {
+    const bal = m.Balance || 0;
+    let balHtml;
+    if (bal > 0) balHtml = `<span class="bal-owes-you">Owes you ${fmtMoney(bal)}</span>`;
+    else if (bal < 0) balHtml = `<span class="bal-you-owe">You owe ${fmtMoney(-bal)}</span>`;
+    else balHtml = `<span class="bal-zero">Settled</span>`;
+    const nameEsc = escHtml(m.Name).replace(/'/g,"\\'");
+    return `<tr>
+      <td data-label="Name" style="cursor:pointer;font-weight:700;" onclick="openMemberDetail(${m.Id}, '${nameEsc}')">${escHtml(m.Name)}</td>
+      <td data-label="Phone" style="cursor:pointer;" onclick="openMemberDetail(${m.Id}, '${nameEsc}')">${escHtml(m.Phone || '—')}</td>
+      <td data-label="Current Balance">${balHtml}</td>
+      <td data-label="Actions"><div class="actions">
+        <button class="icon-btn" style="background:#e3f2fd;" title="Edit" onclick='openMemberModal(${JSON.stringify(m)})'>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#1565c0"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </button>
+        <button class="icon-btn" title="Delete" onclick="deleteMember(${m.Id},'${nameEsc}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#c62828"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        </button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+async function deleteMember(id, name) {
+  if (!confirm('Delete "' + name + '" and all their transaction history?')) return;
+  try {
+    await api('/api/debt-members/' + id, { method: 'DELETE' });
+    showToast('Deleted');
+    loadMembers();
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+// ── XLSX exports — one row per actual entry (transaction / EMI month),
+// not just a summary, since each person's/loan's full history is needed.
+async function exportFriendsXLSX() {
+  showToast('Preparing export…');
+  try {
+    const membersRes = await api('/api/debt-members');
+    const members = membersRes.rows || [];
+    const rows = [];
+    for (const m of members) {
+      const txnRes = await api('/api/debt-transactions?member_id=' + m.Id);
+      const txns = txnRes.rows || [];
+      const typeLabels = { gave: 'Gave', returned_by_them: 'They Returned', took: 'Took Loan', returned_by_me: 'I Returned' };
+      if (!txns.length) {
+        rows.push({ Name: m.Name, Phone: m.Phone || '', Date: '', Type: '(no transactions)', Amount: '', Source: '', Note: '', 'Current Balance': Math.round(m.Balance || 0) });
+      } else {
+        txns.forEach(t => {
+          rows.push({
+            Name: m.Name, Phone: m.Phone || '', Date: t.Date || '',
+            Type: typeLabels[t.Type] || t.Type, Amount: Math.round(t.Amount || 0),
+            Source: t.Type === 'gave' ? (t.Source === 'bank_loan' ? 'Bank Loan' : 'Own Money') : '',
+            Note: t.Note || '', 'Current Balance': Math.round(m.Balance || 0),
+          });
+        });
+      }
+    }
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Friends');
+    XLSX.writeFile(wb, `debt_loan_friends_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showToast('Exported');
+  } catch (e) { showToast('Export failed: ' + e.message); }
+}
+
+async function exportBankLoansXLSX() {
+  showToast('Preparing export…');
+  try {
+    const loansRes = await api('/api/debt-bank-loans');
+    const loans = loansRes.rows || [];
+    // Main page export is a summary only - one row per loan, not the full
+    // schedule for every loan crammed into one sheet. Detailed month-by-
+    // month breakdowns are exported per-loan instead, from that loan's
+    // own detail page.
+    const rows = loans.map(l => ({
+      'Loan Name': l.LoanName,
+      'Date Taken': l.DateTaken || '',
+      Principal: Math.round(l.PrincipalAmount || 0),
+      'Total Interest': Math.round(Math.max(((l.EMISchedule || []).reduce((s, e) => s + (e.ExpectedAmount || 0), 0)) - (l.PrincipalAmount || 0), 0)),
+      'Repaid to Bank': Math.round(l.RepaidToBank || 0),
+      'Outstanding to Bank': Math.round(l.OutstandingToBank || 0),
+      'Lent to Friends': Math.round(l.LentOutToFriends || 0),
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Bank Loans Summary');
+    XLSX.writeFile(wb, `debt_loan_bank_loans_summary_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showToast('Exported');
+  } catch (e) { showToast('Export failed: ' + e.message); }
+}
+
+async function exportSingleLoanXLSX() {
+  showToast('Preparing export…');
+  try {
+    const loanRes = await api('/api/debt-bank-loans');
+    const loan = (loanRes.rows || []).find(l => l.Id === currentLoanId);
+    if (!loan) { showToast('Loan not found'); return; }
+    const membersRes = await api('/api/debt-members');
+    const memberMap = {};
+    (membersRes.rows || []).forEach(m => memberMap[m.Id] = m.Name);
+
+    const schedule = loan.EMISchedule || [];
+    const rows = schedule.map(e => ({
+      Month: e.Month, 'Due Date': e.DueDate || '',
+      'Expected Amount': Math.round(e.ExpectedAmount || 0),
+      Status: e.Paid ? 'Paid' : 'Pending',
+      'Paid Date': e.PaidDate || '',
+      'Paid By': e.PaidByMemberId ? (memberMap[e.PaidByMemberId] || '') : '',
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, loan.LoanName.substring(0, 31));
+    const safeName = loan.LoanName.replace(/[^a-z0-9]+/gi, '_');
+    XLSX.writeFile(wb, `debt_loan_${safeName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showToast('Exported');
+  } catch (e) { showToast('Export failed: ' + e.message); }
+}
+
+document.getElementById('search').addEventListener('input', renderMemberList);
+
+// ── Top-level tab switching (Friends vs Bank Loans) ─────────────────
+function switchMainTab(tab) {
+  const friendsBtn = document.getElementById('tab-friends-btn');
+  const loansBtn = document.getElementById('tab-loans-btn');
+  if (tab === 'friends') {
+    friendsBtn.style.background = '#e65100'; friendsBtn.style.color = 'white';
+    loansBtn.style.background = 'transparent'; loansBtn.style.color = '#555';
+    document.getElementById('view-list').style.display = 'block';
+    document.getElementById('view-detail').style.display = 'none';
+    document.getElementById('view-loans-list').style.display = 'none';
+    document.getElementById('view-loan-detail').style.display = 'none';
+    document.getElementById('back-btn').style.display = 'none';
+    loadMembers();
+  } else {
+    loansBtn.style.background = '#e65100'; loansBtn.style.color = 'white';
+    friendsBtn.style.background = 'transparent'; friendsBtn.style.color = '#555';
+    document.getElementById('view-list').style.display = 'none';
+    document.getElementById('view-detail').style.display = 'none';
+    document.getElementById('view-loans-list').style.display = 'block';
+    document.getElementById('view-loan-detail').style.display = 'none';
+    document.getElementById('back-btn').style.display = 'none';
+    loadBankLoans();
+  }
+}
+
+// ── Bank Loans list ──────────────────────────────────────────────────
+let allBankLoans = [];
+let currentLoanId = null;
+
+async function loadBankLoans() {
+  const listEl = document.getElementById('bank-loans-list');
+  listEl.innerHTML = '<p style="text-align:center;color:#aaa;padding:30px;">Loading…</p>';
+  try {
+    const res = await api('/api/debt-bank-loans');
+    allBankLoans = res.rows || [];
+    renderBankLoansList();
+  } catch (e) {
+    listEl.innerHTML = '<p style="text-align:center;color:#e53935;padding:30px;">Error: ' + escHtml(e.message) + '</p>';
+  }
+}
+
+function renderBankLoansList() {
+  const listEl = document.getElementById('bank-loans-list');
+  if (!allBankLoans.length) {
+    listEl.innerHTML = '<p style="text-align:center;color:#aaa;padding:30px;">No bank loans yet. Click + Add Bank Loan.</p>';
+    return;
+  }
+  listEl.innerHTML = allBankLoans.map(l => `<div class="member-card" onclick="openLoanDetail(${l.Id}, '${escHtml(l.LoanName).replace(/'/g,"\\'")}')">
+    <div>
+      <div class="member-name">${escHtml(l.LoanName)}</div>
+      <div class="member-sub">Principal ${fmtMoney(l.PrincipalAmount)} · Taken ${escHtml(l.DateTaken || '—')}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="text-align:right;">
+        <div style="font-size:0.8rem;font-weight:700;color:#c62828;">Owe bank: ${fmtMoney(l.OutstandingToBank)}</div>
+        <div style="font-size:0.68rem;color:#888;margin-top:2px;">Lent to friends: ${fmtMoney(l.LentOutToFriends)}</div>
+      </div>
+      <button class="icon-btn" style="background:#e3f2fd;" title="Edit" onclick='event.stopPropagation(); openLoanModal(${JSON.stringify(l)})'>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#1565c0"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      </button>
+    </div>
+  </div>`).join('');
+}
+
+function openLoanModal(loan) {
+  document.getElementById('loan-modal-title').textContent = loan ? 'Edit Bank Loan' : 'Add Bank Loan';
+  document.getElementById('lf-id').value = loan ? loan.Id : '';
+  document.getElementById('lf-name').value = loan ? (loan.LoanName || '') : '';
+  document.getElementById('lf-principal').value = loan ? loan.PrincipalAmount : '';
+  document.getElementById('lf-date').value = loan ? (loan.DateTaken || '') : new Date().toISOString().split('T')[0];
+  document.getElementById('lf-tenure').value = loan ? (loan.TenureMonths || '') : '';
+  document.getElementById('lf-emiday').value = loan ? (loan.EMIDueDay || '') : '';
+  document.getElementById('lf-has-interest').checked = loan ? !!loan.HasInterest : false;
+  document.getElementById('lf-interest-rate').value = loan ? (loan.InterestRate || '') : '';
+  document.getElementById('lf-emi-amount').value = loan ? (loan.EMIAmount || '') : '';
+  document.getElementById('lf-notes').value = loan ? (loan.Notes || '') : '';
+  onInterestToggle();
+  document.getElementById('loan-modal').style.display = 'flex';
+}
+
+function onInterestToggle() {
+  const has = document.getElementById('lf-has-interest').checked;
+  document.getElementById('lf-interest-wrap').style.display = has ? 'block' : 'none';
+  recalcEMI();
+}
+
+// Standard EMI formula when interest applies: EMI = P*r*(1+r)^n / ((1+r)^n - 1)
+// where r is the monthly rate and n is the tenure in months. Without
+// interest, it's a plain principal/tenure split. Either way this is just
+// a starting suggestion - the field stays editable, and each individual
+// month in the generated schedule can also be adjusted afterward.
+function recalcEMI() {
+  const principal = parseFloat(document.getElementById('lf-principal').value);
+  const tenure = parseInt(document.getElementById('lf-tenure').value);
+  const hasInterest = document.getElementById('lf-has-interest').checked;
+  const tag = document.getElementById('lf-emi-auto-tag');
+  if (!principal || !tenure || principal <= 0 || tenure <= 0) { tag.textContent = ''; updateTotalAmountDisplay(); return; }
+
+  let emi;
+  if (hasInterest) {
+    const annualRate = parseFloat(document.getElementById('lf-interest-rate').value);
+    if (!annualRate || annualRate <= 0) { tag.textContent = ''; updateTotalAmountDisplay(); return; }
+    const r = annualRate / 12 / 100;
+    emi = principal * r * Math.pow(1 + r, tenure) / (Math.pow(1 + r, tenure) - 1);
+  } else {
+    emi = principal / tenure;
+  }
+  document.getElementById('lf-emi-amount').value = Math.round(emi);
+  tag.textContent = '(auto-calculated)';
+  updateTotalAmountDisplay();
+}
+
+// Shows Total Amount (Principal + Interest) whenever interest is enabled -
+// only meaningful with interest, since without it EMI x tenure always
+// just equals the principal back exactly.
+function updateTotalAmountDisplay() {
+  const wrap = document.getElementById('lf-total-wrap');
+  const hasInterest = document.getElementById('lf-has-interest').checked;
+  const principal = parseFloat(document.getElementById('lf-principal').value);
+  const tenure = parseInt(document.getElementById('lf-tenure').value);
+  const emiAmount = parseFloat(document.getElementById('lf-emi-amount').value);
+  if (!hasInterest || !principal || !tenure || !emiAmount) { wrap.style.display = 'none'; return; }
+  const total = Math.round(emiAmount) * tenure;
+  const totalInterest = Math.max(total - Math.round(principal), 0);
+  document.getElementById('lf-total-amount').textContent = fmtMoney(total);
+  document.getElementById('lf-total-breakdown').textContent = `Principal ${fmtMoney(principal)} + Interest ${fmtMoney(totalInterest)}`;
+  wrap.style.display = 'block';
+}
+
+async function saveBankLoan() {
+  const name = document.getElementById('lf-name').value.trim();
+  const principal = parseFloat(document.getElementById('lf-principal').value);
+  const tenure = parseInt(document.getElementById('lf-tenure').value);
+  const emiAmount = parseFloat(document.getElementById('lf-emi-amount').value);
+  if (!name) return showToast('Loan name is required');
+  if (!principal || principal <= 0) return showToast('Enter a valid principal amount');
+  if (!tenure || tenure <= 0) return showToast('Enter total EMI months');
+  if (!emiAmount || emiAmount <= 0) return showToast('Enter or calculate the monthly EMI amount');
+
+  const hasInterest = document.getElementById('lf-has-interest').checked;
+  const dateTaken = document.getElementById('lf-date').value;
+  const emiDay = parseInt(document.getElementById('lf-emiday').value) || (dateTaken ? new Date(dateTaken).getDate() : 1);
+
+  const payload = {
+    LoanName: name,
+    PrincipalAmount: principal,
+    DateTaken: dateTaken,
+    TenureMonths: tenure,
+    EMIDueDay: emiDay,
+    HasInterest: hasInterest,
+    InterestRate: hasInterest ? (parseFloat(document.getElementById('lf-interest-rate').value) || 0) : 0,
+    EMIAmount: emiAmount,
+    Notes: document.getElementById('lf-notes').value.trim(),
+  };
+
+  const idVal = document.getElementById('lf-id').value;
+  if (idVal) {
+    payload.Id = parseInt(idVal);
+  } else {
+    // Generate the EMI schedule once, at creation - the last month absorbs
+    // any rounding difference so the total matches the TOTAL REPAYMENT
+    // exactly (EMI x tenure, which includes interest when applicable -
+    // targeting the bare principal instead was the bug that made the last
+    // month go negative whenever interest was involved, since total
+    // repayment with interest is always more than the principal alone).
+    // Amounts are rounded to whole rupees throughout, not paise.
+    const schedule = [];
+    const startDate = dateTaken ? new Date(dateTaken) : new Date();
+    const roundedEMI = Math.round(emiAmount);
+    const totalRepayment = roundedEMI * tenure;
+    let runningTotal = 0;
+    for (let m = 1; m <= tenure; m++) {
+      const due = new Date(startDate.getFullYear(), startDate.getMonth() + m, Math.min(emiDay, 28));
+      let amount = roundedEMI;
+      if (m === tenure) {
+        amount = totalRepayment - runningTotal;
+      } else {
+        runningTotal += amount;
+      }
+      schedule.push({ Month: m, DueDate: due.toISOString().split('T')[0], ExpectedAmount: amount });
+    }
+    payload.EMISchedule = schedule;
+  }
+
+  try {
+    await api('/api/debt-bank-loans', { method: 'POST', body: JSON.stringify(payload) });
+    document.getElementById('loan-modal').style.display = 'none';
+    showToast('Saved');
+    loadBankLoans();
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+// ── EMI Schedule display + per-month editing ────────────────────────
+let currentEMISchedule = [];
+
+function renderEMISchedule(loan) {
+  const tbody = document.getElementById('emi-schedule-tbody');
+  const emptyEl = document.getElementById('emi-schedule-empty');
+  currentEMISchedule = (loan && loan.EMISchedule) || [];
+  tbody.innerHTML = '';
+  if (!currentEMISchedule.length) { emptyEl.style.display = 'block'; return; }
+  emptyEl.style.display = 'none';
+
+  // Outstanding must track against the TOTAL repayment (sum of every
+  // month's expected amount, which includes interest when the loan has
+  // any) - not the bare principal. Starting from principal was the bug:
+  // once interest is involved, total repayment exceeds principal, so
+  // outstanding would go negative by the final month and get silently
+  // clamped to 0, hiding the real mismatch instead of fixing it.
+  const totalRepayment = currentEMISchedule.reduce((sum, e) => sum + (e.ExpectedAmount || 0), 0);
+  let outstanding = totalRepayment;
+
+  // Principal/Interest split per month uses standard amortization: the
+  // interest portion is the monthly rate applied to what's still owed on
+  // the PRINCIPAL specifically (tracked separately from the repayment-
+  // total "outstanding" above), and whatever's left of the EMI after
+  // that is the principal portion.
+  const monthlyRate = (loan && loan.HasInterest && loan.InterestRate) ? (loan.InterestRate / 12 / 100) : 0;
+  let principalRemaining = (loan && loan.PrincipalAmount) || 0;
+
+  tbody.innerHTML = currentEMISchedule.map((e, idx) => {
+    outstanding = Math.round(outstanding - e.ExpectedAmount);
+    const interestPortion = Math.round(principalRemaining * monthlyRate);
+    const principalPortion = Math.round(e.ExpectedAmount - interestPortion);
+    principalRemaining = Math.max(principalRemaining - principalPortion, 0);
+    const statusHtml = e.Paid
+      ? `<button class="btn" style="height:26px;padding:0 10px;background:white;border:1.5px solid #c62828;color:#c62828;font-size:0.65rem;" title="Undo this payment" onclick="revertEMIPaid(${idx})">&#8634; Revert (Paid ${escHtml(e.PaidDate || '')})</button>`
+      : `<button class="btn" style="height:26px;padding:0 10px;background:#2e7d32;color:white;font-size:0.65rem;" onclick="openEMIPaidModal(${idx})">Mark Paid</button>`;
+    return `<tr>
+    <td data-label="Month">${e.Month}</td>
+    <td data-label="Due Date">${escHtml(e.DueDate || '—')}</td>
+    <td data-label="Expected Amount" style="font-weight:700;">${fmtMoney(e.ExpectedAmount)}</td>
+    <td data-label="Principal Amt">${fmtMoney(principalPortion)}</td>
+    <td data-label="Interest Amount">${fmtMoney(interestPortion)}</td>
+    <td data-label="Current Outstanding">${fmtMoney(Math.max(outstanding, 0))}</td>
+    <td data-label="Status">${statusHtml}</td>
+    <td data-label="Actions"><button class="icon-btn" style="background:#fff3e0;" title="Edit this month's EMI" onclick="openEMIEditModal(${idx})">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#e65100"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+    </button></td>
+  </tr>`;
+  }).join('');
+}
+
+async function openEMIPaidModal(idx) {
+  const entry = currentEMISchedule[idx];
+  if (!entry) return;
+  document.getElementById('emi-paid-title').textContent = `Mark Month ${entry.Month}'s EMI (${fmtMoney(entry.ExpectedAmount)}) as Paid`;
+  document.getElementById('emi-paid-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('emi-paid-modal').dataset.idx = idx;
+  try {
+    const res = await api('/api/debt-members');
+    const sel = document.getElementById('emi-paid-member');
+    sel.innerHTML = (res.rows || []).map(m => `<option value="${m.Id}">${escHtml(m.Name)}</option>`).join('');
+    if (!res.rows || !res.rows.length) { showToast('Add a member first (Friends tab) to select who paid'); return; }
+  } catch (e) { showToast('Could not load members list'); return; }
+  document.getElementById('emi-paid-modal').style.display = 'flex';
+}
+
+async function confirmEMIPaid() {
+  const idx = parseInt(document.getElementById('emi-paid-modal').dataset.idx);
+  const entry = currentEMISchedule[idx];
+  const paidDate = document.getElementById('emi-paid-date').value;
+  const memberSel = document.getElementById('emi-paid-member');
+  const memberId = parseInt(memberSel.value);
+  const memberName = memberSel.options[memberSel.selectedIndex].textContent;
+  if (!paidDate) return showToast('Select a paid date');
+  if (!memberId) return showToast('Select who paid');
+
+  try {
+    // 1) Record the actual payment against this bank loan.
+    const payRes = await api('/api/debt-bank-loan-payments', {
+      method: 'POST',
+      body: JSON.stringify({
+        BankLoanId: currentLoanId,
+        Amount: entry.ExpectedAmount,
+        Date: paidDate,
+        PaidByMemberId: memberId,
+        Note: `EMI month ${entry.Month}`,
+      }),
+    });
+
+    // 2) Since this person paid on your behalf, you now owe them back -
+    // add a matching entry on their Friends page automatically, so both
+    // sides (the loan's payment record, and the friend's balance) update
+    // from this one action instead of needing two separate entries.
+    const txnRes = await api('/api/debt-transactions', {
+      method: 'POST',
+      body: JSON.stringify({
+        MemberId: memberId,
+        Type: 'took',
+        Amount: entry.ExpectedAmount,
+        Date: paidDate,
+        Note: `Paid EMI month ${entry.Month} for loan`,
+      }),
+    });
+
+    // 3) Mark this schedule entry as paid, remembering the linked
+    // payment/transaction so Revert can cleanly undo both later.
+    entry.Paid = true;
+    entry.PaidDate = paidDate;
+    entry.PaidByMemberId = memberId;
+    entry.LinkedPaymentId = payRes ? payRes.Id : null;
+    entry.LinkedTransactionId = txnRes ? txnRes.Id : null;
+    await api('/api/debt-bank-loans', {
+      method: 'POST',
+      body: JSON.stringify({ Id: currentLoanId, EMISchedule: currentEMISchedule }),
+    });
+
+    document.getElementById('emi-paid-modal').style.display = 'none';
+    showToast(`Marked paid — also added to ${memberName}'s Friends balance`);
+    await loadLoanPayments();
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+async function revertEMIPaid(idx) {
+  const entry = currentEMISchedule[idx];
+  if (!entry) return;
+  if (!confirm(`Revert Month ${entry.Month}'s payment? This deletes the payment record and the matching Friends entry, so you can re-enter it.`)) return;
+
+  try {
+    // Delete the linked bank loan payment - use the tracked ID if we have
+    // one, otherwise fall back to finding it by matching BankLoanId + the
+    // "EMI month N" note this feature always writes, in case the ID
+    // wasn't persisted correctly for any reason.
+    let paymentId = entry.LinkedPaymentId;
+    if (!paymentId) {
+      const payRes = await api('/api/debt-bank-loan-payments?loan_id=' + currentLoanId);
+      const match = (payRes.rows || []).find(p => p.Note === `EMI month ${entry.Month}`);
+      if (match) paymentId = match.Id;
+    }
+    if (paymentId) {
+      await api('/api/debt-bank-loan-payments/' + paymentId, { method: 'DELETE' });
+    }
+
+    // Same fallback for the Friends transaction entry.
+    let txnId = entry.LinkedTransactionId;
+    if (!txnId && entry.PaidByMemberId) {
+      const txnRes = await api('/api/debt-transactions?member_id=' + entry.PaidByMemberId);
+      const match = (txnRes.rows || []).find(t => t.Note === `Paid EMI month ${entry.Month} for loan`);
+      if (match) txnId = match.Id;
+    }
+    if (txnId) {
+      await api('/api/debt-transactions/' + txnId, { method: 'DELETE' });
+    }
+
+    entry.Paid = false;
+    entry.PaidDate = null;
+    entry.PaidByMemberId = null;
+    entry.LinkedPaymentId = null;
+    entry.LinkedTransactionId = null;
+    await api('/api/debt-bank-loans', {
+      method: 'POST',
+      body: JSON.stringify({ Id: currentLoanId, EMISchedule: currentEMISchedule }),
+    });
+    showToast('Reverted — you can re-enter this payment');
+    await loadLoanPayments();
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+function openEMIEditModal(idx) {
+  const entry = currentEMISchedule[idx];
+  if (!entry) return;
+  document.getElementById('emi-edit-title').textContent = `Edit Month ${entry.Month}'s EMI`;
+  document.getElementById('emi-edit-amount').value = entry.ExpectedAmount;
+  document.getElementById('emi-edit-modal').dataset.idx = idx;
+  document.getElementById('emi-edit-modal').style.display = 'flex';
+}
+
+async function saveEMIScheduleEdit() {
+  const idx = parseInt(document.getElementById('emi-edit-modal').dataset.idx);
+  const newAmount = parseFloat(document.getElementById('emi-edit-amount').value);
+  if (!newAmount || newAmount <= 0) return showToast('Enter a valid amount');
+  currentEMISchedule[idx].ExpectedAmount = newAmount;
+  try {
+    await api('/api/debt-bank-loans', {
+      method: 'POST',
+      body: JSON.stringify({ Id: currentLoanId, EMISchedule: currentEMISchedule }),
+    });
+    document.getElementById('emi-edit-modal').style.display = 'none';
+    showToast('Updated');
+    renderEMISchedule({ EMISchedule: currentEMISchedule });
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+async function deleteBankLoan(id, name) {
+  if (!confirm('Delete loan "' + name + '" and all its payment history?')) return;
+  try {
+    await api('/api/debt-bank-loans/' + id, { method: 'DELETE' });
+    showToast('Deleted');
+    loadBankLoans();
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+// ── Bank Loan detail (monthly payments) ─────────────────────────────
+async function openLoanDetail(id, name) {
+  currentLoanId = id;
+  document.getElementById('view-loans-list').style.display = 'none';
+  document.getElementById('view-loan-detail').style.display = 'block';
+  document.getElementById('back-btn').style.display = 'inline-block';
+  document.getElementById('back-btn').onclick = backToLoansList;
+  document.getElementById('loan-detail-name').textContent = name;
+  await loadLoanPayments();
+}
+
+function backToLoansList() {
+  document.getElementById('view-loan-detail').style.display = 'none';
+  document.getElementById('view-loans-list').style.display = 'block';
+  document.getElementById('back-btn').style.display = 'none';
+  loadBankLoans();
+}
+
+async function loadLoanPayments() {
+  const tbody = document.getElementById('loan-payment-tbody');
+  const emptyEl = document.getElementById('loan-payment-empty');
+  tbody.innerHTML = '';
+  emptyEl.style.display = 'none';
+  try {
+    const loanRes = await api('/api/debt-bank-loans');
+    const loan = (loanRes.rows || []).find(l => l.Id === currentLoanId);
+    if (loan) {
+      const totalRepayment = (loan.EMISchedule || []).reduce((sum, e) => sum + (e.ExpectedAmount || 0), 0);
+      const totalInterest = Math.max(Math.round(totalRepayment - (loan.PrincipalAmount || 0)), 0);
+      document.getElementById('loan-detail-stats').innerHTML = `
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
+          <div style="background:#fff3e0;border-radius:8px;padding:8px 14px;">
+            <div style="font-size:0.6rem;color:#888;text-transform:uppercase;font-weight:700;">Principal</div>
+            <div style="font-size:0.9rem;font-weight:800;color:#1a1a2e;">${fmtMoney(loan.PrincipalAmount)}</div>
+          </div>
+          <div style="background:#fff3e0;border-radius:8px;padding:8px 14px;">
+            <div style="font-size:0.6rem;color:#888;text-transform:uppercase;font-weight:700;">Total Interest</div>
+            <div style="font-size:0.9rem;font-weight:800;color:#e65100;">${fmtMoney(totalInterest)}</div>
+          </div>
+          <div style="background:#e8f5e9;border-radius:8px;padding:8px 14px;">
+            <div style="font-size:0.6rem;color:#888;text-transform:uppercase;font-weight:700;">Repaid to Bank</div>
+            <div style="font-size:0.9rem;font-weight:800;color:#2e7d32;">${fmtMoney(loan.RepaidToBank)}</div>
+          </div>
+          <div style="background:#ffebee;border-radius:8px;padding:8px 14px;">
+            <div style="font-size:0.6rem;color:#888;text-transform:uppercase;font-weight:700;">Outstanding</div>
+            <div style="font-size:0.9rem;font-weight:800;color:#c62828;">${fmtMoney(loan.OutstandingToBank)}</div>
+          </div>
+          <div style="background:#e3f2fd;border-radius:8px;padding:8px 14px;">
+            <div style="font-size:0.6rem;color:#888;text-transform:uppercase;font-weight:700;">Lent to Friends</div>
+            <div style="font-size:0.9rem;font-weight:800;color:#1565c0;">${fmtMoney(loan.LentOutToFriends)}</div>
+          </div>
+        </div>`;
+      renderEMISchedule(loan);
+    }
+
+    const membersRes = await api('/api/debt-members');
+    const memberMap = {};
+    (membersRes.rows || []).forEach(m => memberMap[m.Id] = m.Name);
+
+    const res = await api('/api/debt-bank-loan-payments?loan_id=' + currentLoanId);
+    const rows = res.rows || [];
+    if (!rows.length) { emptyEl.style.display = 'block'; return; }
+    tbody.innerHTML = rows.map(p => `<tr>
+      <td data-label="Date">${escHtml(p.Date || '—')}</td>
+      <td data-label="Amount" style="font-weight:700;">${fmtMoney(p.Amount)}</td>
+      <td data-label="Paid By">${escHtml(memberMap[p.PaidByMemberId] || 'Unknown')}</td>
+      <td data-label="Note" style="color:#666;">${escHtml(p.Note || '—')}</td>
+      <td data-label="Actions"><button class="icon-btn" title="Delete" onclick="deleteLoanPayment(${p.Id})">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#c62828"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      </button></td>
+    </tr>`).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#e53935;">Error: ${escHtml(e.message)}</td></tr>`;
+  }
+}
+
+async function openLoanPaymentModal() {
+  document.getElementById('lpf-amount').value = '';
+  document.getElementById('lpf-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('lpf-note').value = '';
+  try {
+    const res = await api('/api/debt-members');
+    const sel = document.getElementById('lpf-member');
+    sel.innerHTML = (res.rows || []).map(m => `<option value="${m.Id}">${escHtml(m.Name)}</option>`).join('');
+  } catch (e) { showToast('Could not load members list'); }
+  document.getElementById('loan-payment-modal').style.display = 'flex';
+}
+
+async function saveLoanPayment() {
+  const amount = parseFloat(document.getElementById('lpf-amount').value);
+  if (!amount || amount <= 0) return showToast('Enter a valid amount');
+  const memberSel = document.getElementById('lpf-member');
+  if (!memberSel.value) return showToast('Add a member first (Friends tab) to select who paid');
+  const payload = {
+    BankLoanId: currentLoanId,
+    Amount: amount,
+    Date: document.getElementById('lpf-date').value,
+    PaidByMemberId: parseInt(memberSel.value),
+    Note: document.getElementById('lpf-note').value.trim(),
+  };
+  try {
+    await api('/api/debt-bank-loan-payments', { method: 'POST', body: JSON.stringify(payload) });
+    document.getElementById('loan-payment-modal').style.display = 'none';
+    showToast('Saved');
+    await loadLoanPayments();
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+async function deleteLoanPayment(id) {
+  if (!confirm('Delete this payment?')) return;
+  try {
+    await api('/api/debt-bank-loan-payments/' + id, { method: 'DELETE' });
+    showToast('Deleted');
+    await loadLoanPayments();
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+// ── Transaction modal: Source of Funds (only relevant for "gave") ──
+function onTxnTypeChange() {
+  const type = document.getElementById('tf-type').value;
+  const sourceWrap = document.getElementById('tf-source-wrap');
+  const loanWrap = document.getElementById('tf-bankloan-wrap');
+  if (type === 'gave') {
+    sourceWrap.style.display = 'block';
+    onTxnSourceChange();
+  } else {
+    sourceWrap.style.display = 'none';
+    loanWrap.style.display = 'none';
+  }
+}
+
+async function onTxnSourceChange() {
+  const source = document.getElementById('tf-source').value;
+  const loanWrap = document.getElementById('tf-bankloan-wrap');
+  if (source === 'bank_loan') {
+    loanWrap.style.display = 'block';
+    try {
+      const res = await api('/api/debt-bank-loans');
+      const sel = document.getElementById('tf-bankloan');
+      sel.innerHTML = (res.rows || []).map(l =>
+        `<option value="${l.Id}">${escHtml(l.LoanName)} (available ${fmtMoney(l.AvailableWithYou)})</option>`
+      ).join('');
+    } catch (e) { showToast('Could not load bank loans list'); }
+  } else {
+    loanWrap.style.display = 'none';
+  }
+}
+
+function openMemberModal(member) {
+  document.getElementById('member-modal-title').textContent = member ? 'Edit Member' : 'Add Member';
+  document.getElementById('mf-id').value = member ? member.Id : '';
+  document.getElementById('mf-name').value = member ? (member.Name || '') : '';
+  document.getElementById('mf-phone').value = member ? (member.Phone || '') : '';
+  document.getElementById('mf-notes').value = member ? (member.Notes || '') : '';
+  document.getElementById('member-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('mf-name').focus(), 100);
+}
+
+async function saveMember() {
+  const name = document.getElementById('mf-name').value.trim();
+  if (!name) return showToast('Name is required');
+  const payload = {
+    Name: name,
+    Phone: document.getElementById('mf-phone').value.trim(),
+    Notes: document.getElementById('mf-notes').value.trim(),
+  };
+  const idVal = document.getElementById('mf-id').value;
+  if (idVal) payload.Id = parseInt(idVal);
+  try {
+    await api('/api/debt-members', { method: 'POST', body: JSON.stringify(payload) });
+    document.getElementById('member-modal').style.display = 'none';
+    showToast('Saved');
+    loadMembers();
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+async function openMemberDetail(id, name) {
+  currentMemberId = id;
+  currentMemberName = name;
+  document.getElementById('view-list').style.display = 'none';
+  document.getElementById('view-detail').style.display = 'block';
+  document.getElementById('back-btn').style.display = 'inline-block';
+  document.getElementById('back-btn').onclick = showMemberList;
+  document.getElementById('detail-name').textContent = name;
+  await loadTransactions();
+}
+
+async function loadTransactions() {
+  const tbody = document.getElementById('txn-tbody');
+  const emptyEl = document.getElementById('txn-empty');
+  tbody.innerHTML = '';
+  emptyEl.style.display = 'none';
+  try {
+    const res = await api('/api/debt-transactions?member_id=' + currentMemberId);
+    const rows = res.rows || [];
+
+    let bal = 0;
+    rows.forEach(t => {
+      const amt = Number(t.Amount || 0);
+      if (t.Type === 'gave') bal += amt;
+      else if (t.Type === 'returned_by_them') bal -= amt;
+      else if (t.Type === 'took') bal -= amt;
+      else if (t.Type === 'returned_by_me') bal += amt;
+    });
+    const balEl = document.getElementById('detail-balance');
+    if (bal > 0) balEl.innerHTML = `<span class="bal-owes-you">Owes you ${fmtMoney(bal)}</span>`;
+    else if (bal < 0) balEl.innerHTML = `<span class="bal-you-owe">You owe ${fmtMoney(-bal)}</span>`;
+    else balEl.innerHTML = `<span class="bal-zero">Settled</span>`;
+
+    if (!rows.length) { emptyEl.style.display = 'block'; return; }
+
+    const typeLabels = { gave: 'Gave', returned_by_them: 'They Returned', took: 'Took Loan', returned_by_me: 'I Returned' };
+    let bankLoanNameMap = {};
+    if (rows.some(t => t.Source === 'bank_loan')) {
+      try {
+        const loansRes = await api('/api/debt-bank-loans');
+        (loansRes.rows || []).forEach(l => bankLoanNameMap[l.Id] = l.LoanName);
+      } catch (e) { /* non-fatal, just won't show the loan name */ }
+    }
+    // Running balance per row needs to be computed in chronological
+    // (oldest-first) order even though rows display newest-first, since
+    // "balance after this transaction" only makes sense walked forward
+    // through time.
+    const chronological = [...rows].reverse();
+    let runningBal = 0;
+    const balanceAfterId = {};
+    chronological.forEach(t => {
+      const amt = Number(t.Amount || 0);
+      if (t.Type === 'gave') runningBal += amt;
+      else if (t.Type === 'returned_by_them') runningBal -= amt;
+      else if (t.Type === 'took') runningBal -= amt;
+      else if (t.Type === 'returned_by_me') runningBal += amt;
+      balanceAfterId[t.Id] = runningBal;
+    });
+
+    tbody.innerHTML = rows.map(t => {
+      let sourceNote = '';
+      if (t.Type === 'gave' && t.Source === 'bank_loan') {
+        sourceNote = `<div style="font-size:0.65rem;color:#e65100;margin-top:2px;">From loan: ${escHtml(bankLoanNameMap[t.BankLoanId] || '—')}</div>`;
+      } else if (t.Type === 'gave' && t.Source === 'own') {
+        sourceNote = `<div style="font-size:0.65rem;color:#888;margin-top:2px;">Own money</div>`;
+      }
+      const balAfter = balanceAfterId[t.Id] || 0;
+      let balAfterHtml;
+      if (balAfter > 0) balAfterHtml = `<span class="bal-owes-you">${fmtMoney(balAfter)}</span>`;
+      else if (balAfter < 0) balAfterHtml = `<span class="bal-you-owe">${fmtMoney(-balAfter)}</span>`;
+      else balAfterHtml = `<span class="bal-zero">${fmtMoney(0)}</span>`;
+      return `<tr>
+      <td data-label="Date">${escHtml(t.Date || '—')}</td>
+      <td data-label="Type"><span class="type-badge type-${t.Type}">${typeLabels[t.Type] || t.Type}</span>${sourceNote}</td>
+      <td data-label="Amount" style="font-weight:700;">${fmtMoney(t.Amount)}</td>
+      <td data-label="Current Balance">${balAfterHtml}</td>
+      <td data-label="Note" style="color:#666;">${escHtml(t.Note || '—')}</td>
+      <td data-label="Actions"><button class="icon-btn" title="Delete" onclick="deleteTransaction(${t.Id})">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#c62828"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      </button></td>
+    </tr>`;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#e53935;">Error: ${escHtml(e.message)}</td></tr>`;
+  }
+}
+
+function openTxnModal() {
+  document.getElementById('tf-type').value = 'gave';
+  document.getElementById('tf-amount').value = '';
+  document.getElementById('tf-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('tf-note').value = '';
+  document.getElementById('tf-source').value = 'own';
+  onTxnTypeChange();
+  document.getElementById('modal').style.display = 'flex';
+}
+
+async function saveTransaction() {
+  const amount = parseFloat(document.getElementById('tf-amount').value);
+  if (!amount || amount <= 0) return showToast('Enter a valid amount');
+  const type = document.getElementById('tf-type').value;
+  const payload = {
+    MemberId: currentMemberId,
+    Type: type,
+    Amount: amount,
+    Date: document.getElementById('tf-date').value,
+    Note: document.getElementById('tf-note').value.trim(),
+  };
+  // Source of funds only applies to "gave" - where the money you handed
+  // a friend came from (your own money, or drawn from a specific bank
+  // loan, in which case it also counts against that loan's balance).
+  if (type === 'gave') {
+    const source = document.getElementById('tf-source').value;
+    payload.Source = source;
+    if (source === 'bank_loan') {
+      const loanSel = document.getElementById('tf-bankloan');
+      if (!loanSel.value) return showToast('Select which bank loan this came from');
+      payload.BankLoanId = parseInt(loanSel.value);
+    }
+  }
+  try {
+    await api('/api/debt-transactions', { method: 'POST', body: JSON.stringify(payload) });
+    document.getElementById('modal').style.display = 'none';
+    showToast('Saved');
+    await loadTransactions();
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+async function deleteTransaction(id) {
+  if (!confirm('Delete this transaction?')) return;
+  try {
+    await api('/api/debt-transactions/' + id, { method: 'DELETE' });
+    showToast('Deleted');
+    await loadTransactions();
+  } catch (e) { showToast('Error: ' + e.message); }
+}
+
+document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') e.target.style.display = 'none'; });
+document.getElementById('member-modal').addEventListener('click', e => { if (e.target.id === 'member-modal') e.target.style.display = 'none'; });
+
+if (sessionStorage.getItem('debtLoanToken')) loadMembers();
+</script>
+
+</body>
+</html>
